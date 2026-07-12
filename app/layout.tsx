@@ -1,10 +1,18 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
+import { Geist, Geist_Mono } from 'next/font/google'
 import './globals.css'
 
+const _geistSans = Geist({ subsets: ['latin'] })
+const _geistMono = Geist_Mono({ subsets: ['latin'] })
+
 export const metadata: Metadata = {
-  title: 'v0 App',
-  description: 'Created with v0',
+  title: {
+    default: 'DomainHub — 全球域名注册商价格比较',
+    template: '%s | DomainHub',
+  },
+  description:
+    'DomainHub 聚合 Cloudflare、Porkbun、Namecheap 等全球主流域名注册商的注册、续费与转入价格，帮助你找到最便宜的域名注册商。',
   generator: 'v0.app',
   icons: {
     icon: [
@@ -28,8 +36,8 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   colorScheme: 'light dark',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
-    { media: '(prefers-color-scheme: dark)', color: 'black' },
+    { media: '(prefers-color-scheme: light)', color: '#faf9f7' },
+    { media: '(prefers-color-scheme: dark)', color: '#1c1b1a' },
   ],
 }
 
@@ -39,8 +47,8 @@ export default function RootLayout({
   children: React.ReactNode
 }>) {
   return (
-    <html lang="en">
-      <body className="antialiased">
+    <html lang="zh-CN" className="bg-background">
+      <body className="font-sans antialiased">
         {children}
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
