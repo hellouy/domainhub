@@ -4,7 +4,7 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { cookies } from 'next/headers'
 import './globals.css'
 import { Providers } from '@/components/providers'
-import { CURRENCY_COOKIE, normalizeCurrency } from '@/lib/currency/context'
+import { CURRENCY_COOKIE, normalizeCurrency } from '@/lib/currency/constants'
 import { LOCALE_COOKIE, normalizeLocale } from '@/lib/i18n/dictionaries'
 import { currencyService } from '@/services/currency'
 
