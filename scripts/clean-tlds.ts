@@ -33,6 +33,26 @@ const POPULARITY: Record<string, number> = {
 
 const POPULAR_FLAG_COUNT = 24
 
+/**
+ * 传统通用顶级域(legacy gTLD,2012 年新顶级计划之前）。
+ * 这些标记为 "gTLD"(通用);2 字母后缀标记为 "ccTLD"(国家);
+ * 其余有效后缀一律为 "newG"(新顶级)。
+ */
+const LEGACY_GTLDS = new Set([
+  "com", "net", "org", "info", "biz", "name", "pro", "mobi", "asia", "tel",
+  "xxx", "cat", "jobs", "travel", "aero", "coop", "museum", "int", "gov",
+  "edu", "mil", "arpa", "post",
+])
+
+/** 判定单个后缀的分类。tld 为主后缀(小写,如 "com"、"co"、"shop") */
+function classify(tld: string): "gTLD" | "ccTLD" | "newG" {
+  const base = tld.toLowerCase()
+  // ICANN 规定:所有两字母顶级域专属国家/地区(ccTLD)
+  if (/^[a-z]{2}$/.test(base)) return "ccTLD"
+  if (LEGACY_GTLDS.has(base)) return "gTLD"
+  return "newG"
+}
+
 async function main() {
   // ---- 1. 增量迁移 ----
   await db.execute(sql`ALTER TABLE tlds ADD COLUMN IF NOT EXISTS is_valid BOOLEAN NOT NULL DEFAULT true`)
@@ -102,7 +122,27 @@ async function main() {
       sql`, `,
     )}) AND is_valid = true`,
   )
-  console.log(`[3/3] 热度标注完成: ${entries.length} 个后缀已打分,前 ${POPULAR_FLAG_COUNT} 个设为热门`)
+  console.log(`[3/4] 热度标注完成: ${entries.length} 个后缀已打分,前 ${POPULAR_FLAG_COUNT} 个设为热门`)
+
+  // ---- 4. 精确三分类:通用 / 国家 / 新顶级 ----
+  const byType: Record<"gTLD" | "ccTLD" | "newG", number[]> = { gTLD: [], ccTLD: [], newG: [] }
+  for (const row of all) {
+    if (invalidIds.includes(row.id)) continue // 无效后缀不重标
+    const main = row.tld.split(".").pop() ?? row.tld
+    byType[classify(main)].push(row.id)
+  }
+  for (const [type, ids] of Object.entries(byType)) {
+    if (ids.length === 0) continue
+    await db.execute(
+      sql`UPDATE tlds SET type = ${type} WHERE id IN (${sql.join(
+        ids.map((i) => sql`${i}`),
+        sql`, `,
+      )})`,
+    )
+  }
+  console.log(
+    `[4/4] 分类完成: 通用 ${byType.gTLD.length} · 国家 ${byType.ccTLD.length} · 新顶级 ${byType.newG.length}`,
+  )
   process.exit(0)
 }
 
