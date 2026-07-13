@@ -21,12 +21,12 @@ import { namecomAdapter } from "./namecom"
 import { onecomAdapter } from "./onecom"
 import { porkbunAdapter } from "./porkbun"
 import { ovhcloudAdapter } from "./ovhcloud"
+import { hostpointAdapter } from "./hostpoint"
 import {
   amenAdapter,
   arubaAdapter,
   domeneshopAdapter,
   eurodnsAdapter,
-  hostpointAdapter,
   hoverAdapter,
   infomaniakAdapter,
   internetbsAdapter,

@@ -112,15 +112,6 @@ export const domeneshopAdapter = createTableAdapter({
   columnOrder: ["register", "renew", "transfer"],
 })
 
-export const hostpointAdapter = createTableAdapter({
-  slug: "hostpoint",
-  name: "Hostpoint",
-  website: "https://www.hostpoint.ch",
-  currency: "CHF",
-  urls: ["https://www.hostpoint.ch/en/domains/prices.html"],
-  columnOrder: ["register", "renew", "transfer"],
-})
-
 export const netcupAdapter = createTableAdapter({
   slug: "netcup",
   name: "Netcup",
