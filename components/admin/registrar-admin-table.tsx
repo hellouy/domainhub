@@ -20,6 +20,17 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { CrawlOneButton } from "@/components/admin/crawl-buttons"
 import { useRouter } from "next/navigation"
 
+type RegistrarHealth = {
+  score?: number
+  coverage?: number
+  successRate?: number
+  avgLatencyMs?: number
+  lastSuccessAt?: string
+  lastFailureAt?: string
+  failureReason?: string
+  currentStrategy?: string
+}
+
 type Registrar = {
   id: number
   slug: string
@@ -27,6 +38,40 @@ type Registrar = {
   website: string
   description: string
   isActive: boolean
+  health?: Record<string, unknown> | null
+  adapterVersion?: string | null
+  owner?: string | null
+}
+
+function HealthBadge({ health }: { health: RegistrarHealth | null }) {
+  if (!health || typeof health.score !== "number") {
+    return <span className="text-xs text-muted-foreground">-</span>
+  }
+  const score = health.score
+  const variant = score >= 80 ? "default" : score >= 50 ? "secondary" : "destructive"
+  return (
+    <div className="flex flex-col gap-0.5">
+      <Badge variant={variant}>{score}</Badge>
+      {typeof health.coverage === "number" && (
+        <span className="text-xs text-muted-foreground">覆盖 {Math.round(health.coverage * 100)}%</span>
+      )}
+    </div>
+  )
+}
+
+function StrategyCell({ health, adapterVersion }: { health: RegistrarHealth | null; adapterVersion?: string | null }) {
+  if (!health?.currentStrategy && !adapterVersion) {
+    return <span className="text-xs text-muted-foreground">未迁移</span>
+  }
+  return (
+    <div className="flex flex-col gap-0.5">
+      {health?.currentStrategy && <code className="text-xs text-foreground">{health.currentStrategy}</code>}
+      <span className="text-xs text-muted-foreground">
+        {adapterVersion ? `v${adapterVersion}` : ""}
+        {typeof health?.avgLatencyMs === "number" ? ` · ${Math.round(health.avgLatencyMs)}ms` : ""}
+      </span>
+    </div>
+  )
 }
 
 function ActiveSwitch({ registrar }: { registrar: Registrar }) {
@@ -107,6 +152,8 @@ export function RegistrarAdminTable({ registrars }: { registrars: Registrar[] })
           <TableRow>
             <TableHead>注册商</TableHead>
             <TableHead>官网</TableHead>
+            <TableHead>健康分</TableHead>
+            <TableHead>策略 / 版本</TableHead>
             <TableHead>状态</TableHead>
             <TableHead>启用</TableHead>
             <TableHead className="text-right">操作</TableHead>
@@ -125,6 +172,12 @@ export function RegistrarAdminTable({ registrars }: { registrars: Registrar[] })
                 >
                   {r.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
                 </a>
+              </TableCell>
+              <TableCell>
+                <HealthBadge health={(r.health as RegistrarHealth | null) ?? null} />
+              </TableCell>
+              <TableCell>
+                <StrategyCell health={(r.health as RegistrarHealth | null) ?? null} adapterVersion={r.adapterVersion} />
               </TableCell>
               <TableCell>
                 <Badge variant={r.isActive ? "default" : "secondary"}>{r.isActive ? "已启用" : "已禁用"}</Badge>

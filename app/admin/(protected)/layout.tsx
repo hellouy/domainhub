@@ -34,6 +34,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               >
                 采集任务
               </Link>
+              <Link
+                href="/admin/credentials"
+                className="rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                凭证
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-2">

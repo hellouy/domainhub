@@ -111,6 +111,41 @@ export async function createPriceSink(registrarId: number): Promise<{
 }
 
 /**
+ * 创建干跑 PriceSink：compare 逻辑与真实 sink 一致，但不写数据库。
+ * 用于适配器测试（scripts/test-adapter.ts --no-db）。
+ */
+export async function createDryRunSink(registrarId: number): Promise<{
+  sink: PriceSink
+  knownTlds: Set<string>
+}> {
+  const { sink: realSink, knownTlds } = await createPriceSink(registrarId)
+  const dryRun: PriceSink = {
+    lookupExisting: realSink.lookupExisting,
+    save: async (validated) => {
+      const started = Date.now()
+      let inserted = 0
+      let updated = 0
+      let skipped = 0
+      for (const { price } of validated) {
+        const prev = realSink.lookupExisting(price.tld)
+        if (prev === undefined) {
+          inserted++
+        } else if (
+          norm(price.registerPrice) === (prev.registerPrice === null ? null : prev.registerPrice.toFixed(2)) &&
+          norm(price.renewPrice) === (prev.renewPrice === null ? null : prev.renewPrice.toFixed(2))
+        ) {
+          skipped++
+        } else {
+          updated++
+        }
+      }
+      return { inserted, updated, skipped, databaseMs: Date.now() - started }
+    },
+  }
+  return { sink: dryRun, knownTlds }
+}
+
+/**
  * 回滚：将某注册商某后缀的价格恢复到上一个历史版本。
  * 返回恢复到的历史行，无历史可回滚时返回 null。
  */

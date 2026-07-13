@@ -6,7 +6,7 @@
  */
 
 export * from "./types"
-export { BaseAdapter, type PriceSink } from "./base-adapter"
+export { BaseAdapter, type PriceSink, type AdapterTestReport } from "./base-adapter"
 export { defineAdapter } from "./define-adapter"
 export { executeStrategies, type StrategyExecution } from "./strategy-engine"
 export { validatePrices, type ExistingPriceLookup } from "./validation"

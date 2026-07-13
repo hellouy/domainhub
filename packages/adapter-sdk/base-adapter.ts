@@ -269,4 +269,107 @@ export class BaseAdapter {
       await this.cleanup(ctx)
     }
   }
+
+  /**
+   * runTests：执行 7 类标准分步测试（脚本 scripts/test-adapter.ts 使用）。
+   * 每个阶段独立报告结果，任一阶段失败不阻断后续可运行的阶段。
+   */
+  async runTests(ctx: AdapterContext, sink?: PriceSink): Promise<AdapterTestReport> {
+    const fail = (detail: string) => ({ ok: false, detail })
+    const pass = (detail: string) => ({ ok: true, detail })
+    const report: AdapterTestReport = {
+      connection: fail("未执行"),
+      fetch: fail("未执行"),
+      parse: fail("未执行"),
+      normalize: fail("未执行"),
+      validation: fail("未执行"),
+      storage: fail("未执行"),
+      coverage: fail("未执行"),
+    }
+
+    // 1. Connection：initialize + discover
+    try {
+      await this.initialize(ctx)
+      const discovery = await this.discover(ctx)
+      const endpoint =
+        discovery.apiEndpoint ?? discovery.xhrEndpoint ?? discovery.graphqlEndpoint ?? discovery.pricingUrl
+      report.connection = pass(`数据源: ${endpoint ?? "(hooks 自定义)"}, 策略 ${discovery.detectedStrategy}`)
+    } catch (err) {
+      report.connection = fail(err instanceof Error ? err.message : String(err))
+      return report
+    }
+
+    // 2+3. Fetch + Parse：策略引擎
+    let execution: Awaited<ReturnType<typeof executeStrategies>>
+    try {
+      execution = await executeStrategies(this.definition.strategies, ctx)
+      report.fetch = pass(`策略 ${execution.strategy}, 下载 ${execution.downloadMs}ms`)
+      report.parse =
+        execution.rawPrices.length > 0
+          ? pass(`解析出 ${execution.rawPrices.length} 条原始记录, ${execution.parsingMs}ms`)
+          : fail("解析结果为空")
+    } catch (err) {
+      report.fetch = fail(err instanceof Error ? err.message : String(err))
+      return report
+    }
+    if (execution.rawPrices.length === 0) return report
+
+    // 4. Normalize
+    const normalized = this.normalize(execution.rawPrices, execution.strategy, `${this.slug} test`)
+    const withRegister = normalized.filter((n) => n.registerPrice !== null).length
+    report.normalize =
+      normalized.length > 0 && withRegister > 0
+        ? pass(`标准化 ${normalized.length} 条, ${withRegister} 条含注册价, 结构完整`)
+        : fail(`标准化异常: 共 ${normalized.length} 条, 含注册价 ${withRegister} 条`)
+
+    // 5. Validation
+    const validated = await this.validate(normalized, ctx, sink?.lookupExisting)
+    const accepted = validated.filter((v) => v.status !== "rejected")
+    const passRate = validated.length > 0 ? accepted.length / validated.length : 0
+    report.validation =
+      passRate >= 0.9
+        ? pass(`通过率 ${(passRate * 100).toFixed(1)}% (${accepted.length}/${validated.length})`)
+        : fail(`通过率 ${(passRate * 100).toFixed(1)}% 低于 90%`)
+
+    // 6. Storage
+    if (sink) {
+      try {
+        const stats = await sink.save(accepted)
+        report.storage = pass(
+          `新增 ${stats.inserted}, 更新 ${stats.updated}, 跳过 ${stats.skipped}, ${stats.databaseMs}ms`,
+        )
+      } catch (err) {
+        report.storage = fail(err instanceof Error ? err.message : String(err))
+      }
+    } else {
+      report.storage = pass("(无 sink, 跳过)")
+    }
+
+    // 7. Coverage
+    if (ctx.knownTlds.size > 0) {
+      const covered = new Set(accepted.map((v) => v.price.tld))
+      let hit = 0
+      for (const t of ctx.knownTlds) if (covered.has(t)) hit++
+      const coverage = hit / ctx.knownTlds.size
+      report.coverage =
+        coverage >= 0.5
+          ? pass(`覆盖率 ${(coverage * 100).toFixed(0)}% (${hit}/${ctx.knownTlds.size})`)
+          : fail(`覆盖率 ${(coverage * 100).toFixed(0)}% 低于 50%`)
+    } else {
+      report.coverage = pass("(无已知 TLD, 跳过)")
+    }
+
+    return report
+  }
+}
+
+/** 分步测试报告（scripts/test-adapter.ts 使用） */
+export interface AdapterTestReport {
+  connection: { ok: boolean; detail: string }
+  fetch: { ok: boolean; detail: string }
+  parse: { ok: boolean; detail: string }
+  normalize: { ok: boolean; detail: string }
+  validation: { ok: boolean; detail: string }
+  storage: { ok: boolean; detail: string }
+  coverage: { ok: boolean; detail: string }
 }
