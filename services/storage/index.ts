@@ -1,9 +1,9 @@
 import "server-only"
 
 import { db } from "@/lib/db"
-import { crawlJobs, crawlLogs, priceHistory, prices, registrars, tlds } from "@/lib/db/schema"
+import { crawlJobs, crawlLogs, priceHistory, prices, registrars, schedulerSettings, tlds } from "@/lib/db/schema"
 import type { DomainPrice, JobStatus } from "@/lib/crawler/types"
-import { and, eq } from "drizzle-orm"
+import { and, desc, eq, inArray } from "drizzle-orm"
 
 /**
  * Storage 服务：采集结果的唯一落库入口
@@ -17,8 +17,10 @@ const norm = (v: number | null | undefined): string | null =>
   v === null || v === undefined ? null : v.toFixed(2)
 
 export interface SaveResult {
-  /** 实际写入/更新的行数 */
+  /** 实际写入/更新的行数（inserted + changed） */
   updated: number
+  /** 其中新插入的行数 */
+  inserted: number
   /** 无变化被跳过的行数 */
   skipped: number
   /** 数据源里存在但 tlds 表未收录的后缀数 */
@@ -47,6 +49,11 @@ export class StorageService {
       finishedAt: Date
       pricesUpdated?: number
       totalTlds?: number
+      retries?: number
+      rowsInserted?: number
+      rowsUpdated?: number
+      rowsSkipped?: number
+      rowsRejected?: number
       errorMessage?: string | null
     },
   ) {
@@ -57,9 +64,57 @@ export class StorageService {
         finishedAt: patch.finishedAt,
         pricesUpdated: patch.pricesUpdated ?? 0,
         totalTlds: patch.totalTlds ?? 0,
+        retries: patch.retries ?? 0,
+        rowsInserted: patch.rowsInserted ?? 0,
+        rowsUpdated: patch.rowsUpdated ?? 0,
+        rowsSkipped: patch.rowsSkipped ?? 0,
+        rowsRejected: patch.rowsRejected ?? 0,
         errorMessage: patch.errorMessage ?? null,
       })
       .where(eq(crawlJobs.id, jobId))
+  }
+
+  /** 每个注册商最近一次失败/取消的任务（供"重试失败"使用） */
+  async getLatestFailedRegistrarIds(): Promise<number[]> {
+    const recent = await db
+      .select({
+        registrarId: crawlJobs.registrarId,
+        status: crawlJobs.status,
+        id: crawlJobs.id,
+      })
+      .from(crawlJobs)
+      .orderBy(desc(crawlJobs.id))
+    const latestByRegistrar = new Map<number, string>()
+    for (const job of recent) {
+      if (!latestByRegistrar.has(job.registrarId)) {
+        latestByRegistrar.set(job.registrarId, job.status)
+      }
+    }
+    return [...latestByRegistrar.entries()]
+      .filter(([, status]) => status === "failed" || status === "cancelled")
+      .map(([registrarId]) => registrarId)
+  }
+
+  // ---------- 调度设置 ----------
+
+  async getSchedulerSettings() {
+    const [row] = await db.select().from(schedulerSettings).limit(1)
+    return row
+  }
+
+  async updateSchedulerSettings(patch: { enabled?: boolean; runHourUtc?: number; lastRunAt?: Date }) {
+    const current = await this.getSchedulerSettings()
+    if (!current) return
+    await db
+      .update(schedulerSettings)
+      .set({ ...patch, updatedAt: new Date() })
+      .where(eq(schedulerSettings.id, current.id))
+  }
+
+  /** 按注册商 id 列表查 slug（重试失败场景） */
+  async getRegistrarsByIds(ids: number[]) {
+    if (ids.length === 0) return []
+    return db.select().from(registrars).where(inArray(registrars.id, ids))
   }
 
   async getJob(jobId: number) {
@@ -112,7 +167,19 @@ export class StorageService {
     const existing = await db.select().from(prices).where(eq(prices.registrarId, registrarId))
     const existingMap = new Map(existing.map((p) => [p.tldId, p]))
 
-    let updated = 0
+    // 第一遍：纯内存差异对比，把写操作分桶（避免逐条往返数据库）
+    type PriceRow = {
+      registrarId: number
+      tldId: number
+      registerPrice: string | null
+      renewPrice: string | null
+      transferPrice: string | null
+      currency: string
+      sourceUrl: string
+      updatedAt: Date
+    }
+    const toInsert: PriceRow[] = []
+    const toUpdate: PriceRow[] = []
     let skipped = 0
     let unknownTlds = 0
 
@@ -122,15 +189,17 @@ export class StorageService {
         unknownTlds++
         continue
       }
-
-      const next = {
+      const next: PriceRow = {
+        registrarId,
+        tldId,
         registerPrice: norm(item.register_price),
         renewPrice: norm(item.renew_price),
         transferPrice: norm(item.transfer_price),
         currency: item.currency,
+        sourceUrl: item.source,
+        updatedAt: item.checked_at,
       }
       const prev = existingMap.get(tldId)
-
       if (
         prev &&
         prev.registerPrice === next.registerPrice &&
@@ -141,26 +210,51 @@ export class StorageService {
         skipped++
         continue
       }
-
-      if (prev) {
-        await db
-          .update(prices)
-          .set({ ...next, sourceUrl: item.source, updatedAt: item.checked_at })
-          .where(and(eq(prices.registrarId, registrarId), eq(prices.tldId, tldId)))
-      } else {
-        await db.insert(prices).values({
-          registrarId,
-          tldId,
-          ...next,
-          sourceUrl: item.source,
-          updatedAt: item.checked_at,
-        })
-      }
-      await db.insert(priceHistory).values({ registrarId, tldId, ...next })
-      updated++
+      if (prev) toUpdate.push(next)
+      else toInsert.push(next)
     }
 
-    return { updated, skipped, unknownTlds }
+    // 第二遍：批量执行（插入按块批量、更新并行小批、历史一次性批量追加）
+    const CHUNK = 200
+    for (let i = 0; i < toInsert.length; i += CHUNK) {
+      await db.insert(prices).values(toInsert.slice(i, i + CHUNK))
+    }
+    const PARALLEL = 10
+    for (let i = 0; i < toUpdate.length; i += PARALLEL) {
+      await Promise.all(
+        toUpdate.slice(i, i + PARALLEL).map((row) =>
+          db
+            .update(prices)
+            .set({
+              registerPrice: row.registerPrice,
+              renewPrice: row.renewPrice,
+              transferPrice: row.transferPrice,
+              currency: row.currency,
+              sourceUrl: row.sourceUrl,
+              updatedAt: row.updatedAt,
+            })
+            .where(and(eq(prices.registrarId, registrarId), eq(prices.tldId, row.tldId))),
+        ),
+      )
+    }
+    const historyRows = [...toInsert, ...toUpdate].map((row) => ({
+      registrarId,
+      tldId: row.tldId,
+      registerPrice: row.registerPrice,
+      renewPrice: row.renewPrice,
+      transferPrice: row.transferPrice,
+      currency: row.currency,
+    }))
+    for (let i = 0; i < historyRows.length; i += CHUNK) {
+      await db.insert(priceHistory).values(historyRows.slice(i, i + CHUNK))
+    }
+
+    return {
+      updated: toInsert.length + toUpdate.length,
+      inserted: toInsert.length,
+      skipped,
+      unknownTlds,
+    }
   }
 }
 

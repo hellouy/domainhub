@@ -9,8 +9,8 @@
  *   Runner（services/crawler）       —— 调度、重试、超时、取消、统计
  */
 
-/** 任务状态机 */
-export type JobStatus = "pending" | "running" | "success" | "failed" | "cancelled"
+/** 任务状态机（warning：任务完成但存在被验证拒绝的记录） */
+export type JobStatus = "pending" | "running" | "success" | "warning" | "failed" | "cancelled"
 
 /** 采集内容的原始载体（fetch 阶段的输出，parse 阶段的输入） */
 export interface RawContent {
@@ -60,8 +60,12 @@ export interface CrawlJobResult {
   totalTlds: number
   /** 实际写入/更新的行数（价格有变化才计入） */
   updated: number
+  /** 其中新插入的行数 */
+  inserted: number
   /** 无变化被跳过的行数 */
   skipped: number
+  /** 被数据验证拒绝的行数 */
+  rejected: number
   /** 实际执行的尝试次数（含重试） */
   attempts: number
   durationMs: number

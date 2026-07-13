@@ -115,6 +115,45 @@ export abstract class BaseAdapter implements RegistrarAdapter {
     throw new Error(`数据源在 ${this.fetchRetries} 次重试后仍不可用：${lastError?.message ?? "未知错误"}`)
   }
 
+  /** 带超时与重试（指数退避）的 HTTP POST 请求，返回响应文本（官方 API 场景） */
+  protected async httpPost(url: string, ctx: CrawlContext, jsonBody: unknown = {}): Promise<string> {
+    let lastError: Error | null = null
+    for (let attempt = 1; attempt <= this.fetchRetries; attempt++) {
+      if (ctx.isCancelled()) throw new Error("任务已取消")
+      const controller = new AbortController()
+      const timer = setTimeout(() => controller.abort(), this.fetchTimeoutMs)
+      try {
+        await ctx.log("info", `POST 数据源（第 ${attempt}/${this.fetchRetries} 次）：${url}`)
+        const res = await fetch(url, {
+          method: "POST",
+          signal: controller.signal,
+          headers: {
+            "User-Agent": "DomainHub/1.0 (price aggregator)",
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify(jsonBody),
+          cache: "no-store",
+        })
+        if (!res.ok) throw new Error(`数据源返回 HTTP ${res.status}`)
+        return await res.text()
+      } catch (err) {
+        lastError = err instanceof Error ? err : new Error(String(err))
+        const isAbort = lastError.name === "AbortError"
+        await ctx.log(
+          "warn",
+          `第 ${attempt} 次请求失败：${isAbort ? `超时（${this.fetchTimeoutMs / 1000}s）` : lastError.message}`,
+        )
+        if (attempt < this.fetchRetries) {
+          await new Promise((r) => setTimeout(r, 1000 * 2 ** (attempt - 1)))
+        }
+      } finally {
+        clearTimeout(timer)
+      }
+    }
+    throw new Error(`数据源在 ${this.fetchRetries} 次重试后仍不可用：${lastError?.message ?? "未知错误"}`)
+  }
+
   /** 归一化工具：非法/非正数价格 -> null */
   protected toPrice(v: unknown): number | null {
     const n = typeof v === "string" ? Number.parseFloat(v.replace(/[^0-9.]/g, "")) : v

@@ -1,5 +1,7 @@
 import type { RegistrarAdapter } from "../types"
 import { cloudflareAdapter } from "./cloudflare"
+import { dynadotAdapter } from "./dynadot"
+import { porkbunAdapter } from "./porkbun"
 import { DemoAdapter } from "./demo.adapter"
 
 /**
@@ -12,14 +14,12 @@ import { DemoAdapter } from "./demo.adapter"
  * 未接入真实采集的注册商由 DemoAdapter（种子数据）占位，
  * 同名 slug 的真实 Adapter 会自动覆盖 Demo 版本。
  */
-const realAdapters: RegistrarAdapter[] = [cloudflareAdapter]
+const realAdapters: RegistrarAdapter[] = [cloudflareAdapter, porkbunAdapter, dynadotAdapter]
 
 const demoAdapters: RegistrarAdapter[] = (
   [
-    ["porkbun", "Porkbun"],
     ["namecheap", "Namecheap"],
     ["godaddy", "GoDaddy"],
-    ["dynadot", "Dynadot"],
     ["namecom", "Name.com"],
     ["spaceship", "Spaceship"],
     ["aliyun", "阿里云（万网）"],

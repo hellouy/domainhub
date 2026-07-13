@@ -9,6 +9,7 @@ import type {
   RunnerOptions,
 } from "@/lib/crawler/types"
 import { storageService, type StorageService } from "@/services/storage"
+import { validatorService, type ValidatorService } from "@/services/validator"
 
 /**
  * CrawlerRunner —— 采集引擎调度器
@@ -20,6 +21,8 @@ import { storageService, type StorageService } from "@/services/storage"
 
 const DEFAULT_MAX_ATTEMPTS = 3
 const DEFAULT_TIMEOUT_MS = 60_000
+/** runAll 的最大并发 Adapter 数 */
+const MAX_CONCURRENT_ADAPTERS = 3
 
 /** 进程内取消标记（同一实例内的"停止"按钮即时生效；跨实例以 DB 状态为准） */
 const cancelledJobs = new Set<number>()
@@ -44,6 +47,7 @@ function withTimeout<T>(promise: Promise<T>, ms: number, label: string): Promise
 export class CrawlerRunner {
   constructor(
     private readonly storage: StorageService = storageService,
+    private readonly validator: ValidatorService = validatorService,
     private readonly options: Required<RunnerOptions> = {
       maxAttempts: DEFAULT_MAX_ATTEMPTS,
       timeoutMs: DEFAULT_TIMEOUT_MS,
@@ -61,13 +65,35 @@ export class CrawlerRunner {
     return this.storage.cancelJob(jobId)
   }
 
-  /** 运行全部启用的注册商（串行，避免打爆数据源与数据库连接） */
+  /** 运行全部启用的注册商（并发执行，上限 MAX_CONCURRENT_ADAPTERS） */
   async runAll(trigger = "manual"): Promise<CrawlJobResult[]> {
     const active = await this.storage.getActiveRegistrars()
-    const results: CrawlJobResult[] = []
-    for (const registrar of active) {
-      results.push(await this.runBySlug(registrar.slug, trigger))
-    }
+    return this.runPool(
+      active.map((r) => r.slug),
+      trigger,
+    )
+  }
+
+  /** 重试所有"最近一次运行失败/取消"的注册商 */
+  async retryFailed(trigger = "retry"): Promise<CrawlJobResult[]> {
+    const failedIds = await this.storage.getLatestFailedRegistrarIds()
+    const registrars = await this.storage.getRegistrarsByIds(failedIds)
+    const activeSlugs = registrars.filter((r) => r.isActive).map((r) => r.slug)
+    if (activeSlugs.length === 0) return []
+    return this.runPool(activeSlugs, trigger)
+  }
+
+  /** 并发池：同时最多 MAX_CONCURRENT_ADAPTERS 个 Adapter 运行 */
+  private async runPool(slugs: string[], trigger: string): Promise<CrawlJobResult[]> {
+    const results: CrawlJobResult[] = new Array(slugs.length)
+    let cursor = 0
+    const workers = Array.from({ length: Math.min(MAX_CONCURRENT_ADAPTERS, slugs.length) }, async () => {
+      while (cursor < slugs.length) {
+        const index = cursor++
+        results[index] = await this.runBySlug(slugs[index], trigger)
+      }
+    })
+    await Promise.all(workers)
     return results
   }
 
@@ -110,32 +136,56 @@ export class CrawlerRunner {
         )
 
         if (await this.checkCancelled(job.id, ctx, startedAt, slug, attempts)) {
-          return this.buildResult(job.id, slug, "cancelled", "任务已取消", domainPrices.length, 0, 0, attempts, startedAt)
+          return this.buildResult(job.id, slug, "cancelled", "任务已取消", domainPrices.length, 0, 0, 0, 0, attempts, startedAt)
+        }
+
+        // validate：写入前的数据验证，被拒绝的记录写日志、不落库
+        const { valid, rejected } = this.validator.validate(domainPrices)
+        if (rejected.length > 0) {
+          const preview = rejected.slice(0, 20)
+          for (const r of preview) {
+            await ctx.log("warn", `验证拒绝：${r.reason}`)
+          }
+          if (rejected.length > preview.length) {
+            await ctx.log("warn", `验证拒绝：其余 ${rejected.length - preview.length} 条从略`)
+          }
+        }
+        if (valid.length === 0) {
+          throw new Error(`全部 ${domainPrices.length} 条记录均未通过验证，放弃写入以保护现有数据`)
         }
 
         // save：由 Storage 服务差异写入
-        const saved = await this.storage.savePrices(registrar.id, domainPrices)
+        const saved = await this.storage.savePrices(registrar.id, valid)
         if (saved.unknownTlds > 0) {
           await ctx.log("info", `数据源含 ${saved.unknownTlds} 个未收录后缀，已跳过（可在 tlds 表中添加后自动收录）`)
         }
 
+        const status: JobStatus = rejected.length > 0 ? "warning" : "success"
         const finishedAt = new Date()
         const durationMs = finishedAt.getTime() - startedAt.getTime()
         await this.storage.finishJob(job.id, {
-          status: "success",
+          status,
           finishedAt,
           pricesUpdated: saved.updated,
           totalTlds: domainPrices.length,
+          retries: attempts - 1,
+          rowsInserted: saved.inserted,
+          rowsUpdated: saved.updated - saved.inserted,
+          rowsSkipped: saved.skipped,
+          rowsRejected: rejected.length,
+          errorMessage: rejected.length > 0 ? `${rejected.length} 条记录未通过验证` : null,
         })
         await ctx.log(
           "info",
-          `任务完成：共 ${domainPrices.length} 条价格，更新 ${saved.updated} 条，无变化跳过 ${saved.skipped} 条，耗时 ${(durationMs / 1000).toFixed(1)}s`,
+          `任务完成（${status}）：共 ${domainPrices.length} 条价格，新增 ${saved.inserted} 条，更新 ${saved.updated - saved.inserted} 条，跳过 ${saved.skipped} 条，拒绝 ${rejected.length} 条，耗时 ${(durationMs / 1000).toFixed(1)}s`,
         )
         cancelledJobs.delete(job.id)
         return this.buildResult(
-          job.id, slug, "success",
-          `成功：更新 ${saved.updated} 条，跳过 ${saved.skipped} 条`,
-          domainPrices.length, saved.updated, saved.skipped, attempts, startedAt,
+          job.id, slug, status,
+          rejected.length > 0
+            ? `完成但有警告：更新 ${saved.updated} 条，拒绝 ${rejected.length} 条`
+            : `成功：更新 ${saved.updated} 条，跳过 ${saved.skipped} 条`,
+          domainPrices.length, saved.updated, saved.inserted, saved.skipped, rejected.length, attempts, startedAt,
         )
       } catch (err) {
         lastError = err instanceof Error ? err.message : String(err)
