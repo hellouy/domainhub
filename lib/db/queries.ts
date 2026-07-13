@@ -1,6 +1,80 @@
-import { and, asc, count, desc, eq, max, min, sql } from "drizzle-orm"
+import { and, asc, count, desc, eq, inArray, max, min, sql } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { crawlJobs, prices, registrars, tlds } from "@/lib/db/schema"
+
+export type PopularTldPrice = {
+  registrarSlug: string
+  registrarName: string
+  registrarWebsite: string
+  registerPrice: string | null
+  renewPrice: string | null
+  transferPrice: string | null
+  currency: string
+  sourceUrl: string | null
+}
+
+export type PopularTldWithPrices = {
+  id: number
+  tld: string
+  type: string
+  registrarCount: number
+  prices: PopularTldPrice[]
+}
+
+/**
+ * 热门后缀 + 各注册商价格（供首页内联展开比价，避免逐层跳转）。
+ * 一次性取回所有热门后缀的价格，前端按选定币种换算、排序、取最低价。
+ */
+export async function getPopularTldsWithPrices(): Promise<PopularTldWithPrices[]> {
+  const popular = await db
+    .select({ id: tlds.id, tld: tlds.tld, type: tlds.type })
+    .from(tlds)
+    .where(eq(tlds.isPopular, true))
+    .orderBy(asc(tlds.tld))
+
+  if (popular.length === 0) return []
+
+  const ids = popular.map((t) => t.id)
+  const priceRows = await db
+    .select({
+      tldId: prices.tldId,
+      registrarSlug: registrars.slug,
+      registrarName: registrars.name,
+      registrarWebsite: registrars.website,
+      registerPrice: prices.registerPrice,
+      renewPrice: prices.renewPrice,
+      transferPrice: prices.transferPrice,
+      currency: prices.currency,
+      sourceUrl: prices.sourceUrl,
+    })
+    .from(prices)
+    .innerJoin(registrars, and(eq(prices.registrarId, registrars.id), eq(registrars.isActive, true)))
+    .where(inArray(prices.tldId, ids))
+
+  const byTld = new Map<number, PopularTldPrice[]>()
+  for (const row of priceRows) {
+    const list = byTld.get(row.tldId) ?? []
+    list.push({
+      registrarSlug: row.registrarSlug,
+      registrarName: row.registrarName,
+      registrarWebsite: row.registrarWebsite,
+      registerPrice: row.registerPrice,
+      renewPrice: row.renewPrice,
+      transferPrice: row.transferPrice,
+      currency: row.currency,
+      sourceUrl: row.sourceUrl,
+    })
+    byTld.set(row.tldId, list)
+  }
+
+  return popular.map((t) => ({
+    id: t.id,
+    tld: t.tld,
+    type: t.type,
+    registrarCount: byTld.get(t.id)?.length ?? 0,
+    prices: byTld.get(t.id) ?? [],
+  }))
+}
 
 /** 站点统计 */
 export async function getStats() {

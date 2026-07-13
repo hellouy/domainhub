@@ -1,7 +1,12 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import { cookies } from 'next/headers'
 import './globals.css'
+import { Providers } from '@/components/providers'
+import { CURRENCY_COOKIE, normalizeCurrency } from '@/lib/currency/context'
+import { LOCALE_COOKIE, normalizeLocale } from '@/lib/i18n/dictionaries'
+import { currencyService } from '@/services/currency'
 
 const _geistSans = Geist({ subsets: ['latin'] })
 const _geistMono = Geist_Mono({ subsets: ['latin'] })
@@ -41,15 +46,22 @@ export const viewport: Viewport = {
   ],
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const cookieStore = await cookies()
+  const locale = normalizeLocale(cookieStore.get(LOCALE_COOKIE)?.value)
+  const currency = normalizeCurrency(cookieStore.get(CURRENCY_COOKIE)?.value)
+  const rates = await currencyService.getRates()
+
   return (
-    <html lang="zh-CN" className="bg-background">
+    <html lang={locale === 'en' ? 'en' : 'zh-CN'} className="bg-background">
       <body className="font-sans antialiased">
-        {children}
+        <Providers locale={locale} currency={currency} rates={rates}>
+          {children}
+        </Providers>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

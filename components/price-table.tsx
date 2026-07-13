@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react"
 import Link from "next/link"
 import { ArrowUpDown, ExternalLink } from "lucide-react"
+import { useCurrency } from "@/lib/currency/context"
+import { useI18n } from "@/lib/i18n/context"
 import { formatPrice, formatRelative } from "@/lib/format"
 import { cn } from "@/lib/utils"
 
@@ -25,12 +27,6 @@ export type PriceRow = {
 
 type SortKey = "registerPrice" | "renewPrice" | "transferPrice"
 
-const SORT_LABELS: Record<SortKey, string> = {
-  registerPrice: "注册价",
-  renewPrice: "续费价",
-  transferPrice: "转入价",
-}
-
 function toNum(v: string | null) {
   if (v == null) return Number.POSITIVE_INFINITY
   const n = Number.parseFloat(v)
@@ -51,7 +47,16 @@ function toComparable(row: PriceRow, key: SortKey): number {
 }
 
 export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; showUpdated?: boolean }) {
+  const { dict } = useI18n()
+  const { format, isSameCurrency } = useCurrency()
   const [sortKey, setSortKey] = useState<SortKey>("registerPrice")
+
+  const t = dict.home
+  const SORT_LABELS: Record<SortKey, string> = {
+    registerPrice: t.register,
+    renewPrice: t.renew,
+    transferPrice: t.transfer,
+  }
 
   const sorted = useMemo(
     () => [...rows].sort((a, b) => toComparable(a, sortKey) - toComparable(b, sortKey)),
@@ -69,7 +74,11 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
   }, [rows])
 
   if (rows.length === 0) {
-    return <p className="border border-border bg-card p-8 text-center text-sm text-muted-foreground">暂无价格数据</p>
+    return (
+      <p className="rounded-2xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">
+        {t.noPrices}
+      </p>
+    )
   }
 
   return (
@@ -83,35 +92,35 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
             onClick={() => setSortKey(key)}
             aria-pressed={sortKey === key}
             className={cn(
-              "px-3 py-1.5 text-xs font-medium transition-colors",
+              "rounded-full px-3 py-1.5 text-xs font-medium transition-all active:scale-95",
               sortKey === key
-                ? "bg-primary text-primary-foreground"
+                ? "bg-primary text-primary-foreground shadow-sm"
                 : "bg-secondary text-secondary-foreground hover:bg-accent",
             )}
           >
-            按{SORT_LABELS[key]}
+            {SORT_LABELS[key]}
           </button>
         ))}
       </div>
-      <div className="overflow-x-auto border border-border">
+      <div className="overflow-x-auto rounded-2xl border border-border">
         <table className="w-full min-w-[560px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-border bg-secondary text-left">
               <th scope="col" className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                注册商
+                {dict.nav.registrars}
               </th>
               <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                注册
+                {t.register}
               </th>
               <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                续费
+                {t.renew}
               </th>
               <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                转入
+                {t.transfer}
               </th>
               {showUpdated && (
                 <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                  更新时间
+                  {dict.common.updatedAt}
                 </th>
               )}
               <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
@@ -129,8 +138,7 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
                 </td>
                 {(["registerPrice", "renewPrice", "transferPrice"] as SortKey[]).map((key) => {
                   const isMin = row[key] != null && toComparable(row, key) === minValues[key]
-                  const usd = row[USD_KEYS[key]]
-                  const showApprox = row.currency.toUpperCase() !== "USD" && usd != null && row[key] != null
+                  const showOriginal = !isSameCurrency(row.currency) && row[key] != null
                   return (
                     <td
                       key={key}
@@ -140,9 +148,11 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
                       )}
                     >
                       <span className="flex flex-col items-end">
-                        <span>{formatPrice(row[key], row.currency)}</span>
-                        {showApprox && (
-                          <span className="text-xs font-normal text-muted-foreground">≈${usd.toFixed(2)}</span>
+                        <span>{format(row[key], row.currency)}</span>
+                        {showOriginal && (
+                          <span className="text-xs font-normal text-muted-foreground">
+                            {formatPrice(row[key], row.currency)}
+                          </span>
                         )}
                       </span>
                       {isMin && <span className="sr-only">（最低价）</span>}
@@ -160,7 +170,7 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`访问 ${row.registrarName} 官网`}
-                    className="inline-flex text-muted-foreground hover:text-primary"
+                    className="inline-flex text-muted-foreground transition-colors hover:text-primary"
                   >
                     <ExternalLink aria-hidden="true" className="size-4" />
                   </a>
