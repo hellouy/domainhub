@@ -64,6 +64,18 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               >
                 价格情报
               </Link>
+              <Link
+                href="/admin/coverage"
+                className="rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                覆盖率
+              </Link>
+              <Link
+                href="/admin/monitoring"
+                className="rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                监控
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-2">
