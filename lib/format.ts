@@ -20,6 +20,37 @@ export function formatPrice(value: string | number | null | undefined, currency 
   return `${symbol}${currency === "JPY" ? Math.round(num).toLocaleString() : num.toFixed(2)}`
 }
 
+/**
+ * 跨币种换算(客户端安全,不依赖数据库)。
+ * rates 为 USD 基准:1 USD = rates[X] 单位 X 货币。
+ */
+export function convertAmount(
+  value: number,
+  from: string,
+  to: string,
+  rates: Record<string, number> | null | undefined,
+): number {
+  if (from === to || !rates) return value
+  const rFrom = rates[from]
+  const rTo = rates[to]
+  if (!rFrom || rFrom <= 0) return value
+  const usd = value / rFrom
+  return rTo && rTo > 0 ? usd * rTo : usd
+}
+
+/** 换算并格式化:原币种金额 → 目标展示币种字符串 */
+export function formatMoney(
+  value: string | number | null | undefined,
+  from: string,
+  to: string,
+  rates: Record<string, number> | null | undefined,
+): string {
+  if (value == null) return "—"
+  const num = typeof value === "string" ? Number.parseFloat(value) : value
+  if (Number.isNaN(num)) return "—"
+  return formatPrice(convertAmount(num, from, to, rates), to)
+}
+
 export function formatDate(value: Date | string | null | undefined) {
   if (!value) return "—"
   const d = typeof value === "string" ? new Date(value) : value

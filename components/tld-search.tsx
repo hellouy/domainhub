@@ -3,8 +3,7 @@
 import { useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Search } from "lucide-react"
-import { formatPrice } from "@/lib/format"
-import { useLocale } from "@/components/providers"
+import { useCurrency, useLocale } from "@/components/providers"
 
 export type TldSearchOption = {
   tld: string
@@ -14,6 +13,7 @@ export type TldSearchOption = {
 
 export function TldSearch({ options }: { options: TldSearchOption[] }) {
   const { t } = useLocale()
+  const { money } = useCurrency()
   const router = useRouter()
   const [query, setQuery] = useState("")
   const [open, setOpen] = useState(false)
@@ -87,7 +87,7 @@ export function TldSearch({ options }: { options: TldSearchOption[] }) {
               >
                 <span className="font-mono text-sm font-medium">.{s.tld}</span>
                 <span className="text-xs text-muted-foreground">
-                  {s.minRegister ? `最低 ${formatPrice(s.minRegister)}` : "暂无价格"}
+                  {s.minRegister ? `最低 ${money(s.minRegister, "USD")}` : "暂无价格"}
                 </span>
               </button>
             </li>

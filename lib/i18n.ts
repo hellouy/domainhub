@@ -14,6 +14,7 @@ const zh = {
   "nav.registrars": "注册商",
   "nav.themeToggle": "切换深浅色",
   "nav.langToggle": "Switch to English",
+  "nav.currency": "切换货币",
   // 首页 Hero
   "hero.eyebrow": "全球域名价格聚合",
   "hero.title": "注册域名前，先比一次价。",
@@ -69,6 +70,7 @@ const en: Record<DictKey, string> = {
   "nav.registrars": "Registrars",
   "nav.themeToggle": "Toggle theme",
   "nav.langToggle": "切换为中文",
+  "nav.currency": "Currency",
   "hero.eyebrow": "Global domain price aggregation",
   "hero.title": "Compare prices before you register.",
   "hero.subtitle":

@@ -4,9 +4,9 @@ import { useMemo, useState } from "react"
 import Link from "next/link"
 import useSWR from "swr"
 import { ArrowUpRight, ExternalLink, Search, X } from "lucide-react"
-import { formatPrice } from "@/lib/format"
+import { convertAmount } from "@/lib/format"
 import { cn } from "@/lib/utils"
-import { useLocale } from "@/components/providers"
+import { useCurrency, useLocale } from "@/components/providers"
 import type { DictKey } from "@/lib/i18n"
 
 export type ExplorerTld = {
@@ -37,24 +37,10 @@ const TYPE_TABS: { key: string; labelKey: DictKey }[] = [
 
 const PAGE_SIZE = 48
 
-/** 近似汇率（与 lib/db/queries.ts 的 usdEquivalent 保持一致），仅用于排序 */
-const USD_RATES: Record<string, number> = {
-  USD: 1,
-  EUR: 1.08,
-  CHF: 1.13,
-  GBP: 1.27,
-  JPY: 0.0066,
-  SEK: 0.095,
-  NOK: 0.093,
-  NZD: 0.61,
-  CAD: 0.73,
-  CNY: 0.14,
-}
-
-function toUsd(value: number | null, currency: string) {
+/** 排序用 USD 折算：使用实时汇率(providers 提供),促销价(< $1)沉底避免误导 */
+function toUsdSort(value: number | null, currency: string, rates: Record<string, number> | null) {
   if (value == null) return Number.POSITIVE_INFINITY
-  const usd = value * (USD_RATES[currency] ?? 1)
-  // 折算后低于 $1 视为首年促销价，排序时沉底避免误导
+  const usd = convertAmount(value, currency, "USD", rates)
   return usd < 1 ? usd + 100000 : usd
 }
 
@@ -63,18 +49,21 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json())
 /** 展开面板：就地加载该后缀的最低报价，无需跳页 */
 function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
   const { t } = useLocale()
+  const { money, rates } = useCurrency()
   const { data, isLoading } = useSWR<{ data: ApiPrice[] }>(
     `/api/v1/prices?tld=${encodeURIComponent(tld)}&limit=50`,
     fetcher,
     { revalidateOnFocus: false },
   )
-  // 客户端按 USD 折算价升序，促销价与 null 沉底，取前 6
+  // 客户端按实时汇率折算 USD 升序，促销价与 null 沉底，取前 6
   const rows = useMemo(() => {
     const all = data?.data ?? []
     return [...all]
-      .sort((a, b) => toUsd(a.registerPrice, a.currency) - toUsd(b.registerPrice, b.currency))
+      .sort(
+        (a, b) => toUsdSort(a.registerPrice, a.currency, rates) - toUsdSort(b.registerPrice, b.currency, rates),
+      )
       .slice(0, 6)
-  }, [data])
+  }, [data, rates])
 
   return (
     <div className="col-span-full border border-primary/40 bg-card">
@@ -138,10 +127,10 @@ function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
                     i === 0 && "text-primary",
                   )}
                 >
-                  {formatPrice(r.registerPrice, r.currency)}
+                  {money(r.registerPrice, r.currency)}
                 </span>
                 <span className="text-[10px] text-muted-foreground">
-                  {t("explorer.panel.renew")} {formatPrice(r.renewPrice, r.currency)}
+                  {t("explorer.panel.renew")} {money(r.renewPrice, r.currency)}
                 </span>
               </span>
               <a
@@ -167,6 +156,7 @@ function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
  */
 export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
   const { t } = useLocale()
+  const { money } = useCurrency()
   const [tab, setTab] = useState("popular")
   const [query, setQuery] = useState("")
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -270,7 +260,7 @@ export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
             >
               <span className="truncate font-mono text-[13px] font-semibold md:text-sm">.{t.tld}</span>
               <span className="truncate font-mono text-[11px] tabular-nums text-muted-foreground md:text-xs">
-                {t.minRegister != null ? formatPrice(t.minRegister) : "—"}
+                {t.minRegister != null ? money(t.minRegister, "USD") : "—"}
               </span>
             </button>
             {expanded === t.tld && <PricePanel tld={t.tld} onClose={() => setExpanded(null)} />}

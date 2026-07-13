@@ -1,7 +1,7 @@
 "use client"
 
 import Link from "next/link"
-import { LocaleToggle, ThemeToggle } from "@/components/header-toggles"
+import { CurrencyToggle, LocaleToggle, ThemeToggle } from "@/components/header-toggles"
 import { useLocale } from "@/components/providers"
 
 export function SiteHeader() {
@@ -36,6 +36,7 @@ export function SiteHeader() {
               </Link>
             ))}
           </nav>
+          <CurrencyToggle />
           <LocaleToggle />
           <ThemeToggle />
         </div>

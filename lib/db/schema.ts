@@ -41,6 +41,21 @@ export const tlds = pgTable("tlds", {
   description: text("description").notNull().default(""),
   isPopular: boolean("is_popular").notNull().default(false),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  /** 是否为 IANA 认可的真实后缀（清洗脚本维护，false 的不在前台展示） */
+  isValid: boolean("is_valid").notNull().default(true),
+  /** 热度分（越大越靠前；0 为普通后缀） */
+  popularity: integer("popularity").notNull().default(0),
+})
+
+/** 汇率缓存：单行 USD 基准，来自 exchangerate-api.com，智能过期刷新 */
+export const exchangeRates = pgTable("exchange_rates", {
+  id: serial("id").primaryKey(),
+  base: text("base").notNull().default("USD"),
+  /** { EUR: 0.87, CNY: 6.78, ... } 1 USD 兑换量 */
+  rates: jsonb("rates").notNull(),
+  fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull().defaultNow(),
+  /** API 声明的下次更新时间，过期才重新拉取 */
+  nextUpdateAt: timestamp("next_update_at", { withTimezone: true }),
 })
 
 export const prices = pgTable(
