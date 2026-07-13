@@ -1,0 +1,293 @@
+"use client"
+
+import { useMemo, useState } from "react"
+import Link from "next/link"
+import useSWR from "swr"
+import { ArrowUpRight, ExternalLink, Search, X } from "lucide-react"
+import { formatPrice } from "@/lib/format"
+import { cn } from "@/lib/utils"
+
+export type ExplorerTld = {
+  tld: string
+  type: string
+  isPopular: boolean
+  minRegister: string | null
+  registrarCount: number
+}
+
+type ApiPrice = {
+  registrar: string
+  registrarName: string
+  currency: string
+  registerPrice: number | null
+  renewPrice: number | null
+  transferPrice: number | null
+  sourceUrl: string | null
+}
+
+const TYPE_TABS: { key: string; label: string }[] = [
+  { key: "popular", label: "热门" },
+  { key: "all", label: "全部" },
+  { key: "gTLD", label: "通用" },
+  { key: "ccTLD", label: "国家" },
+  { key: "newG", label: "新顶级" },
+]
+
+const PAGE_SIZE = 48
+
+/** 近似汇率（与 lib/db/queries.ts 的 usdEquivalent 保持一致），仅用于排序 */
+const USD_RATES: Record<string, number> = {
+  USD: 1,
+  EUR: 1.08,
+  CHF: 1.13,
+  GBP: 1.27,
+  JPY: 0.0066,
+  SEK: 0.095,
+  NOK: 0.093,
+  NZD: 0.61,
+  CAD: 0.73,
+  CNY: 0.14,
+}
+
+function toUsd(value: number | null, currency: string) {
+  if (value == null) return Number.POSITIVE_INFINITY
+  const usd = value * (USD_RATES[currency] ?? 1)
+  // 折算后低于 $1 视为首年促销价，排序时沉底避免误导
+  return usd < 1 ? usd + 100000 : usd
+}
+
+const fetcher = (url: string) => fetch(url).then((r) => r.json())
+
+/** 展开面板：就地加载该后缀的最低报价，无需跳页 */
+function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
+  const { data, isLoading } = useSWR<{ data: ApiPrice[] }>(
+    `/api/v1/prices?tld=${encodeURIComponent(tld)}&limit=50`,
+    fetcher,
+    { revalidateOnFocus: false },
+  )
+  // 客户端按 USD 折算价升序，促销价与 null 沉底，取前 6
+  const rows = useMemo(() => {
+    const all = data?.data ?? []
+    return [...all]
+      .sort((a, b) => toUsd(a.registerPrice, a.currency) - toUsd(b.registerPrice, b.currency))
+      .slice(0, 6)
+  }, [data])
+
+  return (
+    <div className="col-span-full border border-primary/40 bg-card">
+      <div className="flex items-center justify-between border-b border-border px-4 py-3">
+        <h3 className="font-mono text-base font-semibold">
+          .{tld} <span className="ml-1 text-xs font-normal text-muted-foreground">最低报价</span>
+        </h3>
+        <div className="flex items-center gap-3">
+          <Link
+            href={`/tld/${tld}`}
+            className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+          >
+            完整比价
+            <ArrowUpRight aria-hidden="true" className="size-3.5" />
+          </Link>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="收起价格面板"
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <X aria-hidden="true" className="size-4" />
+          </button>
+        </div>
+      </div>
+
+      {isLoading ? (
+        <div className="flex flex-col gap-2 p-4" aria-busy="true" aria-label="加载中">
+          {[0, 1, 2].map((i) => (
+            <div key={i} className="h-9 animate-pulse bg-secondary" />
+          ))}
+        </div>
+      ) : rows.length === 0 ? (
+        <p className="p-4 text-sm text-muted-foreground">暂无该后缀的价格数据</p>
+      ) : (
+        <ul className="flex flex-col">
+          {rows.map((r, i) => (
+            <li
+              key={r.registrar}
+              className="flex items-center gap-2 border-b border-border px-4 py-2.5 last:border-b-0"
+            >
+              <span
+                className={cn(
+                  "w-5 shrink-0 font-mono text-xs",
+                  i === 0 ? "font-bold text-primary" : "text-muted-foreground",
+                )}
+              >
+                {i + 1}
+              </span>
+              <Link
+                href={`/registrars/${r.registrar}`}
+                className="min-w-0 flex-1 truncate text-sm font-medium hover:text-primary"
+              >
+                {r.registrarName}
+              </Link>
+              <span className="flex shrink-0 flex-col items-end">
+                <span
+                  className={cn(
+                    "font-mono text-sm font-semibold tabular-nums",
+                    i === 0 && "text-primary",
+                  )}
+                >
+                  {formatPrice(r.registerPrice, r.currency)}
+                </span>
+                <span className="text-[10px] text-muted-foreground">
+                  续费 {formatPrice(r.renewPrice, r.currency)}
+                </span>
+              </span>
+              <a
+                href={r.sourceUrl ?? "#"}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={`访问 ${r.registrarName}`}
+                className="shrink-0 text-muted-foreground hover:text-primary"
+              >
+                <ExternalLink aria-hidden="true" className="size-3.5" />
+              </a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
+/**
+ * TldExplorer —— 首页后缀浏览器。
+ * 筛选 + 搜索 + 点击就地展开价格，一次点击看到报价，零页面跳转。
+ */
+export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
+  const [tab, setTab] = useState("popular")
+  const [query, setQuery] = useState("")
+  const [expanded, setExpanded] = useState<string | null>(null)
+  const [visible, setVisible] = useState(PAGE_SIZE)
+
+  const filtered = useMemo(() => {
+    const q = query.trim().toLowerCase().replace(/^\.+/, "")
+    let list = tlds
+    if (q) {
+      // 搜索优先级：前缀匹配 > 包含匹配
+      const starts = list.filter((t) => t.tld.startsWith(q))
+      const contains = list.filter((t) => !t.tld.startsWith(q) && t.tld.includes(q))
+      return [...starts, ...contains]
+    }
+    if (tab === "popular") list = list.filter((t) => t.isPopular)
+    else if (tab !== "all") list = list.filter((t) => t.type === tab)
+    return list
+  }, [tlds, tab, query])
+
+  const shown = filtered.slice(0, visible)
+
+  function selectTab(key: string) {
+    setTab(key)
+    setQuery("")
+    setExpanded(null)
+    setVisible(PAGE_SIZE)
+  }
+
+  return (
+    <div className="flex flex-col gap-4">
+      {/* 筛选栏：移动端可横向滚动 */}
+      <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+        <div
+          role="tablist"
+          aria-label="后缀分类"
+          className="-mx-4 flex gap-1 overflow-x-auto px-4 md:mx-0 md:px-0"
+        >
+          {TYPE_TABS.map((t) => (
+            <button
+              key={t.key}
+              type="button"
+              role="tab"
+              aria-selected={tab === t.key && !query}
+              onClick={() => selectTab(t.key)}
+              className={cn(
+                "shrink-0 px-3.5 py-1.5 text-sm font-medium transition-colors",
+                tab === t.key && !query
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-secondary-foreground hover:bg-accent",
+              )}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center gap-2 border border-border bg-card px-3 py-2 focus-within:border-primary md:w-64">
+          <Search aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+          <input
+            type="text"
+            value={query}
+            onChange={(e) => {
+              setQuery(e.target.value)
+              setExpanded(null)
+              setVisible(PAGE_SIZE)
+            }}
+            placeholder="筛选后缀…"
+            aria-label="筛选后缀"
+            className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+          />
+          {query && (
+            <button
+              type="button"
+              onClick={() => setQuery("")}
+              aria-label="清空筛选"
+              className="text-muted-foreground hover:text-foreground"
+            >
+              <X aria-hidden="true" className="size-4" />
+            </button>
+          )}
+        </div>
+      </div>
+
+      <p className="text-xs text-muted-foreground">
+        {filtered.length} 个后缀 · 点击后缀直接查看报价
+      </p>
+
+      {/* chip 网格：点击就地展开 */}
+      <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
+        {shown.map((t) => (
+          <div key={t.tld} className="contents">
+            <button
+              type="button"
+              onClick={() => setExpanded(expanded === t.tld ? null : t.tld)}
+              aria-expanded={expanded === t.tld}
+              className={cn(
+                "flex flex-col gap-0.5 border px-2 py-1.5 text-left transition-colors md:px-3 md:py-2",
+                expanded === t.tld
+                  ? "border-primary bg-accent"
+                  : "border-border bg-card hover:border-primary hover:bg-accent",
+              )}
+            >
+              <span className="truncate font-mono text-[13px] font-semibold md:text-sm">.{t.tld}</span>
+              <span className="truncate font-mono text-[11px] tabular-nums text-muted-foreground md:text-xs">
+                {t.minRegister != null ? formatPrice(t.minRegister) : "—"}
+              </span>
+            </button>
+            {expanded === t.tld && <PricePanel tld={t.tld} onClose={() => setExpanded(null)} />}
+          </div>
+        ))}
+      </div>
+
+      {filtered.length === 0 && (
+        <p className="border border-border bg-card p-8 text-center text-sm text-muted-foreground">
+          没有匹配的后缀
+        </p>
+      )}
+
+      {filtered.length > visible && (
+        <button
+          type="button"
+          onClick={() => setVisible((v) => v + PAGE_SIZE * 2)}
+          className="mx-auto border border-border bg-card px-6 py-2.5 text-sm font-medium transition-colors hover:border-primary hover:text-primary"
+        >
+          显示更多（还有 {filtered.length - visible} 个）
+        </button>
+      )}
+    </div>
+  )
+}

@@ -7,6 +7,9 @@ import { Button } from "@/components/ui/button"
 
 export const metadata = { title: "后台管理 - DomainHub" }
 
+/** 管理后台依赖 Cookie 认证与实时数据，禁止静态预渲染（否则构建时认证检查会失败） */
+export const dynamic = "force-dynamic"
+
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   if (!(await isAdminAuthenticated())) redirect("/admin/login")
 
@@ -33,6 +36,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 className="rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               >
                 采集任务
+              </Link>
+              <Link
+                href="/admin/credentials"
+                className="rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                凭证
               </Link>
             </nav>
           </div>

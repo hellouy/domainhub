@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowUpRight } from "lucide-react"
 import { PriceTable } from "@/components/price-table"
 import { formatPrice, formatRelative, TLD_TYPE_LABELS } from "@/lib/format"
 import { getPricesForTld, getTldByName, getTldLastUpdated } from "@/lib/db/queries"
@@ -85,36 +84,32 @@ export default async function TldPage({ params }: Props) {
         <p className="text-xs text-muted-foreground">数据更新于 {formatRelative(lastUpdated)}</p>
       </header>
 
-      <section aria-label="最低价格" className="grid grid-cols-1 gap-px border border-border bg-border md:grid-cols-3">
+      <section aria-label="最低价格" className="grid grid-cols-3 gap-px border border-border bg-border">
         {[
-          { label: "最低注册价", value: minRegister, note: "首年" },
-          { label: "最低续费价", value: minRenew, note: "每年" },
-          { label: "最低转入价", value: minTransfer, note: "含一年续期" },
+          { label: "最低注册", value: minRegister, note: "首年" },
+          { label: "最低续费", value: minRenew, note: "每年" },
+          { label: "最低转入", value: minTransfer, note: "含续期" },
         ].map((item) => (
-          <div key={item.label} className="flex flex-col gap-2 bg-card p-6">
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">{item.label}</span>
-            <span className="font-mono text-3xl font-bold tabular-nums text-primary">
+          <div key={item.label} className="flex flex-col gap-1 bg-card p-3 md:gap-2 md:p-6">
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground md:text-xs md:tracking-widest">
+              {item.label}
+            </span>
+            <span className="font-mono text-lg font-bold tabular-nums text-primary md:text-3xl">
               {item.value != null ? formatPrice(item.value) : "—"}
             </span>
-            <span className="text-xs text-muted-foreground">{item.note} · USD</span>
+            <span className="text-[10px] text-muted-foreground md:text-xs">{item.note} · USD</span>
           </div>
         ))}
       </section>
 
       <section aria-labelledby="price-list" className="flex flex-col gap-4">
-        <div className="flex items-end justify-between">
-          <h2 id="price-list" className="text-xl font-bold tracking-tight">
-            全部注册商价格（{priceRows.length}）
-          </h2>
-          <Link
-            href={`/compare/${row.tld}`}
-            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
-          >
-            完整比价
-            <ArrowUpRight aria-hidden="true" className="size-4" />
-          </Link>
-        </div>
+        <h2 id="price-list" className="text-xl font-bold tracking-tight">
+          全部注册商价格（{priceRows.length}）
+        </h2>
         <PriceTable rows={priceRows} />
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          提示：许多注册商首年注册价低廉，但续费明显更高。若计划长期持有，请重点比较续费价。
+        </p>
       </section>
     </div>
   )
