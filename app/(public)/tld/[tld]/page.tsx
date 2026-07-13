@@ -84,18 +84,20 @@ export default async function TldPage({ params }: Props) {
         <p className="text-xs text-muted-foreground">数据更新于 {formatRelative(lastUpdated)}</p>
       </header>
 
-      <section aria-label="最低价格" className="grid grid-cols-1 gap-px border border-border bg-border md:grid-cols-3">
+      <section aria-label="最低价格" className="grid grid-cols-3 gap-px border border-border bg-border">
         {[
-          { label: "最低注册价", value: minRegister, note: "首年" },
-          { label: "最低续费价", value: minRenew, note: "每年" },
-          { label: "最低转入价", value: minTransfer, note: "含一年续期" },
+          { label: "最低注册", value: minRegister, note: "首年" },
+          { label: "最低续费", value: minRenew, note: "每年" },
+          { label: "最低转入", value: minTransfer, note: "含续期" },
         ].map((item) => (
-          <div key={item.label} className="flex flex-col gap-2 bg-card p-6">
-            <span className="text-xs uppercase tracking-widest text-muted-foreground">{item.label}</span>
-            <span className="font-mono text-3xl font-bold tabular-nums text-primary">
+          <div key={item.label} className="flex flex-col gap-1 bg-card p-3 md:gap-2 md:p-6">
+            <span className="text-[10px] uppercase tracking-wide text-muted-foreground md:text-xs md:tracking-widest">
+              {item.label}
+            </span>
+            <span className="font-mono text-lg font-bold tabular-nums text-primary md:text-3xl">
               {item.value != null ? formatPrice(item.value) : "—"}
             </span>
-            <span className="text-xs text-muted-foreground">{item.note} · USD</span>
+            <span className="text-[10px] text-muted-foreground md:text-xs">{item.note} · USD</span>
           </div>
         ))}
       </section>

@@ -249,7 +249,7 @@ export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
       </p>
 
       {/* chip 网格：点击就地展开 */}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+      <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
         {shown.map((t) => (
           <div key={t.tld} className="contents">
             <button
@@ -257,16 +257,15 @@ export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
               onClick={() => setExpanded(expanded === t.tld ? null : t.tld)}
               aria-expanded={expanded === t.tld}
               className={cn(
-                "flex flex-col gap-0.5 border px-3 py-2.5 text-left transition-colors",
+                "flex flex-col gap-0.5 border px-2 py-1.5 text-left transition-colors md:px-3 md:py-2",
                 expanded === t.tld
                   ? "border-primary bg-accent"
                   : "border-border bg-card hover:border-primary hover:bg-accent",
               )}
             >
-              <span className="truncate font-mono text-sm font-semibold">.{t.tld}</span>
-              <span className="font-mono text-xs tabular-nums text-muted-foreground">
+              <span className="truncate font-mono text-[13px] font-semibold md:text-sm">.{t.tld}</span>
+              <span className="truncate font-mono text-[11px] tabular-nums text-muted-foreground md:text-xs">
                 {t.minRegister != null ? formatPrice(t.minRegister) : "—"}
-                <span className="ml-1 text-[10px]">起</span>
               </span>
             </button>
             {expanded === t.tld && <PricePanel tld={t.tld} onClose={() => setExpanded(null)} />}
