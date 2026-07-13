@@ -2,23 +2,24 @@
 
 import { TldSearch, type TldSearchOption } from "@/components/tld-search"
 import { useLocale } from "@/components/providers"
+import { formatRelative } from "@/lib/format"
 
 type HeroStats = {
   registrarCount: number
   tldCount: number
   priceCount: number
-  lastUpdatedText: string
+  lastUpdatedISO: string | null
 }
 
 /** 首页 Hero(客户端):文案随语言切换,数据由服务端传入 */
 export function HomeHero({ stats, searchOptions }: { stats: HeroStats; searchOptions: TldSearchOption[] }) {
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
 
   const statItems = [
     { label: t("hero.stat.registrars"), value: String(stats.registrarCount) },
     { label: t("hero.stat.tlds"), value: String(stats.tldCount) },
     { label: t("hero.stat.prices"), value: String(stats.priceCount) },
-    { label: t("hero.stat.updated"), value: stats.lastUpdatedText },
+    { label: t("hero.stat.updated"), value: formatRelative(stats.lastUpdatedISO, locale) },
   ]
 
   return (

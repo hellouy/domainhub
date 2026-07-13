@@ -51,16 +51,20 @@ export function formatMoney(
   return formatPrice(convertAmount(num, from, to, rates), to)
 }
 
-export function formatDate(value: Date | string | null | undefined) {
+import type { Locale } from "@/lib/i18n"
+
+export function formatDate(value: Date | string | null | undefined, locale: Locale = "zh") {
   if (!value) return "—"
   const d = typeof value === "string" ? new Date(value) : value
-  return d.toLocaleDateString("zh-CN", { year: "numeric", month: "short", day: "numeric" })
+  const bcp47 = locale === "en" ? "en-US" : "zh-CN"
+  return d.toLocaleDateString(bcp47, { year: "numeric", month: "short", day: "numeric" })
 }
 
-export function formatDateTime(value: Date | string | null | undefined) {
+export function formatDateTime(value: Date | string | null | undefined, locale: Locale = "zh") {
   if (!value) return "—"
   const d = typeof value === "string" ? new Date(value) : value
-  return d.toLocaleString("zh-CN", {
+  const bcp47 = locale === "en" ? "en-US" : "zh-CN"
+  return d.toLocaleString(bcp47, {
     year: "numeric",
     month: "short",
     day: "numeric",
@@ -69,23 +73,37 @@ export function formatDateTime(value: Date | string | null | undefined) {
   })
 }
 
-/** 相对时间（如“3 小时前”） */
-export function formatRelative(value: Date | string | null | undefined) {
+/** 相对时间（如“3 小时前” / “3 h ago”），随语言本地化 */
+export function formatRelative(value: Date | string | null | undefined, locale: Locale = "zh") {
   if (!value) return "—"
   const d = typeof value === "string" ? new Date(value) : value
   const diff = Date.now() - d.getTime()
   const minutes = Math.floor(diff / 60000)
-  if (minutes < 1) return "刚刚"
-  if (minutes < 60) return `${minutes} 分钟前`
+  const en = locale === "en"
+  if (minutes < 1) return en ? "just now" : "刚刚"
+  if (minutes < 60) return en ? `${minutes} min ago` : `${minutes} 分钟前`
   const hours = Math.floor(minutes / 60)
-  if (hours < 24) return `${hours} 小时前`
+  if (hours < 24) return en ? `${hours} h ago` : `${hours} 小时前`
   const days = Math.floor(hours / 24)
-  if (days < 30) return `${days} 天前`
-  return formatDate(d)
+  if (days < 30) return en ? `${days} d ago` : `${days} 天前`
+  return formatDate(d, locale)
 }
 
-export const TLD_TYPE_LABELS: Record<string, string> = {
+/** 后缀类型 → 本地化标签 */
+const TLD_TYPE_LABELS_ZH: Record<string, string> = {
   gTLD: "通用顶级域名",
   ccTLD: "国家域名",
   newG: "新顶级域名",
 }
+const TLD_TYPE_LABELS_EN: Record<string, string> = {
+  gTLD: "Generic TLD",
+  ccTLD: "Country-code TLD",
+  newG: "New gTLD",
+}
+export function tldTypeLabel(type: string, locale: Locale = "zh") {
+  const map = locale === "en" ? TLD_TYPE_LABELS_EN : TLD_TYPE_LABELS_ZH
+  return map[type] ?? type
+}
+
+/** 兼容旧用法（默认中文） */
+export const TLD_TYPE_LABELS = TLD_TYPE_LABELS_ZH
