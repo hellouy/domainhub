@@ -18,6 +18,19 @@ import type { ValidatedPrice } from "@/packages/adapter-sdk"
 /** 归一化价格为 numeric 列字符串，便于比较 */
 const norm = (v: number | null): string | null => (v === null ? v : v.toFixed(2))
 
+/** 校验 TLD 名称合法性（含多级后缀如 co.uk），防止脏数据入库 */
+export function isValidTldName(tld: string): boolean {
+  return /^(?:[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?\.)*(?:xn--)?[a-z0-9](?:[a-z0-9-]{0,61}[a-z0-9])?$/.test(tld) && tld.length <= 63 && !tld.startsWith(".")
+}
+
+/** 推断 TLD 类型：单段 2 字母为 ccTLD，其余为 gTLD */
+export function inferTldType(tld: string): string {
+  const parts = tld.split(".")
+  const last = parts[parts.length - 1]
+  if (parts.length > 1) return "ccTLD"
+  return last.length === 2 ? "ccTLD" : "gTLD"
+}
+
 export interface SaveStats {
   inserted: number
   updated: number
@@ -59,10 +72,25 @@ export async function createPriceSink(registrarId: number): Promise<{
     let skipped = 0
 
     for (const { price } of validated) {
-      const tldId = tldIdMap.get(price.tld)
+      let tldId = tldIdMap.get(price.tld)
       if (!tldId) {
-        // 未收录后缀：跳过（在 tlds 表添加后自动收录）
-        continue
+        // 未收录后缀：自动创建（仅接受合法格式），使采集到的新后缀立即可见
+        if (!isValidTldName(price.tld)) continue
+        const [created] = await db
+          .insert(tlds)
+          .values({ tld: price.tld, type: inferTldType(price.tld), description: "" })
+          .onConflictDoNothing({ target: tlds.tld })
+          .returning({ id: tlds.id })
+        if (created) {
+          tldId = created.id
+        } else {
+          // 并发下已被其他任务创建，重新查询
+          const [row] = await db.select({ id: tlds.id }).from(tlds).where(eq(tlds.tld, price.tld)).limit(1)
+          if (!row) continue
+          tldId = row.id
+        }
+        tldIdMap.set(price.tld, tldId)
+        knownTlds.add(price.tld)
       }
 
       const next = {
