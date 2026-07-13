@@ -104,8 +104,15 @@ export function findTldCell(cells: string[]): [string, number] | null {
 
 /**
  * createTableAdapter —— 用一份配置生成完整适配器。
+ *
+ * 动态规则: 若 adapter_rules 表中存在该注册商的 active 规则
+ * (由 LLM 修复代理产出),采集时自动覆盖 urls/columnOrder/
+ * numberFormat/currency,无需改代码或重新部署。
  */
 export function createTableAdapter(config: TableAdapterConfig) {
+  /** 本次采集生效的配置(fetch 时解析,parse 复用;适配器并发为 1) */
+  let effective: Pick<TableAdapterConfig, "urls" | "columnOrder" | "numberFormat" | "currency"> = config
+
   const definition: AdapterDefinition = {
     slug: config.slug,
     name: config.name,
@@ -127,8 +134,25 @@ export function createTableAdapter(config: TableAdapterConfig) {
         type: "html",
         url: config.urls[0],
         async fetch(ctx) {
+          // 加载 LLM 修复代理产出的动态规则(如有);动态导入避免客户端打包
+          effective = config
+          try {
+            const { getActiveRuleBySlug } = await import("@/packages/ai-repair")
+            const rule = await getActiveRuleBySlug(config.slug)
+            if (rule) {
+              effective = {
+                urls: rule.urls,
+                columnOrder: rule.columnOrder,
+                numberFormat: rule.numberFormat,
+                currency: rule.currency,
+              }
+              ctx.log?.("info", `应用动态规则: ${rule.urls[0]} (${rule.columnOrder.join(",")})`)
+            }
+          } catch {
+            // 规则加载失败不阻塞采集,回退静态配置
+          }
           const pages: string[] = []
-          for (const url of config.urls) {
+          for (const url of effective.urls) {
             const res = await ctx.fetch(url, {
               headers: {
                 "User-Agent":
@@ -155,13 +179,13 @@ export function createTableAdapter(config: TableAdapterConfig) {
             // 收集 TLD 列之后的数字单元格
             const priceValues: (number | null)[] = []
             for (let i = tldIdx + 1; i < cells.length; i++) {
-              const v = parsePrice(cells[i], config.numberFormat)
+              const v = parsePrice(cells[i], effective.numberFormat)
               priceValues.push(v)
             }
             if (priceValues.every((v) => v === null)) continue
-            const price: RawPrice = { tld, currency: config.currency, sourceUrl: config.urls[0] }
+            const price: RawPrice = { tld, currency: effective.currency, sourceUrl: effective.urls[0] }
             let vi = 0
-            for (const role of config.columnOrder) {
+            for (const role of effective.columnOrder) {
               if (vi >= priceValues.length) break
               const value = priceValues[vi]
               vi++

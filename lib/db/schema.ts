@@ -172,6 +172,23 @@ export const crawlQueue = pgTable("crawl_queue", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 })
 
+/** LLM 修复代理生成的动态适配器规则：一商多版本,active 的生效 */
+export const adapterRules = pgTable("adapter_rules", {
+  id: serial("id").primaryKey(),
+  registrarId: integer("registrar_id").notNull(),
+  /** 声明式表格适配器配置(urls/columnOrder/numberFormat 等),见 packages/ai-repair/schema.ts */
+  config: jsonb("config").notNull(),
+  /** active | candidate | rejected | superseded */
+  status: text("status").notNull().default("candidate"),
+  /** 产出该规则的模型 ID(如 google/gemini-3-flash);人工创建为 manual */
+  modelUsed: text("model_used").notNull().default("manual"),
+  /** 验证摘要: 解析条数、样本、校验结果 */
+  verification: jsonb("verification"),
+  /** 触发原因: initial | repair | manual */
+  trigger: text("trigger").notNull().default("manual"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
 export type Registrar = typeof registrars.$inferSelect
 export type Tld = typeof tlds.$inferSelect
 export type Price = typeof prices.$inferSelect
@@ -181,3 +198,4 @@ export type RegistrarCredential = typeof registrarCredentials.$inferSelect
 export type RegistrarCapability = typeof registrarCapabilities.$inferSelect
 export type DiscoveryMetadataRow = typeof discoveryMetadata.$inferSelect
 export type CrawlQueueItem = typeof crawlQueue.$inferSelect
+export type AdapterRule = typeof adapterRules.$inferSelect
