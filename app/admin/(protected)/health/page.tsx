@@ -5,7 +5,7 @@ import { desc, eq, sql } from "drizzle-orm"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 
-export const metadata = { title: "健康检查 - DomainHub 后台" }
+export const metadata = { title: "健康检查 - TLDbi 后台" }
 
 export const dynamic = "force-dynamic"
 

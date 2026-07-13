@@ -1,5 +1,5 @@
 /**
- * DomainHub 公开 API 的 OpenAPI 3.0 规范（Sprint 4 Part 2）
+ * TLDbi 公开 API 的 OpenAPI 3.0 规范（Sprint 4 Part 2）
  * 由 /api/v1/openapi.json 提供，/api-docs 页面渲染 Swagger UI。
  */
 
@@ -20,7 +20,7 @@ const priceItem = {
 export const openApiSpec = {
   openapi: "3.0.3",
   info: {
-    title: "DomainHub API",
+    title: "TLDbi API",
     version: "1.0.0",
     description:
       "域名价格比较平台公开 API。所有端点均有限流（120 次/分钟/IP），响应头携带 X-Request-Id 便于排障。",

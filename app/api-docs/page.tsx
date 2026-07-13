@@ -40,7 +40,7 @@ export default function ApiDocsPage() {
   return (
     <main className="min-h-svh bg-white">
       <div className="border-b border-border px-6 py-4">
-        <h1 className="text-lg font-semibold text-gray-900">DomainHub API 文档</h1>
+        <h1 className="text-lg font-semibold text-gray-900">TLDbi API 文档</h1>
         <p className="text-sm text-gray-500">
           {"OpenAPI 规范："}
           <a href="/api/v1/openapi.json" className="underline">

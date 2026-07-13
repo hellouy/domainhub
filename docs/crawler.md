@@ -1,4 +1,4 @@
-# DomainHub 采集引擎（Crawler Engine）
+# TLDbi 采集引擎（Crawler Engine）
 
 生产级、可扩展的注册商价格采集框架。所有未来的注册商接入都基于本框架，
 新增一个注册商只需要：**创建一个 Adapter 文件 + 注册一行**，无需修改任何其他代码。
@@ -152,7 +152,7 @@ const realAdapters: RegistrarAdapter[] = [cloudflareAdapter, new PorkbunAdapter(
 
 `StorageService`（`services/storage`）是采集结果的唯一落库入口：
 
-- `savePrices(registrarId, items)` —— 先在内存中做全量差异对比，再批量执行：
+- `savePrices(registrarId, items)` —— 先在内存中做全量差异���比，再批量执行：
   - 价格与币种完全一致 → **跳过**（不写 prices，不写 history）
   - 新记录 → 按 200 条一批批量 `INSERT`
   - 有变化 → 10 条并行小批 `UPDATE`

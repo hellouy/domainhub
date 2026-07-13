@@ -91,7 +91,7 @@ export abstract class BaseAdapter implements RegistrarAdapter {
         const res = await fetch(url, {
           signal: controller.signal,
           headers: {
-            "User-Agent": "DomainHub/1.0 (price aggregator)",
+            "User-Agent": "TLDbi/1.0 (price aggregator)",
             Accept: accept,
           },
           cache: "no-store",
@@ -128,7 +128,7 @@ export abstract class BaseAdapter implements RegistrarAdapter {
           method: "POST",
           signal: controller.signal,
           headers: {
-            "User-Agent": "DomainHub/1.0 (price aggregator)",
+            "User-Agent": "TLDbi/1.0 (price aggregator)",
             "Content-Type": "application/json",
             Accept: "application/json",
           },

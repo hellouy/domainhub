@@ -1,4 +1,4 @@
-# DomainHub 架构文档
+# TLDbi 架构文档
 
 > Sprint 4 平台化改造后的系统全景。采集器相关细节见 [crawler.md](./crawler.md)。
 

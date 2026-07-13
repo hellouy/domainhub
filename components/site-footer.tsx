@@ -15,9 +15,9 @@ export function SiteFooter() {
               aria-hidden="true"
               className="flex size-6 items-center justify-center rounded-lg bg-primary font-mono text-xs font-bold text-primary-foreground"
             >
-              D
+              T
             </span>
-            <span className="font-mono text-sm font-semibold">DomainHub</span>
+            <span className="font-mono text-sm font-semibold">TLDbi</span>
           </div>
           <p className="max-w-sm text-pretty text-sm leading-relaxed text-muted-foreground">
             {dict.footer.description}
@@ -54,7 +54,7 @@ export function SiteFooter() {
       <div className="border-t border-border">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-4 px-4 py-4 md:px-6">
           <p className="text-pretty text-xs text-muted-foreground">{dict.footer.disclaimer}</p>
-          <p className="font-mono text-xs text-muted-foreground">DomainHub</p>
+          <p className="font-mono text-xs text-muted-foreground">TLDbi</p>
         </div>
       </div>
     </footer>

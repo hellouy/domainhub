@@ -4,7 +4,7 @@ import { crawlerRunner } from "@/services/crawler"
 import { desc, inArray } from "drizzle-orm"
 import { CrawlerPanel, type AdapterRow } from "@/components/admin/crawler-panel"
 
-export const metadata = { title: "采集引擎 - DomainHub 后台" }
+export const metadata = { title: "采集引擎 - TLDbi 后台" }
 
 export const dynamic = "force-dynamic"
 

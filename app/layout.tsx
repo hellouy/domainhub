@@ -13,11 +13,11 @@ const _geistMono = Geist_Mono({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: {
-    default: 'DomainHub — 全球域名注册商价格比较',
-    template: '%s | DomainHub',
+    default: 'TLDbi — 全球域名注册商价格比较',
+    template: '%s | TLDbi',
   },
   description:
-    'DomainHub 聚合 Cloudflare、Porkbun、Namecheap 等全球主流域名注册商的注册、续费与转入价格，帮助你找到最便宜的域名注册商。',
+    'TLDbi 聚合 Cloudflare、Porkbun、Namecheap 等全球主流域名注册商的注册、续费与转入价格，帮助你找到最便宜的域名注册商。',
   generator: 'v0.app',
   icons: {
     icon: [

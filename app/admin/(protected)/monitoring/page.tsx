@@ -14,7 +14,7 @@ import {
 } from "@/components/ui/table"
 
 export const metadata: Metadata = {
-  title: "监控中心 - DomainHub 管理后台",
+  title: "监控中心 - TLDbi 管理后台",
 }
 
 export const dynamic = "force-dynamic"

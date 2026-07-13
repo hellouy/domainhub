@@ -39,7 +39,7 @@ const zh = {
       heroTitleLine1: "注册域名前，",
       heroTitleLine2: "先比一次价。",
       heroDescription:
-        "DomainHub 汇集 {registrars} 家主流注册商、{tlds} 个常用后缀的注册、续费与转入价格，让你避开首年低价陷阱，找到长期最划算的注册商。",
+        "TLDbi 汇集 {registrars} 家主流注册商、{tlds} 个常用后缀的注册、续费与转入价格，让你避开首年低价陷阱，找到长期最划算的注册商。",
       statRegistrars: "注册商",
       statTlds: "域名后缀",
       statPrices: "价格记录",
@@ -103,7 +103,7 @@ const en: Dictionary = {
       heroTitleLine1: "Before you register,",
       heroTitleLine2: "compare the price.",
       heroDescription:
-        "DomainHub gathers registration, renewal and transfer prices from {registrars} major registrars across {tlds} popular TLDs, helping you dodge first-year teaser deals and find the best long-term value.",
+        "TLDbi gathers registration, renewal and transfer prices from {registrars} major registrars across {tlds} popular TLDs, helping you dodge first-year teaser deals and find the best long-term value.",
       statRegistrars: "Registrars",
       statTlds: "TLDs",
       statPrices: "Price records",

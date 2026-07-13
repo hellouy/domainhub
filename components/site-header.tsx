@@ -27,9 +27,9 @@ export function SiteHeader() {
             aria-hidden="true"
             className="flex size-7 items-center justify-center rounded-lg bg-primary font-mono text-sm font-bold text-primary-foreground shadow-sm"
           >
-            D
+            T
           </span>
-          <span className="font-mono text-base font-semibold tracking-tight">DomainHub</span>
+          <span className="font-mono text-base font-semibold tracking-tight">TLDbi</span>
         </Link>
 
         {/* 桌面导航 */}

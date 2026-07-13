@@ -7,7 +7,7 @@ export const revalidate = 300
 
 export const metadata: Metadata = {
   title: "全部域名后缀",
-  description: "浏览 DomainHub 收录的所有域名后缀，查看每个后缀在各注册商的最低注册价格。",
+  description: "浏览 TLDbi 收录的所有域名后缀，查看每个后缀在各注册商的最低注册价格。",
   alternates: { canonical: "/tlds" },
 }
 
