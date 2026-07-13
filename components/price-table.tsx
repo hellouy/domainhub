@@ -4,7 +4,8 @@ import { useMemo, useState } from "react"
 import Link from "next/link"
 import { ArrowUpDown, ExternalLink } from "lucide-react"
 import { formatRelative } from "@/lib/format"
-import { useCurrency } from "@/components/providers"
+import { useCurrency, useLocale } from "@/components/providers"
+import type { DictKey } from "@/lib/i18n"
 import { cn } from "@/lib/utils"
 
 export type PriceRow = {
@@ -22,10 +23,10 @@ export type PriceRow = {
 
 type SortKey = "registerPrice" | "renewPrice" | "transferPrice"
 
-const SORT_LABELS: Record<SortKey, string> = {
-  registerPrice: "注册价",
-  renewPrice: "续费价",
-  transferPrice: "转入价",
+const SORT_LABEL_KEYS: Record<SortKey, DictKey> = {
+  registerPrice: "pt.byRegister",
+  renewPrice: "pt.byRenew",
+  transferPrice: "pt.byTransfer",
 }
 
 function toNum(v: string | null) {
@@ -36,6 +37,7 @@ function toNum(v: string | null) {
 
 export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; showUpdated?: boolean }) {
   const { money } = useCurrency()
+  const { t, locale } = useLocale()
   const [sortKey, setSortKey] = useState<SortKey>("registerPrice")
 
   const sorted = useMemo(
@@ -54,14 +56,16 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
   }, [rows])
 
   if (rows.length === 0) {
-    return <p className="border border-border bg-card p-8 text-center text-sm text-muted-foreground">暂无价格数据</p>
+    return (
+      <p className="border border-border bg-card p-8 text-center text-sm text-muted-foreground">{t("pt.empty")}</p>
+    )
   }
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2" role="group" aria-label="排序方式">
+      <div className="flex items-center gap-2" role="group" aria-label={t("pt.sortGroup")}>
         <ArrowUpDown aria-hidden="true" className="size-4 text-muted-foreground" />
-        {(Object.keys(SORT_LABELS) as SortKey[]).map((key) => (
+        {(Object.keys(SORT_LABEL_KEYS) as SortKey[]).map((key) => (
           <button
             key={key}
             type="button"
@@ -74,7 +78,7 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
                 : "bg-secondary text-secondary-foreground hover:bg-accent",
             )}
           >
-            按{SORT_LABELS[key]}
+            {t(SORT_LABEL_KEYS[key])}
           </button>
         ))}
       </div>
@@ -83,24 +87,24 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
           <thead>
             <tr className="border-b border-border bg-secondary text-left">
               <th scope="col" className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                注册商
+                {t("pt.registrar")}
               </th>
               <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                注册
+                {t("th.register")}
               </th>
               <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                续费
+                {t("th.renew")}
               </th>
               <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                转入
+                {t("th.transfer")}
               </th>
               {showUpdated && (
                 <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                  更新时间
+                  {t("th.updated")}
                 </th>
               )}
               <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                <span className="sr-only">官网</span>
+                <span className="sr-only">{t("pt.visit")}</span>
               </th>
             </tr>
           </thead>
@@ -123,13 +127,13 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
                       )}
                     >
                       {money(row[key], row.currency)}
-                      {isMin && <span className="sr-only">（最低价）</span>}
+                      {isMin && <span className="sr-only">{t("pt.lowest")}</span>}
                     </td>
                   )
                 })}
                 {showUpdated && (
                   <td className="px-4 py-3.5 text-right text-xs text-muted-foreground">
-                    {formatRelative(row.updatedAt)}
+                    {formatRelative(row.updatedAt, locale)}
                   </td>
                 )}
                 <td className="px-4 py-3.5 text-right">
@@ -137,7 +141,7 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
                     href={row.sourceUrl ?? row.registrarWebsite}
                     target="_blank"
                     rel="noopener noreferrer"
-                    aria-label={`访问 ${row.registrarName} 官网`}
+                    aria-label={t("pt.visitAria").replace("{name}", row.registrarName)}
                     className="inline-flex text-muted-foreground hover:text-primary"
                   >
                     <ExternalLink aria-hidden="true" className="size-4" />

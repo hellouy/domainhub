@@ -202,6 +202,15 @@ const en: Record<DictKey, string> = {
   "time.minAgo": "{n} min ago",
   "time.hrAgo": "{n} h ago",
   "time.dayAgo": "{n} d ago",
+  "pt.registrar": "Registrar",
+  "pt.empty": "No price data yet",
+  "pt.sortGroup": "Sort by",
+  "pt.byRegister": "By register",
+  "pt.byRenew": "By renewal",
+  "pt.byTransfer": "By transfer",
+  "pt.lowest": " (lowest)",
+  "pt.visit": "Website",
+  "pt.visitAria": "Visit {name} website",
 }
 
 const DICTS: Record<Locale, Record<DictKey, string>> = { zh, en }
