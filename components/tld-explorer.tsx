@@ -6,6 +6,8 @@ import useSWR from "swr"
 import { ArrowUpRight, ExternalLink, Search, X } from "lucide-react"
 import { formatPrice } from "@/lib/format"
 import { cn } from "@/lib/utils"
+import { useLocale } from "@/components/providers"
+import type { DictKey } from "@/lib/i18n"
 
 export type ExplorerTld = {
   tld: string
@@ -25,12 +27,12 @@ type ApiPrice = {
   sourceUrl: string | null
 }
 
-const TYPE_TABS: { key: string; label: string }[] = [
-  { key: "popular", label: "热门" },
-  { key: "all", label: "全部" },
-  { key: "gTLD", label: "通用" },
-  { key: "ccTLD", label: "国家" },
-  { key: "newG", label: "新顶级" },
+const TYPE_TABS: { key: string; labelKey: DictKey }[] = [
+  { key: "popular", labelKey: "explorer.tab.popular" },
+  { key: "all", labelKey: "explorer.tab.all" },
+  { key: "gTLD", labelKey: "explorer.tab.gtld" },
+  { key: "ccTLD", labelKey: "explorer.tab.cctld" },
+  { key: "newG", labelKey: "explorer.tab.newg" },
 ]
 
 const PAGE_SIZE = 48
@@ -60,6 +62,7 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json())
 
 /** 展开面板：就地加载该后缀的最低报价，无需跳页 */
 function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
+  const { t } = useLocale()
   const { data, isLoading } = useSWR<{ data: ApiPrice[] }>(
     `/api/v1/prices?tld=${encodeURIComponent(tld)}&limit=50`,
     fetcher,
@@ -77,20 +80,21 @@ function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
     <div className="col-span-full border border-primary/40 bg-card">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <h3 className="font-mono text-base font-semibold">
-          .{tld} <span className="ml-1 text-xs font-normal text-muted-foreground">最低报价</span>
+          .{tld}{" "}
+          <span className="ml-1 text-xs font-normal text-muted-foreground">{t("explorer.panel.lowest")}</span>
         </h3>
         <div className="flex items-center gap-3">
           <Link
             href={`/tld/${tld}`}
             className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
           >
-            完整比价
+            {t("explorer.panel.full")}
             <ArrowUpRight aria-hidden="true" className="size-3.5" />
           </Link>
           <button
             type="button"
             onClick={onClose}
-            aria-label="收起价格面板"
+            aria-label={t("explorer.panel.close")}
             className="text-muted-foreground hover:text-foreground"
           >
             <X aria-hidden="true" className="size-4" />
@@ -99,13 +103,13 @@ function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
       </div>
 
       {isLoading ? (
-        <div className="flex flex-col gap-2 p-4" aria-busy="true" aria-label="加载中">
+        <div className="flex flex-col gap-2 p-4" aria-busy="true" aria-label={t("explorer.panel.loading")}>
           {[0, 1, 2].map((i) => (
             <div key={i} className="h-9 animate-pulse bg-secondary" />
           ))}
         </div>
       ) : rows.length === 0 ? (
-        <p className="p-4 text-sm text-muted-foreground">暂无该后缀的价格数据</p>
+        <p className="p-4 text-sm text-muted-foreground">{t("explorer.panel.noData")}</p>
       ) : (
         <ul className="flex flex-col">
           {rows.map((r, i) => (
@@ -137,14 +141,14 @@ function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
                   {formatPrice(r.registerPrice, r.currency)}
                 </span>
                 <span className="text-[10px] text-muted-foreground">
-                  续费 {formatPrice(r.renewPrice, r.currency)}
+                  {t("explorer.panel.renew")} {formatPrice(r.renewPrice, r.currency)}
                 </span>
               </span>
               <a
                 href={r.sourceUrl ?? "#"}
                 target="_blank"
                 rel="noopener noreferrer"
-                aria-label={`访问 ${r.registrarName}`}
+                aria-label={`${t("explorer.panel.visit")} ${r.registrarName}`}
                 className="shrink-0 text-muted-foreground hover:text-primary"
               >
                 <ExternalLink aria-hidden="true" className="size-3.5" />
@@ -162,6 +166,7 @@ function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
  * 筛选 + 搜索 + 点击就地展开价格，一次点击看到报价，零页面跳转。
  */
 export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
+  const { t } = useLocale()
   const [tab, setTab] = useState("popular")
   const [query, setQuery] = useState("")
   const [expanded, setExpanded] = useState<string | null>(null)
@@ -199,21 +204,21 @@ export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
           aria-label="后缀分类"
           className="-mx-4 flex gap-1 overflow-x-auto px-4 md:mx-0 md:px-0"
         >
-          {TYPE_TABS.map((t) => (
+          {TYPE_TABS.map((tabItem) => (
             <button
-              key={t.key}
+              key={tabItem.key}
               type="button"
               role="tab"
-              aria-selected={tab === t.key && !query}
-              onClick={() => selectTab(t.key)}
+              aria-selected={tab === tabItem.key && !query}
+              onClick={() => selectTab(tabItem.key)}
               className={cn(
                 "shrink-0 px-3.5 py-1.5 text-sm font-medium transition-colors",
-                tab === t.key && !query
+                tab === tabItem.key && !query
                   ? "bg-primary text-primary-foreground"
                   : "bg-secondary text-secondary-foreground hover:bg-accent",
               )}
             >
-              {t.label}
+              {t(tabItem.labelKey)}
             </button>
           ))}
         </div>
@@ -227,8 +232,8 @@ export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
               setExpanded(null)
               setVisible(PAGE_SIZE)
             }}
-            placeholder="筛选后缀…"
-            aria-label="筛选后缀"
+            placeholder={t("explorer.filter")}
+            aria-label={t("explorer.filter")}
             className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
           {query && (
@@ -245,7 +250,7 @@ export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        {filtered.length} 个后缀 · 点击后缀直接查看报价
+        {filtered.length} {t("explorer.hint")}
       </p>
 
       {/* chip 网格：点击就地展开 */}
@@ -275,7 +280,7 @@ export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
 
       {filtered.length === 0 && (
         <p className="border border-border bg-card p-8 text-center text-sm text-muted-foreground">
-          没有匹配的后缀
+          {t("explorer.empty")}
         </p>
       )}
 
@@ -285,7 +290,7 @@ export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
           onClick={() => setVisible((v) => v + PAGE_SIZE * 2)}
           className="mx-auto border border-border bg-card px-6 py-2.5 text-sm font-medium transition-colors hover:border-primary hover:text-primary"
         >
-          显示更多（还有 {filtered.length - visible} 个）
+          {t("explorer.showMore").replace("{n}", String(filtered.length - visible))}
         </button>
       )}
     </div>
