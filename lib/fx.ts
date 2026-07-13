@@ -9,6 +9,7 @@ import { exchangeRates } from "@/lib/db/schema"
  *   1. exchangerate-api.com v6 正式端点(EXCHANGERATE_API_KEY)
  *   2. currencyfreaks.com 备用(CURRENCYFREAKS_API_KEY)
  *   3. open.er-api.com 免费开放端点(无需密钥)
+ *   4. frankfurter.dev 最终兜底(ECB 数据,无需密钥)
  *
  * 缓存层:
  *   1. 进程内存缓存(5 分钟,避免同实例重复查库)
@@ -80,31 +81,57 @@ async function fetchCurrencyFreaks(): Promise<FetchResult | null> {
   }
 }
 
-/** 依次尝试:主通道 → 备用通道 → 免费开放端点 */
+/** 免费开放端点:open.er-api.com(无需密钥) */
+async function fetchOpenErApi(): Promise<FetchResult | null> {
+  try {
+    const res = await fetch("https://open.er-api.com/v6/latest/USD", {
+      signal: AbortSignal.timeout(10000),
+      cache: "no-store",
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    if (!data.rates || data.result !== "success") return null
+    const nextUpdate = data.time_next_update_unix ? new Date(data.time_next_update_unix * 1000) : null
+    return { rates: data.rates, nextUpdate, source: "open.er-api" }
+  } catch {
+    return null
+  }
+}
+
+/**
+ * 最终兜底:frankfurter.dev(ECB 数据,无需密钥,约 30 个主流币种)。
+ * 响应不含基准币种本身,需手动补 USD:1;每工作日更新一次,按 24h 过期。
+ */
+async function fetchFrankfurter(): Promise<FetchResult | null> {
+  try {
+    const res = await fetch("https://api.frankfurter.dev/v1/latest?base=USD", {
+      signal: AbortSignal.timeout(10000),
+      cache: "no-store",
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    const raw: Record<string, number> | undefined = data.rates
+    if (!raw || Object.keys(raw).length === 0) return null
+    const rates: UsdRates = { USD: 1, ...raw }
+    return { rates, nextUpdate: new Date(Date.now() + 24 * 3600 * 1000), source: "frankfurter" }
+  } catch {
+    return null
+  }
+}
+
+/** 依次尝试:主通道 → 备用通道 → 免费开放端点 → frankfurter 最终兜底 */
 async function fetchFromApi(): Promise<FetchResult | null> {
   const primary = await fetchExchangeRateApi()
   if (primary) return primary
   const backup = await fetchCurrencyFreaks()
   if (backup) return backup
-  // 主通道带密钥失败时,再试一次无密钥的开放端点兜底
+  // 主通道带密钥失败时,再试无密钥的开放端点
   if (process.env.EXCHANGERATE_API_KEY) {
-    try {
-      const res = await fetch("https://open.er-api.com/v6/latest/USD", {
-        signal: AbortSignal.timeout(10000),
-        cache: "no-store",
-      })
-      if (res.ok) {
-        const data = await res.json()
-        if (data.rates && data.result === "success") {
-          const nextUpdate = data.time_next_update_unix ? new Date(data.time_next_update_unix * 1000) : null
-          return { rates: data.rates, nextUpdate, source: "open.er-api" }
-        }
-      }
-    } catch {
-      // 忽略,走 stale 回退
-    }
+    const open = await fetchOpenErApi()
+    if (open) return open
   }
-  return null
+  // 所有前序数据源均失败时,frankfurter 作最终兜底
+  return await fetchFrankfurter()
 }
 
 /** 读取 USD 基准汇率表(1 USD = rates[X] 单位 X 货币) */
