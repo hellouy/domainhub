@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { formatPrice, TLD_TYPE_LABELS } from "@/lib/format"
+import { TLD_TYPE_LABELS } from "@/lib/format"
+import { Money } from "@/components/money"
 import { getTldsWithMinPrice } from "@/lib/db/queries"
 
 export const revalidate = 300
@@ -51,7 +52,7 @@ export default async function TldsPage() {
                 </td>
                 <td className="px-4 py-3.5 text-muted-foreground">{TLD_TYPE_LABELS[t.type] ?? t.type}</td>
                 <td className="px-4 py-3.5 text-right font-mono tabular-nums text-primary">
-                  {formatPrice(t.minRegister)}
+                  <Money value={t.minRegister} from="USD" />
                 </td>
                 <td className="px-4 py-3.5 text-right font-mono tabular-nums text-muted-foreground">
                   {t.registrarCount}

@@ -8,7 +8,7 @@ export async function getStats() {
   const [row] = await db
     .select({
       registrarCount: sql<number>`(SELECT count(*) FROM ${registrars} WHERE ${registrars.isActive} = true)`,
-      tldCount: sql<number>`(SELECT count(*) FROM ${tlds})`,
+      tldCount: sql<number>`(SELECT count(*) FROM ${tlds} WHERE ${tlds.isValid} = true)`,
       priceCount: sql<number>`(SELECT count(*) FROM ${prices})`,
       lastUpdated: sql<string | null>`(SELECT max(${prices.updatedAt}) FROM ${prices})`,
     })
