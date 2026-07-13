@@ -33,7 +33,21 @@ export class PorkbunAdapter extends BaseAdapter {
     if (envelope.status !== "SUCCESS" || !envelope.pricing || typeof envelope.pricing !== "object") {
       throw new Error(`官方 API 返回异常状态：${envelope.status ?? "未知"}`)
     }
-    return { kind: "json", body: JSON.stringify(envelope.pricing), sourceUrl: API_URL }
+    // 过滤 Handshake（区块链）后缀：specialType === "handshake" 的不是 ICANN 域名
+    const pricing = envelope.pricing as Record<string, { specialType?: string }>
+    const icannOnly: Record<string, unknown> = {}
+    let handshakeCount = 0
+    for (const [tld, info] of Object.entries(pricing)) {
+      if (info?.specialType === "handshake") {
+        handshakeCount++
+        continue
+      }
+      icannOnly[tld] = info
+    }
+    if (handshakeCount > 0) {
+      await ctx.log("info", `已过滤 ${handshakeCount} 个 Handshake（非 ICANN）后缀`)
+    }
+    return { kind: "json", body: JSON.stringify(icannOnly), sourceUrl: API_URL }
   }
 
   protected normalize(records: RawRecord[], _ctx: CrawlContext): DomainPrice[] {

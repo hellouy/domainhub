@@ -162,8 +162,11 @@ export class CrawlerRunner {
         const saveStart = Date.now()
         const saved = await this.storage.savePrices(registrar.id, valid)
         void metricsService.record("db.write_duration", Date.now() - saveStart, "ms", slug)
+        if (saved.newTlds > 0) {
+          await ctx.log("info", `自动收录 ${saved.newTlds} 个新后缀到 tlds 表`)
+        }
         if (saved.unknownTlds > 0) {
-          await ctx.log("info", `数据源含 ${saved.unknownTlds} 个未收录后缀，已跳过（可在 tlds 表中添加后自动收录）`)
+          await ctx.log("warn", `数据源含 ${saved.unknownTlds} 个未收录后缀，已跳过`)
         }
 
         const status: JobStatus = rejected.length > 0 ? "warning" : "success"

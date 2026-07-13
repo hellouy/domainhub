@@ -23,8 +23,21 @@ export interface SaveResult {
   inserted: number
   /** 无变化被跳过的行数 */
   skipped: number
-  /** 数据源里存在但 tlds 表未收录的后缀数 */
+  /** 本次自动收录进 tlds 表的新后缀数 */
+  newTlds: number
+  /** 数据源里存在但 tlds 表未收录的后缀数（仅当禁用自动收录时非 0） */
   unknownTlds: number
+}
+
+/** 经典 gTLD 列表（其余非 2 字母后缀视为新顶级域名 newG） */
+const CLASSIC_GTLDS = new Set(["com", "net", "org", "info", "biz", "name", "pro", "mobi", "asia", "tel"])
+
+/** 根据后缀形态推断类型：2 字母 → ccTLD；经典列表 → gTLD；其余 → newG */
+function inferTldType(tld: string): string {
+  const last = tld.split(".").pop() ?? tld
+  if (last.length === 2) return "ccTLD"
+  if (CLASSIC_GTLDS.has(last)) return "gTLD"
+  return "newG"
 }
 
 export class StorageService {
@@ -164,6 +177,38 @@ export class StorageService {
   async savePrices(registrarId: number, items: DomainPrice[]): Promise<SaveResult> {
     const allTlds = await db.select({ id: tlds.id, tld: tlds.tld }).from(tlds)
     const tldMap = new Map(allTlds.map((t) => [t.tld, t.id]))
+
+    // 自动收录：数据源中出现但 tlds 表未收录的后缀，先批量建档再写价格
+    const missing = [...new Set(items.map((i) => i.tld))].filter((t) => !tldMap.has(t))
+    let newTlds = 0
+    const TLD_CHUNK = 200
+    for (let i = 0; i < missing.length; i += TLD_CHUNK) {
+      const batch = missing.slice(i, i + TLD_CHUNK).map((tld) => ({
+        tld,
+        type: inferTldType(tld),
+        description: "",
+        isPopular: false,
+      }))
+      const created = await db
+        .insert(tlds)
+        .values(batch)
+        .onConflictDoNothing({ target: tlds.tld })
+        .returning({ id: tlds.id, tld: tlds.tld })
+      for (const row of created) {
+        tldMap.set(row.tld, row.id)
+        newTlds++
+      }
+    }
+    // onConflictDoNothing 未返回的（并发下已被其他任务创建），补查一次
+    const stillMissing = missing.filter((t) => !tldMap.has(t))
+    if (stillMissing.length > 0) {
+      const rows = await db
+        .select({ id: tlds.id, tld: tlds.tld })
+        .from(tlds)
+        .where(inArray(tlds.tld, stillMissing))
+      for (const row of rows) tldMap.set(row.tld, row.id)
+    }
+
     const existing = await db.select().from(prices).where(eq(prices.registrarId, registrarId))
     const existingMap = new Map(existing.map((p) => [p.tldId, p]))
 
@@ -253,6 +298,7 @@ export class StorageService {
       updated: toInsert.length + toUpdate.length,
       inserted: toInsert.length,
       skipped,
+      newTlds,
       unknownTlds,
     }
   }
