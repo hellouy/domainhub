@@ -15,7 +15,21 @@ export async function getStats() {
   return row
 }
 
-/** 全部后缀 + 每个后缀的最低注册价（仅统计启用的注册商） */
+/** 近似汇率折算为 USD 的 SQL 表达式（跨货币最低价比较用） */
+const usdEquivalent = sql<string>`${prices.registerPrice} * (CASE ${prices.currency}
+  WHEN 'USD' THEN 1
+  WHEN 'EUR' THEN 1.08
+  WHEN 'CHF' THEN 1.13
+  WHEN 'GBP' THEN 1.27
+  WHEN 'JPY' THEN 0.0066
+  WHEN 'SEK' THEN 0.095
+  WHEN 'NOK' THEN 0.093
+  WHEN 'NZD' THEN 0.61
+  WHEN 'CAD' THEN 0.73
+  WHEN 'CNY' THEN 0.14
+  ELSE 1 END)`
+
+/** 全部后缀 + 每个后缀的最低注册价（折算 USD 近似值，仅统计启用的注册商） */
 export async function getTldsWithMinPrice(onlyPopular = false) {
   const rows = await db
     .select({
@@ -23,7 +37,7 @@ export async function getTldsWithMinPrice(onlyPopular = false) {
       tld: tlds.tld,
       type: tlds.type,
       isPopular: tlds.isPopular,
-      minRegister: min(prices.registerPrice),
+      minRegister: min(usdEquivalent),
       registrarCount: count(prices.id),
     })
     .from(tlds)
