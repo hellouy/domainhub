@@ -29,7 +29,10 @@ const usdEquivalent = sql<string>`${prices.registerPrice} * (CASE ${prices.curre
   WHEN 'CNY' THEN 0.14
   ELSE 1 END)`
 
-/** 全部后缀 + 每个后缀的最低注册价（折算 USD 近似值，仅统计启用的注册商） */
+/**
+ * 全部后缀 + 每个后缀的最低注册价（折算 USD 近似值，仅统计启用的注册商）。
+ * 折算后低于 $1 的价格视为首年促销/占位价（如日元 1 円活动），不参与最低价展示。
+ */
 export async function getTldsWithMinPrice(onlyPopular = false) {
   const rows = await db
     .select({
@@ -37,7 +40,7 @@ export async function getTldsWithMinPrice(onlyPopular = false) {
       tld: tlds.tld,
       type: tlds.type,
       isPopular: tlds.isPopular,
-      minRegister: min(usdEquivalent),
+      minRegister: min(sql<string>`CASE WHEN ${usdEquivalent} >= 1 THEN ${usdEquivalent} ELSE NULL END`),
       registrarCount: count(prices.id),
     })
     .from(tlds)

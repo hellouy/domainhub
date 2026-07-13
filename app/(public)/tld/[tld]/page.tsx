@@ -1,7 +1,6 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
-import { ArrowUpRight } from "lucide-react"
 import { PriceTable } from "@/components/price-table"
 import { formatPrice, formatRelative, TLD_TYPE_LABELS } from "@/lib/format"
 import { getPricesForTld, getTldByName, getTldLastUpdated } from "@/lib/db/queries"
@@ -102,19 +101,13 @@ export default async function TldPage({ params }: Props) {
       </section>
 
       <section aria-labelledby="price-list" className="flex flex-col gap-4">
-        <div className="flex items-end justify-between">
-          <h2 id="price-list" className="text-xl font-bold tracking-tight">
-            全部注册商价格（{priceRows.length}）
-          </h2>
-          <Link
-            href={`/compare/${row.tld}`}
-            className="flex items-center gap-1 text-sm text-muted-foreground hover:text-primary"
-          >
-            完整比价
-            <ArrowUpRight aria-hidden="true" className="size-4" />
-          </Link>
-        </div>
+        <h2 id="price-list" className="text-xl font-bold tracking-tight">
+          全部注册商价格（{priceRows.length}）
+        </h2>
         <PriceTable rows={priceRows} />
+        <p className="text-xs leading-relaxed text-muted-foreground">
+          提示：许多注册商首年注册价低廉，但续费明显更高。若计划长期持有，请重点比较续费价。
+        </p>
       </section>
     </div>
   )
