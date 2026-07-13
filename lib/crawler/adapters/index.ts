@@ -2,6 +2,7 @@ import type { RegistrarAdapter } from "../types"
 import { registrarRegistry } from "../registry"
 import { cloudflareAdapter } from "./cloudflare"
 import { dynadotAdapter } from "./dynadot"
+import { mythicBeastsAdapter } from "./mythic-beasts"
 import { ovhAdapter } from "./ovh"
 import { porkbunAdapter } from "./porkbun"
 import { DemoAdapter } from "./demo.adapter"
@@ -56,6 +57,12 @@ registrarRegistry.register(ovhAdapter, {
   priority: 10,
   version: "1.0.0",
   website: "https://www.ovhcloud.com/en-ie/domains/",
+})
+registrarRegistry.register(mythicBeastsAdapter, {
+  sourceType: "html",
+  priority: 30,
+  version: "1.0.0",
+  website: "https://www.mythic-beasts.com/domains",
 })
 
 // —— 兼容旧接口（Runner 与既有代码依赖）——
