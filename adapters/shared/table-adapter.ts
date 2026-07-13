@@ -1,0 +1,185 @@
+/**
+ * 配置驱动的 HTML 表格适配器工厂
+ * ------------------------------------------------------------
+ * 所有权: Platform Team
+ *
+ * 大量注册商的价格页是结构化 HTML 表格。该工厂把"新增注册商"
+ * 降为纯配置: URL + 货币 + 列语义, 无需新基础设施。
+ *
+ * 自动能力:
+ * - 多页抓取(urls 数组)
+ * - TLD 列自动识别(含 .xx 的单元格)
+ * - 价格列按 columnOrder 语义映射
+ * - 千分位/货币符号/本地化数字清洗
+ */
+
+import { defineAdapter, type AdapterDefinition, type RawPrice, type RegistrarCapabilities, type RateLimitConfig } from "@/packages/adapter-sdk"
+
+export interface TableAdapterConfig {
+  slug: string
+  name: string
+  website: string
+  currency: string
+  /** 价格页 URL(多页时给数组) */
+  urls: string[]
+  /**
+   * 表格列语义(除 TLD 列外), 按出现顺序。
+   * 如 ["register", "renew", "transfer"] 表示 TLD 列之后
+   * 第 1 个价格是注册价、第 2 个是续费价、第 3 个是转入价。
+   */
+  columnOrder: ("register" | "renew" | "transfer" | "restore" | "skip")[]
+  /** 数字格式: "1,234.56"(en) 或 "1.234,56"(eu) 或 "1 234,56"(fr),默认 en */
+  numberFormat?: "en" | "eu" | "fr"
+  /** 每分钟请求数(多页站点用低值),默认 10 */
+  rpm?: number
+  owner?: string
+  version?: string
+  capabilities?: RegistrarCapabilities
+  rateLimit?: RateLimitConfig
+  priority?: number
+  /** 额外请求头(部分站点需要 Referer 等) */
+  headers?: Record<string, string>
+  /** 自定义行过滤(返回 false 跳过该行) */
+  rowFilter?: (cells: string[]) => boolean
+}
+
+/** 清洗单元格中的价格数字, 失败返回 null */
+export function parsePrice(text: string, format: "en" | "eu" | "fr" = "en"): number | null {
+  // 去货币符号与空白类字符
+  let t = text.replace(/[^\d.,\s\u00a0']/g, "").trim()
+  if (!t) return null
+  if (format === "fr") {
+    // 1 234,56 → 1234.56
+    t = t.replace(/[\s\u00a0']/g, "").replace(",", ".")
+  } else if (format === "eu") {
+    // 1.234,56 → 1234.56
+    t = t.replace(/\./g, "").replace(",", ".")
+  } else {
+    // 1,234.56 → 1234.56
+    t = t.replace(/,/g, "")
+  }
+  const v = Number.parseFloat(t)
+  if (!Number.isFinite(v) || v <= 0 || v >= 100_000) return null
+  return Math.round(v * 100) / 100
+}
+
+/** 从 HTML 中提取全部表格行的纯文本单元格 */
+export function extractTableRows(html: string): string[][] {
+  const rows: string[][] = []
+  const trMatches = html.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) ?? []
+  for (const tr of trMatches) {
+    const cells: string[] = []
+    const cellMatches = tr.match(/<t[dh][^>]*>[\s\S]*?<\/t[dh]>/gi) ?? []
+    for (const cell of cellMatches) {
+      const text = cell
+        .replace(/<script[\s\S]*?<\/script>/gi, "")
+        .replace(/<style[\s\S]*?<\/style>/gi, "")
+        .replace(/<[^>]+>/g, " ")
+        .replace(/&nbsp;/g, " ")
+        .replace(/&amp;/g, "&")
+        .replace(/\s+/g, " ")
+        .trim()
+      cells.push(text)
+    }
+    if (cells.length > 0) rows.push(cells)
+  }
+  return rows
+}
+
+/** 在一行单元格中找出 TLD(形如 .com / .co.uk),返回 [tld, 索引] */
+export function findTldCell(cells: string[]): [string, number] | null {
+  for (let i = 0; i < cells.length; i++) {
+    const m = cells[i].match(/^\.?([a-z0-9-]{1,63}(?:\.[a-z0-9-]{1,63}){0,2})$/i)
+    if (m && /^\./.test(cells[i].trim()) === true) {
+      return [m[1].toLowerCase(), i]
+    }
+    // 也接受不带点但看起来像 TLD 的首列(如 "com")——仅限第一列且长度合理
+    if (i === 0) {
+      const m2 = cells[i].match(/^([a-z0-9-]{2,20}(?:\.[a-z0-9-]{2,10})?)$/i)
+      if (m2 && !/^\d+$/.test(cells[i])) return [m2[1].toLowerCase(), i]
+    }
+  }
+  return null
+}
+
+/**
+ * createTableAdapter —— 用一份配置生成完整适配器。
+ */
+export function createTableAdapter(config: TableAdapterConfig) {
+  const definition: AdapterDefinition = {
+    slug: config.slug,
+    name: config.name,
+    website: config.website,
+    owner: config.owner ?? "Data Team",
+    version: config.version ?? "1.0.0",
+    parserVersion: "1.0.0",
+    currency: config.currency,
+    priority: config.priority ?? 50,
+    capabilities: config.capabilities ?? {
+      registration: true,
+      renewal: true,
+      transfer: true,
+      supportedCurrencies: [config.currency],
+    },
+    rateLimit: config.rateLimit ?? { concurrency: 1, rpm: config.rpm ?? 10, retries: 2, timeoutMs: 60_000 },
+    strategies: [
+      {
+        type: "html",
+        url: config.urls[0],
+        async fetch(ctx) {
+          const pages: string[] = []
+          for (const url of config.urls) {
+            const res = await ctx.fetch(url, {
+              headers: {
+                "User-Agent":
+                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+                Accept: "text/html,application/xhtml+xml",
+                ...config.headers,
+              },
+            })
+            if (!res.ok) throw new Error(`${config.slug} 价格页 ${url} 返回 HTTP ${res.status}`)
+            pages.push(await res.text())
+          }
+          return pages.join("\n<!--PAGE_BREAK-->\n")
+        },
+        parse(raw): RawPrice[] {
+          const rows = extractTableRows(raw)
+          const prices: RawPrice[] = []
+          const seen = new Set<string>()
+          for (const cells of rows) {
+            if (config.rowFilter && !config.rowFilter(cells)) continue
+            const tldHit = findTldCell(cells)
+            if (!tldHit) continue
+            const [tld, tldIdx] = tldHit
+            if (seen.has(tld)) continue
+            // 收集 TLD 列之后的数字单元格
+            const priceValues: (number | null)[] = []
+            for (let i = tldIdx + 1; i < cells.length; i++) {
+              const v = parsePrice(cells[i], config.numberFormat)
+              priceValues.push(v)
+            }
+            if (priceValues.every((v) => v === null)) continue
+            const price: RawPrice = { tld, currency: config.currency, sourceUrl: config.urls[0] }
+            let vi = 0
+            for (const role of config.columnOrder) {
+              if (vi >= priceValues.length) break
+              const value = priceValues[vi]
+              vi++
+              if (role === "skip") continue
+              if (role === "register") price.registerPrice = value
+              else if (role === "renew") price.renewPrice = value
+              else if (role === "transfer") price.transferPrice = value
+              else if (role === "restore") price.restorePrice = value
+            }
+            if (price.registerPrice == null && price.renewPrice == null && price.transferPrice == null) continue
+            seen.add(tld)
+            prices.push(price)
+          }
+          if (prices.length === 0) throw new Error(`${config.slug} 表格解析结果为空(页面结构可能已变化)`)
+          return prices
+        },
+      },
+    ],
+  }
+  return defineAdapter(definition)
+}
