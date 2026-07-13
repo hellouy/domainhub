@@ -79,6 +79,18 @@ export class BaseAdapter {
   get sdkVersion(): string {
     return SDK_VERSION
   }
+  get owner(): string | undefined {
+    return this.definition.owner
+  }
+  get priority(): number {
+    return this.definition.priority ?? 100
+  }
+  get capabilities() {
+    return this.definition.capabilities
+  }
+  get website(): string | undefined {
+    return this.definition.website
+  }
   /** 策略优先级列表（如 ["api","json","html"]） */
   get strategyPriority(): StrategyType[] {
     return this.definition.strategies.map((s) => s.type)

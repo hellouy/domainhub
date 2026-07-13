@@ -1,6 +1,7 @@
 import { db } from "@/lib/db"
 import { crawlJobs, crawlLogs, priceHistory, prices, registrars, tlds } from "@/lib/db/schema"
 import { and, eq } from "drizzle-orm"
+import { runCrawlWithSdk } from "@/services/crawl"
 import { getAdapter } from "./adapters"
 
 /** 采集任务执行结果（供后台展示统计） */
@@ -32,6 +33,11 @@ const norm = (v: number | null | undefined): string | null =>
  * 更新任务状态与统计。Adapter 抛错时不写入任何价格，保留旧数据。
  */
 export async function runCrawlJob(registrarId: number): Promise<CrawlJobResult> {
+  // 平台化路径：已迁移到 Adapter SDK 2.0 的注册商优先走新服务
+  // （services/crawl），未迁移的注册商继续走下方旧逻辑，行为不变。
+  const sdkResult = await runCrawlWithSdk(registrarId)
+  if (sdkResult) return sdkResult
+
   const startedAt = new Date()
   const fail = (jobId: number, message: string): CrawlJobResult => ({
     jobId,
