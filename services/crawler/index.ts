@@ -10,6 +10,8 @@ import type {
 } from "@/lib/crawler/types"
 import { storageService, type StorageService } from "@/services/storage"
 import { validatorService, type ValidatorService } from "@/services/validator"
+import { cacheService, CACHE_TAGS } from "@/services/cache"
+import { metricsService } from "@/services/metrics"
 
 /**
  * CrawlerRunner —— 采集引擎调度器
@@ -129,11 +131,13 @@ export class CrawlerRunner {
       }
       try {
         // Adapter 生命周期：initialize -> fetch -> parse -> normalize -> finish
+        const collectStart = Date.now()
         const domainPrices = await withTimeout(
           adapter.collect(ctx),
           this.options.timeoutMs,
           `第 ${attempts} 次尝试`,
         )
+        void metricsService.record("crawler.adapter_latency", Date.now() - collectStart, "ms", slug)
 
         if (await this.checkCancelled(job.id, ctx, startedAt, slug, attempts)) {
           return this.buildResult(job.id, slug, "cancelled", "任务已取消", domainPrices.length, 0, 0, 0, 0, attempts, startedAt)
@@ -154,8 +158,10 @@ export class CrawlerRunner {
           throw new Error(`全部 ${domainPrices.length} 条记录均未通过验证，放弃写入以保护现有数据`)
         }
 
-        // save：由 Storage 服务差异写入
+        // save：由 Storage 服务差异写入（记录数据库写入耗时）
+        const saveStart = Date.now()
         const saved = await this.storage.savePrices(registrar.id, valid)
+        void metricsService.record("db.write_duration", Date.now() - saveStart, "ms", slug)
         if (saved.unknownTlds > 0) {
           await ctx.log("info", `数据源含 ${saved.unknownTlds} 个未收录后缀，已跳过（可在 tlds 表中添加后自动收录）`)
         }
@@ -179,6 +185,13 @@ export class CrawlerRunner {
           "info",
           `任务完成（${status}）：共 ${domainPrices.length} 条价格，新增 ${saved.inserted} 条，更新 ${saved.updated - saved.inserted} 条，跳过 ${saved.skipped} 条，拒绝 ${rejected.length} 条，耗时 ${(durationMs / 1000).toFixed(1)}s`,
         )
+        // 采集成功：记录任务耗时指标，并让价格相关缓存失效
+        void metricsService.record("crawler.duration", durationMs, "ms", slug)
+        if (saved.updated > 0) {
+          cacheService.invalidateTag(CACHE_TAGS.prices)
+          cacheService.invalidateTag(CACHE_TAGS.statistics)
+          cacheService.invalidateTag(CACHE_TAGS.coverage)
+        }
         cancelledJobs.delete(job.id)
         return this.buildResult(
           job.id, slug, status,
