@@ -13,6 +13,8 @@ export default async function HomePage() {
     getActiveRegistrars(),
   ])
   const popularTlds = allTlds.filter((t) => t.isPopular)
+  /** 已验证后缀：至少有一条真实采集价格记录 */
+  const verifiedTlds = allTlds.filter((t) => t.registrarCount > 0 && t.minRegister !== null)
   const searchOptions = allTlds.map((t) => ({
     tld: t.tld,
     type: t.type,
@@ -93,12 +95,42 @@ export default async function HomePage() {
         </div>
       </section>
 
+      {/* 全部已验证后缀 */}
+      <section aria-labelledby="verified-tlds" className="border-b border-border">
+        <div className="mx-auto w-full max-w-6xl px-4 py-14 md:px-6">
+          <div className="mb-8 flex flex-col gap-2">
+            <p className="text-xs font-medium uppercase tracking-widest text-primary">02</p>
+            <h2 id="verified-tlds" className="text-2xl font-bold tracking-tight md:text-3xl">
+              全部已验证后缀
+            </h2>
+            <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+              以下 {verifiedTlds.length} 个后缀均有真实采集的注册商报价，点击查看跨注册商价格对比。
+            </p>
+          </div>
+          <ul className="flex flex-wrap gap-2">
+            {verifiedTlds.map((t) => (
+              <li key={t.id}>
+                <Link
+                  href={`/tld/${t.tld}`}
+                  className="group flex items-baseline gap-2 border border-border bg-card px-3 py-1.5 transition-colors hover:border-primary hover:bg-accent"
+                >
+                  <span className="font-mono text-sm font-medium group-hover:text-primary">.{t.tld}</span>
+                  <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                    {formatPrice(t.minRegister)}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
       {/* 注册商 */}
       <section aria-labelledby="registrars-heading">
         <div className="mx-auto w-full max-w-6xl px-4 py-14 md:px-6">
           <div className="mb-8 flex items-end justify-between">
             <div className="flex flex-col gap-2">
-              <p className="text-xs font-medium uppercase tracking-widest text-primary">02</p>
+              <p className="text-xs font-medium uppercase tracking-widest text-primary">03</p>
               <h2 id="registrars-heading" className="text-2xl font-bold tracking-tight md:text-3xl">
                 收录的注册商
               </h2>
