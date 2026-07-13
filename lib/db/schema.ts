@@ -103,6 +103,12 @@ export const metrics = pgTable("metrics", {
   recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull().defaultNow(),
 })
 
+export const exchangeRates = pgTable("exchange_rates", {
+  currency: text("currency").primaryKey(),
+  rateToUsd: numeric("rate_to_usd", { precision: 18, scale: 8 }).notNull(),
+  fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
 export const auditLogs = pgTable("audit_logs", {
   id: serial("id").primaryKey(),
   requestId: text("request_id").notNull().default(""),
@@ -120,3 +126,4 @@ export type CrawlLog = typeof crawlLogs.$inferSelect
 export type SchedulerSettings = typeof schedulerSettings.$inferSelect
 export type Metric = typeof metrics.$inferSelect
 export type AuditLog = typeof auditLogs.$inferSelect
+export type ExchangeRate = typeof exchangeRates.$inferSelect

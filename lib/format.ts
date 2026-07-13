@@ -1,10 +1,28 @@
+/** 常见币种符号表 */
+const CURRENCY_SYMBOLS: Record<string, string> = {
+  USD: "$",
+  CNY: "¥",
+  EUR: "€",
+  GBP: "£",
+  JPY: "¥",
+  CAD: "C$",
+  AUD: "A$",
+  INR: "₹",
+}
+
 /** 价格格式化：numeric 字段以 string 返回 */
 export function formatPrice(value: string | number | null | undefined, currency = "USD") {
   if (value == null) return "—"
   const num = typeof value === "string" ? Number.parseFloat(value) : value
   if (Number.isNaN(num)) return "—"
-  const symbol = currency === "CNY" ? "¥" : "$"
+  const symbol = CURRENCY_SYMBOLS[currency.toUpperCase()] ?? `${currency} `
   return `${symbol}${num.toFixed(2)}`
+}
+
+/** USD 换算价格格式化（带 ≈ 前缀表示换算价） */
+export function formatUsdApprox(value: number | null | undefined) {
+  if (value == null || Number.isNaN(value)) return "—"
+  return `≈$${value.toFixed(2)}`
 }
 
 export function formatDate(value: Date | string | null | undefined) {

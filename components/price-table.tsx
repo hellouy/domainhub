@@ -17,6 +17,10 @@ export type PriceRow = {
   registrarSlug: string
   registrarName: string
   registrarWebsite: string
+  /** 换算为 USD 后的价格（非 USD 币种时用于排序与最低价对比） */
+  registerUsd?: number | null
+  renewUsd?: number | null
+  transferUsd?: number | null
 }
 
 type SortKey = "registerPrice" | "renewPrice" | "transferPrice"
@@ -33,11 +37,24 @@ function toNum(v: string | null) {
   return Number.isNaN(n) ? Number.POSITIVE_INFINITY : n
 }
 
+/** USD 键映射：排序与最低价均按换算后 USD 计算（无换算值时回退原始值） */
+const USD_KEYS: Record<SortKey, "registerUsd" | "renewUsd" | "transferUsd"> = {
+  registerPrice: "registerUsd",
+  renewPrice: "renewUsd",
+  transferPrice: "transferUsd",
+}
+
+function toComparable(row: PriceRow, key: SortKey): number {
+  const usd = row[USD_KEYS[key]]
+  if (usd != null && Number.isFinite(usd)) return usd
+  return toNum(row[key])
+}
+
 export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; showUpdated?: boolean }) {
   const [sortKey, setSortKey] = useState<SortKey>("registerPrice")
 
   const sorted = useMemo(
-    () => [...rows].sort((a, b) => toNum(a[sortKey]) - toNum(b[sortKey])),
+    () => [...rows].sort((a, b) => toComparable(a, sortKey) - toComparable(b, sortKey)),
     [rows, sortKey],
   )
 
@@ -45,7 +62,7 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
     const keys: SortKey[] = ["registerPrice", "renewPrice", "transferPrice"]
     const mins: Partial<Record<SortKey, number>> = {}
     for (const key of keys) {
-      const vals = rows.map((r) => toNum(r[key])).filter((v) => Number.isFinite(v))
+      const vals = rows.map((r) => toComparable(r, key)).filter((v) => Number.isFinite(v))
       if (vals.length > 0) mins[key] = Math.min(...vals)
     }
     return mins
@@ -111,7 +128,9 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
                   </Link>
                 </td>
                 {(["registerPrice", "renewPrice", "transferPrice"] as SortKey[]).map((key) => {
-                  const isMin = row[key] != null && toNum(row[key]) === minValues[key]
+                  const isMin = row[key] != null && toComparable(row, key) === minValues[key]
+                  const usd = row[USD_KEYS[key]]
+                  const showApprox = row.currency.toUpperCase() !== "USD" && usd != null && row[key] != null
                   return (
                     <td
                       key={key}
@@ -120,7 +139,12 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
                         isMin ? "font-semibold text-primary" : "text-foreground",
                       )}
                     >
-                      {formatPrice(row[key], row.currency)}
+                      <span className="flex flex-col items-end">
+                        <span>{formatPrice(row[key], row.currency)}</span>
+                        {showApprox && (
+                          <span className="text-xs font-normal text-muted-foreground">≈${usd.toFixed(2)}</span>
+                        )}
+                      </span>
                       {isMin && <span className="sr-only">（最低价）</span>}
                     </td>
                   )
