@@ -11,15 +11,21 @@
     let s = t.replace(/[^\d.,\s\u00a0']/g, '').trim()
     if (!s) return null
     // 判断小数分隔符: 最后出现的 . 或 ,
+    // 关键规则: 分隔符后正好 3 位数字视为千位分隔符(如 1,298 → 1298)
     const lastDot = s.lastIndexOf('.')
     const lastComma = s.lastIndexOf(',')
-    if (lastComma > lastDot) {
+    const sep = Math.max(lastDot, lastComma)
+    const digitsAfter = sep >= 0 ? s.slice(sep + 1).replace(/\D/g, '').length : 0
+    if (sep >= 0 && digitsAfter === 3) {
+      // 千位分隔符
+      s = s.replace(/[.,\s\u00a0']/g, '')
+    } else if (lastComma > lastDot) {
       s = s.replace(/[.\s\u00a0']/g, '').replace(',', '.')
     } else {
       s = s.replace(/[,\s\u00a0']/g, '')
     }
     const v = parseFloat(s)
-    return Number.isFinite(v) && v > 0 && v < 100000 ? Math.round(v * 100) / 100 : null
+    return Number.isFinite(v) && v > 0 && v < 1000000 ? Math.round(v * 100) / 100 : null
   }
 
   // 1) 表格
