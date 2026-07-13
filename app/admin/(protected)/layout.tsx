@@ -5,7 +5,7 @@ import { isAdminAuthenticated } from "@/lib/admin-auth"
 import { adminLogout } from "@/app/actions/admin"
 import { Button } from "@/components/ui/button"
 
-export const metadata = { title: "后台管理 - DomainHub" }
+export const metadata = { title: "后台管理 - tldbi.com" }
 
 /** 管理后台依赖 Cookie 认证与实时数据，禁止静态预渲染（否则构建时认证检查会失败） */
 export const dynamic = "force-dynamic"

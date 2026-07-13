@@ -119,7 +119,7 @@ export async function rateLimitedFetch(
         ...init,
         signal: controller.signal,
         headers: {
-          "User-Agent": "DomainHub/2.0 (registrar intelligence platform)",
+          "User-Agent": "tldbi/2.0 (+https://tldbi.com)",
           ...((init?.headers as Record<string, string>) ?? {}),
         },
         cache: "no-store",

@@ -1,9 +1,8 @@
 import type { MetadataRoute } from "next"
 
+/** 正式域名固定为 tldbi.com,保证搜索引擎收录地址一致 */
 function getBaseUrl() {
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
-  return "http://localhost:3000"
+  return "https://tldbi.com"
 }
 
 export default function robots(): MetadataRoute.Robots {

@@ -2,7 +2,7 @@ import { redirect } from "next/navigation"
 import { isAdminAuthenticated } from "@/lib/admin-auth"
 import { AdminLoginForm } from "@/components/admin/login-form"
 
-export const metadata = { title: "后台登录 - DomainHub" }
+export const metadata = { title: "后台登录 - tldbi.com" }
 
 export default async function AdminLoginPage() {
   if (await isAdminAuthenticated()) redirect("/admin")

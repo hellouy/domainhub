@@ -7,7 +7,7 @@ export const revalidate = 300
 
 export const metadata: Metadata = {
   title: "域名注册商大全",
-  description: "浏览 DomainHub 收录的全球主流域名注册商，了解各家的特色、支持的后缀数量与价格水平。",
+  description: "浏览 tldbi.com 收录的全球主流域名注册商，了解各家的特色、支持的后缀数量与价格水平。",
   alternates: { canonical: "/registrars" },
 }
 

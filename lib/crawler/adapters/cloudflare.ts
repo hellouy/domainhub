@@ -36,7 +36,7 @@ async function fetchWithTimeout(url: string, timeoutMs: number): Promise<Respons
     return await fetch(url, {
       signal: controller.signal,
       headers: {
-        "User-Agent": "DomainHub/1.0 (price aggregator; +https://domainhub.example)",
+        "User-Agent": "tldbi/1.0 (price aggregator; +https://tldbi.com)",
         Accept: "application/json",
       },
       cache: "no-store",
