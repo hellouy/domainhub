@@ -3,10 +3,9 @@ import { db } from "@/lib/db"
 import { registrars, tlds } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
 
+/** 正式域名固定为 tldbi.com,保证搜索引擎收录地址一致 */
 function getBaseUrl() {
-  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-  if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}`
-  return "http://localhost:3000"
+  return "https://tldbi.com"
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
@@ -22,10 +21,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     { url: `${base}/registrars`, changeFrequency: "weekly", priority: 0.8 },
   ]
 
-  const tldRoutes: MetadataRoute.Sitemap = allTlds.flatMap((t) => [
-    { url: `${base}/tld/${t.tld}`, changeFrequency: "daily" as const, priority: 0.8 },
-    { url: `${base}/compare/${t.tld}`, changeFrequency: "daily" as const, priority: 0.7 },
-  ])
+  // /compare/[tld] 已 301 到 /tld/[tld],不再进 sitemap
+  const tldRoutes: MetadataRoute.Sitemap = allTlds.map((t) => ({
+    url: `${base}/tld/${t.tld}`,
+    changeFrequency: "daily" as const,
+    priority: 0.8,
+  }))
 
   const registrarRoutes: MetadataRoute.Sitemap = activeRegistrars.map((r) => ({
     url: `${base}/registrars/${r.slug}`,

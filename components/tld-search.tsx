@@ -3,15 +3,17 @@
 import { useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Search } from "lucide-react"
-import { formatPrice } from "@/lib/format"
+import { useCurrency, useLocale } from "@/components/providers"
 
-type TldOption = {
+export type TldSearchOption = {
   tld: string
   type: string
   minRegister: string | null
 }
 
-export function TldSearch({ options }: { options: TldOption[] }) {
+export function TldSearch({ options }: { options: TldSearchOption[] }) {
+  const { t } = useLocale()
+  const { money } = useCurrency()
   const router = useRouter()
   const [query, setQuery] = useState("")
   const [open, setOpen] = useState(false)
@@ -55,8 +57,8 @@ export function TldSearch({ options }: { options: TldOption[] }) {
               submit()
             }
           }}
-          placeholder="搜索域名后缀，如 com、io、ai"
-          aria-label="搜索域名后缀"
+          placeholder={t("search.placeholder")}
+          aria-label={t("search.placeholder")}
           className="w-full bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground"
         />
         <button
@@ -64,7 +66,7 @@ export function TldSearch({ options }: { options: TldOption[] }) {
           onClick={submit}
           className="shrink-0 bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
         >
-          比价
+          {t("search.button")}
         </button>
       </div>
       {open && suggestions.length > 0 && (
@@ -85,7 +87,7 @@ export function TldSearch({ options }: { options: TldOption[] }) {
               >
                 <span className="font-mono text-sm font-medium">.{s.tld}</span>
                 <span className="text-xs text-muted-foreground">
-                  {s.minRegister ? `最低 ${formatPrice(s.minRegister)}` : "暂无价格"}
+                  {s.minRegister ? `最低 ${money(s.minRegister, "USD")}` : "暂无价格"}
                 </span>
               </button>
             </li>

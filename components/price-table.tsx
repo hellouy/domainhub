@@ -3,7 +3,8 @@
 import { useMemo, useState } from "react"
 import Link from "next/link"
 import { ArrowUpDown, ExternalLink } from "lucide-react"
-import { formatPrice, formatRelative } from "@/lib/format"
+import { formatRelative } from "@/lib/format"
+import { useCurrency } from "@/components/providers"
 import { cn } from "@/lib/utils"
 
 export type PriceRow = {
@@ -34,6 +35,7 @@ function toNum(v: string | null) {
 }
 
 export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; showUpdated?: boolean }) {
+  const { money } = useCurrency()
   const [sortKey, setSortKey] = useState<SortKey>("registerPrice")
 
   const sorted = useMemo(
@@ -120,7 +122,7 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
                         isMin ? "font-semibold text-primary" : "text-foreground",
                       )}
                     >
-                      {formatPrice(row[key], row.currency)}
+                      {money(row[key], row.currency)}
                       {isMin && <span className="sr-only">（最低价）</span>}
                     </td>
                   )

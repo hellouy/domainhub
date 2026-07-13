@@ -2,8 +2,10 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { notFound } from "next/navigation"
 import { PriceTable } from "@/components/price-table"
-import { formatPrice, formatRelative, TLD_TYPE_LABELS } from "@/lib/format"
+import { Money } from "@/components/money"
+import { formatRelative, TLD_TYPE_LABELS } from "@/lib/format"
 import { getPricesForTld, getTldByName, getTldLastUpdated } from "@/lib/db/queries"
+import { getUsdRates, toUsd, type UsdRates } from "@/lib/fx"
 
 export const revalidate = 300
 
@@ -24,11 +26,12 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-function minOf(values: (string | null)[]) {
+/** 跨币种最低价:全部折算 USD 后比较,排除 < $1 的促销占位价 */
+function minUsdOf(values: { value: string | null; currency: string }[], rates: UsdRates) {
   const nums = values
-    .filter((v): v is string => v != null)
-    .map((v) => Number.parseFloat(v))
-    .filter((v) => !Number.isNaN(v))
+    .filter((v): v is { value: string; currency: string } => v.value != null)
+    .map((v) => toUsd(Number.parseFloat(v.value), v.currency, rates))
+    .filter((v) => !Number.isNaN(v) && v >= 1)
   return nums.length > 0 ? Math.min(...nums) : null
 }
 
@@ -37,11 +40,24 @@ export default async function TldPage({ params }: Props) {
   const row = await getTldByName(decodeURIComponent(tld))
   if (!row) notFound()
 
-  const [priceRows, lastUpdated] = await Promise.all([getPricesForTld(row.id), getTldLastUpdated(row.id)])
+  const [priceRows, lastUpdated, rates] = await Promise.all([
+    getPricesForTld(row.id),
+    getTldLastUpdated(row.id),
+    getUsdRates(),
+  ])
 
-  const minRegister = minOf(priceRows.map((p) => p.registerPrice))
-  const minRenew = minOf(priceRows.map((p) => p.renewPrice))
-  const minTransfer = minOf(priceRows.map((p) => p.transferPrice))
+  const minRegister = minUsdOf(
+    priceRows.map((p) => ({ value: p.registerPrice, currency: p.currency })),
+    rates,
+  )
+  const minRenew = minUsdOf(
+    priceRows.map((p) => ({ value: p.renewPrice, currency: p.currency })),
+    rates,
+  )
+  const minTransfer = minUsdOf(
+    priceRows.map((p) => ({ value: p.transferPrice, currency: p.currency })),
+    rates,
+  )
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -95,9 +111,9 @@ export default async function TldPage({ params }: Props) {
               {item.label}
             </span>
             <span className="font-mono text-lg font-bold tabular-nums text-primary md:text-3xl">
-              {item.value != null ? formatPrice(item.value) : "—"}
+              {item.value != null ? <Money value={item.value} from="USD" /> : "—"}
             </span>
-            <span className="text-[10px] text-muted-foreground md:text-xs">{item.note} · USD</span>
+            <span className="text-[10px] text-muted-foreground md:text-xs">{item.note}</span>
           </div>
         ))}
       </section>

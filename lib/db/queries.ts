@@ -1,13 +1,14 @@
-import { and, asc, count, desc, eq, max, min, sql } from "drizzle-orm"
+import { and, asc, count, desc, eq, max, min, sql, type SQL } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { crawlJobs, prices, registrars, tlds } from "@/lib/db/schema"
+import { getUsdRates } from "@/lib/fx"
 
 /** 站点统计 */
 export async function getStats() {
   const [row] = await db
     .select({
       registrarCount: sql<number>`(SELECT count(*) FROM ${registrars} WHERE ${registrars.isActive} = true)`,
-      tldCount: sql<number>`(SELECT count(*) FROM ${tlds})`,
+      tldCount: sql<number>`(SELECT count(*) FROM ${tlds} WHERE ${tlds.isValid} = true)`,
       priceCount: sql<number>`(SELECT count(*) FROM ${prices})`,
       lastUpdated: sql<string | null>`(SELECT max(${prices.updatedAt}) FROM ${prices})`,
     })
@@ -15,31 +16,38 @@ export async function getStats() {
   return row
 }
 
-/** 近似汇率折算为 USD 的 SQL 表达式（跨货币最低价比较用） */
-const usdEquivalent = sql<string>`${prices.registerPrice} * (CASE ${prices.currency}
+/**
+ * 用实时汇率(exchangerate-api.com,DB 智能缓存)动态生成折算 USD 的 SQL 表达式。
+ * 汇率为 1 USD = rates[X],故 X 货币金额 → USD 需除以 rates[X]。
+ */
+async function usdEquivalentExpr(): Promise<SQL<string>> {
+  const rates = await getUsdRates()
+  const currencies = ["EUR", "CHF", "GBP", "JPY", "SEK", "NOK", "NZD", "CAD", "CNY", "AUD", "HKD", "SGD"]
+  const cases: SQL[] = []
+  for (const c of currencies) {
+    const r = rates[c]
+    if (r && r > 0) cases.push(sql`WHEN ${c} THEN ${sql.raw((1 / r).toFixed(6))}`)
+  }
+  return sql<string>`${prices.registerPrice} * (CASE ${prices.currency}
   WHEN 'USD' THEN 1
-  WHEN 'EUR' THEN 1.08
-  WHEN 'CHF' THEN 1.13
-  WHEN 'GBP' THEN 1.27
-  WHEN 'JPY' THEN 0.0066
-  WHEN 'SEK' THEN 0.095
-  WHEN 'NOK' THEN 0.093
-  WHEN 'NZD' THEN 0.61
-  WHEN 'CAD' THEN 0.73
-  WHEN 'CNY' THEN 0.14
+  ${sql.join(cases, sql` `)}
   ELSE 1 END)`
+}
 
 /**
- * 全部后缀 + 每个后缀的最低注册价（折算 USD 近似值，仅统计启用的注册商）。
+ * 全部后缀 + 每个后缀的最低注册价（实时汇率折算 USD，仅统计启用的注册商）。
  * 折算后低于 $1 的价格视为首年促销/占位价（如日元 1 円活动），不参与最低价展示。
+ * 只返回 IANA 认可的有效后缀，按热度分降序排列。
  */
 export async function getTldsWithMinPrice(onlyPopular = false) {
+  const usdEquivalent = await usdEquivalentExpr()
   const rows = await db
     .select({
       id: tlds.id,
       tld: tlds.tld,
       type: tlds.type,
       isPopular: tlds.isPopular,
+      popularity: tlds.popularity,
       minRegister: min(sql<string>`CASE WHEN ${usdEquivalent} >= 1 THEN ${usdEquivalent} ELSE NULL END`),
       registrarCount: count(prices.id),
     })
@@ -51,9 +59,11 @@ export async function getTldsWithMinPrice(onlyPopular = false) {
         sql`${prices.registrarId} IN (SELECT id FROM ${registrars} WHERE ${registrars.isActive} = true)`,
       ),
     )
-    .where(onlyPopular ? eq(tlds.isPopular, true) : undefined)
+    .where(
+      onlyPopular ? and(eq(tlds.isValid, true), eq(tlds.isPopular, true)) : eq(tlds.isValid, true),
+    )
     .groupBy(tlds.id)
-    .orderBy(asc(tlds.tld))
+    .orderBy(desc(tlds.popularity), desc(count(prices.id)), asc(tlds.tld))
   return rows
 }
 

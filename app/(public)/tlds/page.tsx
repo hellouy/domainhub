@@ -1,13 +1,14 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { formatPrice, TLD_TYPE_LABELS } from "@/lib/format"
+import { TLD_TYPE_LABELS } from "@/lib/format"
+import { Money } from "@/components/money"
 import { getTldsWithMinPrice } from "@/lib/db/queries"
 
 export const revalidate = 300
 
 export const metadata: Metadata = {
   title: "全部域名后缀",
-  description: "浏览 DomainHub 收录的所有域名后缀，查看每个后缀在各注册商的最低注册价格。",
+  description: "浏览 tldbi.com 收录的 1800+ 域名后缀，查看每个后缀在各注册商的最低注册、续费与转入价格。",
   alternates: { canonical: "/tlds" },
 }
 
@@ -51,7 +52,7 @@ export default async function TldsPage() {
                 </td>
                 <td className="px-4 py-3.5 text-muted-foreground">{TLD_TYPE_LABELS[t.type] ?? t.type}</td>
                 <td className="px-4 py-3.5 text-right font-mono tabular-nums text-primary">
-                  {formatPrice(t.minRegister)}
+                  <Money value={t.minRegister} from="USD" />
                 </td>
                 <td className="px-4 py-3.5 text-right font-mono tabular-nums text-muted-foreground">
                   {t.registrarCount}
