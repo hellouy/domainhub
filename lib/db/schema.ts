@@ -68,6 +68,7 @@ export const crawlJobs = pgTable("crawl_jobs", {
   startedAt: timestamp("started_at", { withTimezone: true }),
   finishedAt: timestamp("finished_at", { withTimezone: true }),
   pricesUpdated: integer("prices_updated").notNull().default(0),
+  totalTlds: integer("total_tlds").notNull().default(0),
   errorMessage: text("error_message"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 })

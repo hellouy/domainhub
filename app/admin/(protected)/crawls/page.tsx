@@ -49,7 +49,12 @@ export default async function AdminCrawlsPage({
                         </Badge>
                         <span className="text-sm font-medium text-foreground">#{job.id}</span>
                         <span className="text-sm text-foreground">{job.registrarName}</span>
-                        <span className="text-xs text-muted-foreground">更新 {job.pricesUpdated} 条</span>
+                        <span className="text-xs text-muted-foreground">
+                          后缀 {job.totalTlds} · 更新 {job.pricesUpdated} 条
+                          {job.startedAt && job.finishedAt
+                            ? ` · ${((job.finishedAt.getTime() - job.startedAt.getTime()) / 1000).toFixed(1)}s`
+                            : ""}
+                        </span>
                       </div>
                       <span className="font-mono text-xs text-muted-foreground">{formatDateTime(job.createdAt)}</span>
                     </a>

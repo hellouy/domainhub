@@ -54,11 +54,13 @@ function EditDialog({ registrar }: { registrar: Registrar }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>
-        <Button variant="ghost" size="sm">
-          编辑
-        </Button>
-      </DialogTrigger>
+      <DialogTrigger
+        render={
+          <Button variant="ghost" size="sm">
+            编辑
+          </Button>
+        }
+      />
       <DialogContent>
         <DialogHeader>
           <DialogTitle>编辑注册商</DialogTitle>
@@ -131,8 +133,11 @@ export function RegistrarAdminTable({ registrars }: { registrars: Registrar[] })
                 <ActiveSwitch registrar={r} />
               </TableCell>
               <TableCell className="text-right">
-                <div className="flex items-center justify-end gap-1">
-                  <CrawlOneButton registrarId={r.id} />
+                <div className="flex items-start justify-end gap-1">
+                  <CrawlOneButton
+                    registrarId={r.id}
+                    label={r.slug === "cloudflare" ? "运行 Cloudflare 采集" : undefined}
+                  />
                   <EditDialog registrar={r} />
                 </div>
               </TableCell>

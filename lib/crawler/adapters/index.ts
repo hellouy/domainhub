@@ -1,4 +1,5 @@
 import type { RegistrarAdapter } from "../types"
+import { cloudflareAdapter } from "./cloudflare"
 import { createSeedAdapter } from "./seed-adapter"
 
 /**
@@ -6,12 +7,14 @@ import { createSeedAdapter } from "./seed-adapter"
  *
  * 新增注册商时：
  * 1. 在数据库 registrars 表中添加记录
- * 2. 在此注册对应的 Adapter（种子 Adapter 或自定义真实采集 Adapter）
+ * 2. 在此目录新增独立的 Adapter 文件（如 porkbun.ts、spaceship.ts），
+ *    并在下方 realAdapters 中注册；未实现真实采集的注册商自动回退到种子 Adapter
  */
-const adapters: Record<string, RegistrarAdapter> = Object.fromEntries(
+const realAdapters: RegistrarAdapter[] = [cloudflareAdapter]
+
+const seedAdapters: Record<string, RegistrarAdapter> = Object.fromEntries(
   (
     [
-      ["cloudflare", "Cloudflare"],
       ["porkbun", "Porkbun"],
       ["namecheap", "Namecheap"],
       ["godaddy", "GoDaddy"],
@@ -22,6 +25,11 @@ const adapters: Record<string, RegistrarAdapter> = Object.fromEntries(
     ] as const
   ).map(([slug, name]) => [slug, createSeedAdapter(slug, name)]),
 )
+
+const adapters: Record<string, RegistrarAdapter> = {
+  ...seedAdapters,
+  ...Object.fromEntries(realAdapters.map((a) => [a.slug, a])),
+}
 
 export function getAdapter(slug: string): RegistrarAdapter | undefined {
   return adapters[slug]

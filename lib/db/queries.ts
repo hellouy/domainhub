@@ -137,6 +137,7 @@ export async function getRecentJobs(limit = 10) {
       startedAt: crawlJobs.startedAt,
       finishedAt: crawlJobs.finishedAt,
       pricesUpdated: crawlJobs.pricesUpdated,
+      totalTlds: crawlJobs.totalTlds,
       errorMessage: crawlJobs.errorMessage,
       createdAt: crawlJobs.createdAt,
       registrarName: registrars.name,
