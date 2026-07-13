@@ -1,40 +1,76 @@
 import type { RegistrarAdapter } from "../types"
+import { registrarRegistry } from "../registry"
 import { cloudflareAdapter } from "./cloudflare"
-import { createSeedAdapter } from "./seed-adapter"
+import { dynadotAdapter } from "./dynadot"
+import { mythicBeastsAdapter } from "./mythic-beasts"
+import { ovhAdapter } from "./ovh"
+import { porkbunAdapter } from "./porkbun"
+import { DemoAdapter } from "./demo.adapter"
 
 /**
- * Adapter 注册表：slug -> Adapter
+ * Adapter 注册入口：所有 Adapter 在此向 RegistrarRegistry 自动注册。
  *
- * 新增注册商时：
- * 1. 在数据库 registrars 表中添加记录
- * 2. 在此目录新增独立的 Adapter 文件（如 porkbun.ts、spaceship.ts），
- *    并在下方 realAdapters 中注册；未实现真实采集的注册商自动回退到种子 Adapter
+ * 新增注册商只需两步（其余代码零改动）：
+ * 1. 复制 sample.adapter.ts 为新文件，继承 BaseAdapter 实现 fetch/normalize
+ * 2. 在下方调用一次 registrarRegistry.register(newAdapter, { sourceType, ... })
+ *
+ * 未接入真实采集的注册商由 DemoAdapter（种子数据）占位，
+ * 同名 slug 的真实 Adapter 后注册会自动覆盖 Demo 版本。
  */
-const realAdapters: RegistrarAdapter[] = [cloudflareAdapter]
 
-const seedAdapters: Record<string, RegistrarAdapter> = Object.fromEntries(
-  (
-    [
-      ["porkbun", "Porkbun"],
-      ["namecheap", "Namecheap"],
-      ["godaddy", "GoDaddy"],
-      ["dynadot", "Dynadot"],
-      ["namecom", "Name.com"],
-      ["spaceship", "Spaceship"],
-      ["aliyun", "阿里云（万网）"],
-    ] as const
-  ).map(([slug, name]) => [slug, createSeedAdapter(slug, name)]),
-)
-
-const adapters: Record<string, RegistrarAdapter> = {
-  ...seedAdapters,
-  ...Object.fromEntries(realAdapters.map((a) => [a.slug, a])),
+// —— Demo（种子数据）占位 Adapter ——
+for (const [slug, name] of [
+  ["namecheap", "Namecheap"],
+  ["godaddy", "GoDaddy"],
+  ["namecom", "Name.com"],
+  ["spaceship", "Spaceship"],
+  ["aliyun", "阿里云（万网）"],
+] as const) {
+  registrarRegistry.register(new DemoAdapter(slug, name), {
+    sourceType: "seed",
+    priority: 200,
+    status: "experimental",
+  })
 }
 
+// —— 真实数据 Adapter（后注册覆盖同名 Demo）——
+registrarRegistry.register(cloudflareAdapter, {
+  sourceType: "json",
+  priority: 10,
+  version: "1.1.0",
+  website: "https://www.cloudflare.com/products/registrar/",
+})
+registrarRegistry.register(porkbunAdapter, {
+  sourceType: "api",
+  priority: 10,
+  version: "1.0.0",
+  website: "https://porkbun.com",
+})
+registrarRegistry.register(dynadotAdapter, {
+  sourceType: "html",
+  priority: 20,
+  version: "1.0.0",
+  website: "https://www.dynadot.com",
+})
+registrarRegistry.register(ovhAdapter, {
+  sourceType: "api",
+  priority: 10,
+  version: "1.0.0",
+  website: "https://www.ovhcloud.com/en-ie/domains/",
+})
+registrarRegistry.register(mythicBeastsAdapter, {
+  sourceType: "html",
+  priority: 30,
+  version: "1.0.0",
+  website: "https://www.mythic-beasts.com/domains",
+})
+
+// —— 兼容旧接口（Runner 与既有代码依赖）——
+
 export function getAdapter(slug: string): RegistrarAdapter | undefined {
-  return adapters[slug]
+  return registrarRegistry.get(slug)
 }
 
 export function listAdapters(): RegistrarAdapter[] {
-  return Object.values(adapters)
+  return registrarRegistry.list()
 }

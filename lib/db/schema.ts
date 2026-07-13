@@ -69,8 +69,21 @@ export const crawlJobs = pgTable("crawl_jobs", {
   finishedAt: timestamp("finished_at", { withTimezone: true }),
   pricesUpdated: integer("prices_updated").notNull().default(0),
   totalTlds: integer("total_tlds").notNull().default(0),
+  retries: integer("retries").notNull().default(0),
+  rowsInserted: integer("rows_inserted").notNull().default(0),
+  rowsUpdated: integer("rows_updated").notNull().default(0),
+  rowsSkipped: integer("rows_skipped").notNull().default(0),
+  rowsRejected: integer("rows_rejected").notNull().default(0),
   errorMessage: text("error_message"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
+export const schedulerSettings = pgTable("scheduler_settings", {
+  id: serial("id").primaryKey(),
+  enabled: boolean("enabled").notNull().default(false),
+  runHourUtc: integer("run_hour_utc").notNull().default(2),
+  lastRunAt: timestamp("last_run_at", { withTimezone: true }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
 
 export const crawlLogs = pgTable("crawl_logs", {
@@ -81,8 +94,36 @@ export const crawlLogs = pgTable("crawl_logs", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 })
 
+export const metrics = pgTable("metrics", {
+  id: serial("id").primaryKey(),
+  name: text("name").notNull(),
+  value: numeric("value", { precision: 14, scale: 3 }).notNull(),
+  unit: text("unit").notNull().default(""),
+  context: text("context").notNull().default(""),
+  recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
+export const exchangeRates = pgTable("exchange_rates", {
+  currency: text("currency").primaryKey(),
+  rateToUsd: numeric("rate_to_usd", { precision: 18, scale: 8 }).notNull(),
+  fetchedAt: timestamp("fetched_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
+export const auditLogs = pgTable("audit_logs", {
+  id: serial("id").primaryKey(),
+  requestId: text("request_id").notNull().default(""),
+  actor: text("actor").notNull().default("admin"),
+  action: text("action").notNull(),
+  detail: text("detail").notNull().default(""),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
 export type Registrar = typeof registrars.$inferSelect
 export type Tld = typeof tlds.$inferSelect
 export type Price = typeof prices.$inferSelect
 export type CrawlJob = typeof crawlJobs.$inferSelect
 export type CrawlLog = typeof crawlLogs.$inferSelect
+export type SchedulerSettings = typeof schedulerSettings.$inferSelect
+export type Metric = typeof metrics.$inferSelect
+export type AuditLog = typeof auditLogs.$inferSelect
+export type ExchangeRate = typeof exchangeRates.$inferSelect

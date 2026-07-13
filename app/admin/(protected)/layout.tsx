@@ -5,7 +5,7 @@ import { isAdminAuthenticated } from "@/lib/admin-auth"
 import { adminLogout } from "@/app/actions/admin"
 import { Button } from "@/components/ui/button"
 
-export const metadata = { title: "后台管理 - DomainHub" }
+export const metadata = { title: "后台管理 - TLDbi" }
 
 export default async function AdminLayout({ children }: { children: React.ReactNode }) {
   if (!(await isAdminAuthenticated())) redirect("/admin/login")
@@ -16,7 +16,7 @@ export default async function AdminLayout({ children }: { children: React.ReactN
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-2 px-4 py-3">
           <div className="flex items-center gap-4">
             <Link href="/admin" className="font-mono text-sm font-semibold tracking-widest text-primary">
-              DOMAINHUB 后台
+              TLDBI 后台
             </Link>
             <nav aria-label="后台导航" className="flex items-center gap-1 text-sm">
               <Link href="/admin" className="rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground">
@@ -33,6 +33,48 @@ export default async function AdminLayout({ children }: { children: React.ReactN
                 className="rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
               >
                 采集任务
+              </Link>
+              <Link
+                href="/admin/crawler"
+                className="rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                采集引擎
+              </Link>
+              <Link
+                href="/admin/health"
+                className="rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                健康检查
+              </Link>
+              <Link
+                href="/admin/data-quality"
+                className="rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                数据质量
+              </Link>
+              <Link
+                href="/admin/scheduler"
+                className="rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                调度中心
+              </Link>
+              <Link
+                href="/admin/intelligence"
+                className="rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                价格情报
+              </Link>
+              <Link
+                href="/admin/coverage"
+                className="rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                覆盖率
+              </Link>
+              <Link
+                href="/admin/monitoring"
+                className="rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                监控
               </Link>
             </nav>
           </div>

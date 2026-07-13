@@ -6,4 +6,4 @@
  * 未来注册商同理：scrapers/porkbun.ts、scrapers/spaceship.ts 等
  * 只需转发各自的 Adapter。
  */
-export { cloudflareAdapter, crawl } from "@/lib/crawler/adapters/cloudflare"
+export { CloudflareAdapter, cloudflareAdapter } from "@/lib/crawler/adapters/cloudflare"

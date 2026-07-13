@@ -3,6 +3,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { PriceTable } from "@/components/price-table"
 import { getPricesForTld, getTldByName } from "@/lib/db/queries"
+import { currencyService } from "@/services/currency"
 
 export const revalidate = 300
 
@@ -24,7 +25,13 @@ export default async function ComparePage({ params }: Props) {
   const row = await getTldByName(decodeURIComponent(tld))
   if (!row) notFound()
 
-  const priceRows = await getPricesForTld(row.id)
+  const [priceRows, convert] = await Promise.all([getPricesForTld(row.id), currencyService.getConverter()])
+  const rowsWithUsd = priceRows.map((p) => ({
+    ...p,
+    registerUsd: convert(p.registerPrice, p.currency),
+    renewUsd: convert(p.renewPrice, p.currency),
+    transferUsd: convert(p.transferPrice, p.currency),
+  }))
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-12 md:px-6">
@@ -46,10 +53,10 @@ export default async function ComparePage({ params }: Props) {
         </h1>
         <p className="max-w-2xl text-pretty leading-relaxed text-muted-foreground">
           共收录 {priceRows.length} 家注册商的价格，点击排序按钮切换注册价、续费价、转入价排序。
-          橙色数字为该项最低价。价格为美元（USD），不含增值税。
+          高亮数字为该项最低价。非 USD 价格（如 EUR）已按当日汇率换算后统一比价。
         </p>
       </header>
-      <PriceTable rows={priceRows} />
+      <PriceTable rows={rowsWithUsd} />
       <p className="text-xs leading-relaxed text-muted-foreground">
         提示：许多注册商首年注册价格低廉，但续费价格明显更高。若计划长期持有，请重点比较续费价。
       </p>

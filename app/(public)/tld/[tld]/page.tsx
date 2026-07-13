@@ -3,8 +3,10 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ArrowUpRight } from "lucide-react"
 import { PriceTable } from "@/components/price-table"
-import { formatPrice, formatRelative, TLD_TYPE_LABELS } from "@/lib/format"
+import { PriceTrendChart } from "@/components/price-trend-chart"
+import { formatRelative, TLD_TYPE_LABELS } from "@/lib/format"
 import { getPricesForTld, getTldByName, getTldLastUpdated } from "@/lib/db/queries"
+import { currencyService } from "@/services/currency"
 
 export const revalidate = 300
 
@@ -25,11 +27,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-function minOf(values: (string | null)[]) {
-  const nums = values
-    .filter((v): v is string => v != null)
-    .map((v) => Number.parseFloat(v))
-    .filter((v) => !Number.isNaN(v))
+function minOf(values: (number | null)[]) {
+  const nums = values.filter((v): v is number => v != null && Number.isFinite(v))
   return nums.length > 0 ? Math.min(...nums) : null
 }
 
@@ -38,11 +37,23 @@ export default async function TldPage({ params }: Props) {
   const row = await getTldByName(decodeURIComponent(tld))
   if (!row) notFound()
 
-  const [priceRows, lastUpdated] = await Promise.all([getPricesForTld(row.id), getTldLastUpdated(row.id)])
+  const [priceRows, lastUpdated, convert] = await Promise.all([
+    getPricesForTld(row.id),
+    getTldLastUpdated(row.id),
+    currencyService.getConverter(),
+  ])
 
-  const minRegister = minOf(priceRows.map((p) => p.registerPrice))
-  const minRenew = minOf(priceRows.map((p) => p.renewPrice))
-  const minTransfer = minOf(priceRows.map((p) => p.transferPrice))
+  // 为每行附加 USD 换算价（EUR、CNY 等币种统一到 USD 比价）
+  const rowsWithUsd = priceRows.map((p) => ({
+    ...p,
+    registerUsd: convert(p.registerPrice, p.currency),
+    renewUsd: convert(p.renewPrice, p.currency),
+    transferUsd: convert(p.transferPrice, p.currency),
+  }))
+
+  const minRegister = minOf(rowsWithUsd.map((p) => p.registerUsd))
+  const minRenew = minOf(rowsWithUsd.map((p) => p.renewUsd))
+  const minTransfer = minOf(rowsWithUsd.map((p) => p.transferUsd))
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -94,12 +105,14 @@ export default async function TldPage({ params }: Props) {
           <div key={item.label} className="flex flex-col gap-2 bg-card p-6">
             <span className="text-xs uppercase tracking-widest text-muted-foreground">{item.label}</span>
             <span className="font-mono text-3xl font-bold tabular-nums text-primary">
-              {item.value != null ? formatPrice(item.value) : "—"}
+              {item.value != null ? `$${item.value.toFixed(2)}` : "—"}
             </span>
-            <span className="text-xs text-muted-foreground">{item.note} · USD</span>
+            <span className="text-xs text-muted-foreground">{item.note} · USD（多币种已换算）</span>
           </div>
         ))}
       </section>
+
+      <PriceTrendChart tld={row.tld} />
 
       <section aria-labelledby="price-list" className="flex flex-col gap-4">
         <div className="flex items-end justify-between">
@@ -114,7 +127,7 @@ export default async function TldPage({ params }: Props) {
             <ArrowUpRight aria-hidden="true" className="size-4" />
           </Link>
         </div>
-        <PriceTable rows={priceRows} />
+        <PriceTable rows={rowsWithUsd} />
       </section>
     </div>
   )
