@@ -125,7 +125,7 @@ export class CrawlerRunner {
 
     for (attempts = 1; attempts <= this.options.maxAttempts; attempts++) {
       if (await this.checkCancelled(job.id, ctx, startedAt, slug, attempts)) {
-        return this.buildResult(job.id, slug, "cancelled", "任务已取消", 0, 0, 0, attempts, startedAt)
+        return this.buildResult(job.id, slug, "cancelled", "任务已取消", 0, 0, 0, 0, 0, attempts, startedAt)
       }
       try {
         // Adapter 生命周期：initialize -> fetch -> parse -> normalize -> finish
@@ -204,7 +204,7 @@ export class CrawlerRunner {
     await this.storage.finishJob(job.id, { status: "failed", finishedAt, errorMessage: lastError })
     await ctx.log("error", `任务失败（旧价格未被覆盖）：${lastError}`)
     cancelledJobs.delete(job.id)
-    return this.buildResult(job.id, slug, "failed", lastError, 0, 0, 0, this.options.maxAttempts, startedAt, lastError)
+    return this.buildResult(job.id, slug, "failed", lastError, 0, 0, 0, 0, 0, this.options.maxAttempts, startedAt, lastError)
   }
 
   /** 重试一个失败/取消的历史任务（按其注册商重新运行） */
@@ -256,7 +256,9 @@ export class CrawlerRunner {
     message: string,
     totalTlds: number,
     updated: number,
+    inserted: number,
     skipped: number,
+    rejected: number,
     attempts: number,
     startedAt: Date,
     error?: string,
@@ -265,11 +267,13 @@ export class CrawlerRunner {
       jobId,
       registrarSlug,
       status,
-      ok: status === "success",
+      ok: status === "success" || status === "warning",
       message,
       totalTlds,
       updated,
+      inserted,
       skipped,
+      rejected,
       attempts,
       durationMs: Date.now() - startedAt.getTime(),
       error,
@@ -285,7 +289,9 @@ export class CrawlerRunner {
       message,
       totalTlds: 0,
       updated: 0,
+      inserted: 0,
       skipped: 0,
+      rejected: 0,
       attempts: 0,
       durationMs: 0,
       error: message,

@@ -46,6 +46,24 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               >
                 健康检查
               </Link>
+              <Link
+                href="/admin/data-quality"
+                className="rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                数据质量
+              </Link>
+              <Link
+                href="/admin/scheduler"
+                className="rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                调度中心
+              </Link>
+              <Link
+                href="/admin/intelligence"
+                className="rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                价格情报
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-2">

@@ -16,6 +16,9 @@ function revalidateAll() {
   revalidatePath("/admin/crawler")
   revalidatePath("/admin/crawls")
   revalidatePath("/admin/health")
+  revalidatePath("/admin/data-quality")
+  revalidatePath("/admin/scheduler")
+  revalidatePath("/admin/intelligence")
   revalidatePath("/", "layout")
 }
 
@@ -49,4 +52,23 @@ export async function retryJobAction(jobId: number): Promise<CrawlJobResult> {
   const result = await crawlerRunner.retryJob(jobId)
   revalidateAll()
   return result
+}
+
+/** 重试所有"最近一次运行失败/取消"的注册商 */
+export async function retryFailedAction(): Promise<CrawlJobResult[]> {
+  await requireAdmin()
+  const results = await crawlerRunner.retryFailed()
+  revalidateAll()
+  return results
+}
+
+/** 更新每日定时采集设置 */
+export async function updateSchedulerAction(patch: { enabled?: boolean; runHourUtc?: number }): Promise<void> {
+  await requireAdmin()
+  const { storageService } = await import("@/services/storage")
+  if (patch.runHourUtc !== undefined && (patch.runHourUtc < 0 || patch.runHourUtc > 23)) {
+    throw new Error("运行时刻必须在 0-23 之间")
+  }
+  await storageService.updateSchedulerSettings(patch)
+  revalidatePath("/admin/scheduler")
 }
