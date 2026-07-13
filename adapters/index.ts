@@ -17,7 +17,11 @@ import { registerAdapter } from "@/packages/registry"
 import { cloudflareAdapter } from "./cloudflare"
 import { dynadotAdapter } from "./dynadot"
 import { gandiAdapter } from "./gandi"
+import { godaddyAdapter } from "./godaddy"
+import { namecheapAdapter } from "./namecheap"
 import { namecomAdapter } from "./namecom"
+import { namesiloAdapter } from "./namesilo"
+import { netimAdapter } from "./netim"
 import { onecomAdapter } from "./onecom"
 import { porkbunAdapter } from "./porkbun"
 import { ovhcloudAdapter } from "./ovhcloud"
@@ -33,9 +37,7 @@ import {
   loopiaAdapter,
   lwsAdapter,
   metanameAdapter,
-  namesiloAdapter,
   netcupAdapter,
-  netimAdapter,
   onamaeAdapter,
   openproviderAdapter,
   registercomAdapter,
@@ -46,6 +48,8 @@ export const allAdapters = [
   cloudflareAdapter,
   porkbunAdapter,
   dynadotAdapter,
+  godaddyAdapter,
+  namecheapAdapter,
   ovhcloudAdapter,
   gandiAdapter,
   namecomAdapter,

@@ -10,15 +10,6 @@
 
 import { createTableAdapter } from "./shared/table-adapter"
 
-export const namesiloAdapter = createTableAdapter({
-  slug: "namesilo",
-  name: "NameSilo",
-  website: "https://www.namesilo.com",
-  currency: "USD",
-  urls: ["https://www.namesilo.com/pricing"],
-  columnOrder: ["register", "renew", "transfer"],
-})
-
 export const hoverAdapter = createTableAdapter({
   slug: "hover",
   name: "Hover",
@@ -44,16 +35,6 @@ export const internetbsAdapter = createTableAdapter({
   currency: "USD",
   urls: ["https://internetbs.net/en/domain-name-registrations/pricelist.html"],
   columnOrder: ["register", "transfer", "renew"],
-})
-
-export const netimAdapter = createTableAdapter({
-  slug: "netim",
-  name: "Netim",
-  website: "https://www.netim.com",
-  currency: "EUR",
-  numberFormat: "eu",
-  urls: ["https://www.netim.com/en/domain-name/price-list"],
-  columnOrder: ["register", "renew", "transfer"],
 })
 
 export const eurodnsAdapter = createTableAdapter({
