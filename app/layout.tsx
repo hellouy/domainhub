@@ -1,7 +1,9 @@
 import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import { cookies } from 'next/headers'
 import { Providers } from '@/components/providers'
+import { LOCALE_COOKIE, type Locale } from '@/lib/i18n'
 import './globals.css'
 
 const _geistSans = Geist({ subsets: ['latin'] })
@@ -77,15 +79,19 @@ export const viewport: Viewport = {
   ],
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const cookieStore = await cookies()
+  const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value
+  const initialLocale: Locale = cookieLocale === 'en' ? 'en' : 'zh'
+
   return (
-    <html lang="zh-CN" className="bg-background" suppressHydrationWarning>
+    <html lang={initialLocale === 'en' ? 'en' : 'zh-CN'} className="bg-background" suppressHydrationWarning>
       <body className="font-sans antialiased">
-        <Providers>{children}</Providers>
+        <Providers initialLocale={initialLocale}>{children}</Providers>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

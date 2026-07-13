@@ -24,18 +24,25 @@ export function useLocale() {
   return useContext(LocaleContext)
 }
 
-function readCookieLocale(): Locale {
-  if (typeof document === "undefined") return DEFAULT_LOCALE
+function readCookieLocale(): Locale | null {
+  if (typeof document === "undefined") return null
   const m = document.cookie.match(new RegExp(`${LOCALE_COOKIE}=(zh|en)`))
-  return (m?.[1] as Locale) ?? DEFAULT_LOCALE
+  return (m?.[1] as Locale) ?? null
 }
 
-function LocaleProvider({ children }: { children: React.ReactNode }) {
-  const [locale, setLocaleState] = useState<Locale>(DEFAULT_LOCALE)
+function LocaleProvider({
+  children,
+  initialLocale,
+}: {
+  children: React.ReactNode
+  initialLocale?: Locale
+}) {
+  const [locale, setLocaleState] = useState<Locale>(initialLocale ?? DEFAULT_LOCALE)
 
-  // 挂载后读取 cookie,避免 SSR 与客户端初值不一致
+  // 挂载后校正为 cookie 实际值(中间件按 IP/浏览器写入,或用户手动切换)
   useEffect(() => {
-    setLocaleState(readCookieLocale())
+    const fromCookie = readCookieLocale()
+    if (fromCookie) setLocaleState(fromCookie)
   }, [])
 
   useEffect(() => {
@@ -117,10 +124,16 @@ function CurrencyProvider({ children }: { children: React.ReactNode }) {
 
 /* ---------- 组合提供者 ---------- */
 
-export function Providers({ children }: { children: React.ReactNode }) {
+export function Providers({
+  children,
+  initialLocale,
+}: {
+  children: React.ReactNode
+  initialLocale?: Locale
+}) {
   return (
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-      <LocaleProvider>
+      <LocaleProvider initialLocale={initialLocale}>
         <CurrencyProvider>{children}</CurrencyProvider>
       </LocaleProvider>
     </ThemeProvider>

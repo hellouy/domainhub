@@ -28,7 +28,7 @@ const zh = {
   "section.registrars": "收录的注册商",
   "section.tldCount": "后缀",
   // 搜索框
-  "search.placeholder": "搜索域名后缀，如 com、io、ai…",
+  "search.placeholder": "搜索后缀，如 com、io",
   "search.button": "比价",
   "search.noResult": "未找到该后缀",
   // 后缀浏览器
@@ -82,7 +82,7 @@ const en: Record<DictKey, string> = {
   "section.explorer": "Browse TLD prices",
   "section.registrars": "Registrars",
   "section.tldCount": "TLDs",
-  "search.placeholder": "Search a TLD, e.g. com, io, ai…",
+  "search.placeholder": "Search a TLD, e.g. com",
   "search.button": "Compare",
   "search.noResult": "TLD not found",
   "explorer.title": "Browse TLD prices",

@@ -59,12 +59,12 @@ export function TldSearch({ options }: { options: TldSearchOption[] }) {
           }}
           placeholder={t("search.placeholder")}
           aria-label={t("search.placeholder")}
-          className="w-full bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground"
+          className="w-full min-w-0 bg-transparent text-base text-foreground outline-none placeholder:text-muted-foreground"
         />
         <button
           type="button"
           onClick={submit}
-          className="shrink-0 bg-primary px-4 py-1.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          className="shrink-0 bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 md:px-4"
         >
           {t("search.button")}
         </button>
