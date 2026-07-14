@@ -47,6 +47,7 @@ import {
   registercomAdapter,
   savAdapter,
   transipAdapter,
+  truehostAdapter,
 } from "./table-registrars"
 
 export const allAdapters = [
@@ -82,6 +83,7 @@ export const allAdapters = [
   savAdapter,
   njallaAdapter,
   epikAdapter,
+  truehostAdapter,
 ]
 
 for (const adapter of allAdapters) {

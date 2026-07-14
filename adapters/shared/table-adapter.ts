@@ -93,17 +93,25 @@ export function extractTableRows(html: string): string[][] {
   return rows
 }
 
+/** 促销/状态噪音标签,常紧跟在 TLD 后(如 ".com Hot"、".net New") */
+const TLD_NOISE = /\b(hot|new|sale|popular|promo|best|top|deal|special|featured|热门|新|促销)\b/gi
+
 /** 在一行单元格中找出 TLD(形如 .com / .co.uk),返回 [tld, 索引] */
 export function findTldCell(cells: string[]): [string, number] | null {
   for (let i = 0; i < cells.length; i++) {
-    const m = cells[i].match(/^\.?([a-z0-9-]{1,63}(?:\.[a-z0-9-]{1,63}){0,2})$/i)
-    if (m && /^\./.test(cells[i].trim()) === true) {
+    // 先剥离尾部促销标签(".com Hot" -> ".com"),再判定
+    const cleaned = cells[i].replace(TLD_NOISE, "").replace(/\s+/g, " ").trim()
+    const m = cleaned.match(/^\.?([a-z0-9-]{1,63}(?:\.[a-z0-9-]{1,63}){0,2})$/i)
+    if (m && /^\./.test(cleaned) === true) {
       return [m[1].toLowerCase(), i]
     }
+    // 单元格以 .tld 开头、后面跟噪音/空格(如 ".com Hot"):提取开头的 TLD token
+    const lead = cells[i].trim().match(/^\.([a-z0-9-]{2,63}(?:\.[a-z0-9-]{2,63}){0,2})\b/i)
+    if (lead) return [lead[1].toLowerCase(), i]
     // 也接受不带点但看起来像 TLD 的首列(如 "com")——仅限第一列且长度合理
     if (i === 0) {
-      const m2 = cells[i].match(/^([a-z0-9-]{2,20}(?:\.[a-z0-9-]{2,10})?)$/i)
-      if (m2 && !/^\d+$/.test(cells[i])) return [m2[1].toLowerCase(), i]
+      const m2 = cleaned.match(/^([a-z0-9-]{2,20}(?:\.[a-z0-9-]{2,10})?)$/i)
+      if (m2 && !/^\d+$/.test(cleaned)) return [m2[1].toLowerCase(), i]
     }
   }
   return null
