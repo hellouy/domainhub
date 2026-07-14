@@ -27,6 +27,7 @@ const NAV_ITEMS = [
   { href: "/admin/prices", label: "价格数据", icon: DollarSign },
   { href: "/admin/tlds", label: "后缀管理", icon: Globe },
   { href: "/admin/credentials", label: "凭证", icon: KeyRound },
+  { href: "/admin/replication", label: "数据容灾", icon: DatabaseBackup },
   { href: "/admin/settings", label: "站点设置", icon: Settings },
 ]
 

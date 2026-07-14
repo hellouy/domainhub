@@ -151,3 +151,39 @@ export const openproviderAdapter = createTableAdapter({
   urls: ["https://www.openprovider.com/domain-price-list"],
   columnOrder: ["register", "renew", "transfer"],
 })
+
+export const dreamhostAdapter = createTableAdapter({
+  slug: "dreamhost",
+  name: "DreamHost",
+  website: "https://www.dreamhost.com",
+  currency: "USD",
+  urls: ["https://www.dreamhost.com/domains/"],
+  columnOrder: ["register", "renew", "transfer"],
+})
+
+export const savAdapter = createTableAdapter({
+  slug: "sav",
+  name: "Sav",
+  website: "https://www.sav.com",
+  currency: "USD",
+  urls: ["https://www.sav.com/domains/pricing"],
+  columnOrder: ["register", "renew", "transfer"],
+})
+
+export const njallaAdapter = createTableAdapter({
+  slug: "njalla",
+  name: "Njalla",
+  website: "https://njal.la",
+  currency: "EUR",
+  urls: ["https://njal.la/pricing/"],
+  columnOrder: ["register", "renew", "transfer"],
+})
+
+export const epikAdapter = createTableAdapter({
+  slug: "epik",
+  name: "Epik",
+  website: "https://www.epik.com",
+  currency: "USD",
+  urls: ["https://www.epik.com/domains/"],
+  columnOrder: ["register", "renew", "transfer"],
+})

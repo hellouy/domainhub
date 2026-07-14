@@ -26,10 +26,13 @@ import { onecomAdapter } from "./onecom"
 import { porkbunAdapter } from "./porkbun"
 import { ovhcloudAdapter } from "./ovhcloud"
 import { hostpointAdapter } from "./hostpoint"
+import { spaceshipAdapter } from "./spaceship"
 import {
   amenAdapter,
   arubaAdapter,
   domeneshopAdapter,
+  dreamhostAdapter,
+  epikAdapter,
   eurodnsAdapter,
   hoverAdapter,
   infomaniakAdapter,
@@ -38,9 +41,11 @@ import {
   lwsAdapter,
   metanameAdapter,
   netcupAdapter,
+  njallaAdapter,
   onamaeAdapter,
   openproviderAdapter,
   registercomAdapter,
+  savAdapter,
   transipAdapter,
 } from "./table-registrars"
 
@@ -72,6 +77,11 @@ export const allAdapters = [
   arubaAdapter,
   transipAdapter,
   openproviderAdapter,
+  spaceshipAdapter,
+  dreamhostAdapter,
+  savAdapter,
+  njallaAdapter,
+  epikAdapter,
 ]
 
 for (const adapter of allAdapters) {
