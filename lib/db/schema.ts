@@ -227,7 +227,7 @@ export const siteSettings = pgTable("site_settings", {
 /**
  * 分批回填进度：每注册商一行游标，供“逐 TLD 拉取”型注册商(如 Netim)
  * 分批全量回填使用。cron 每次读取游标推进一批，采完自动置 completed。
- * 只增量、幂等；不影响其它注册商与既有采集路径。
+ * 只增量、幂等；不��响其它注册商与既有采集路径。
  */
 export const crawlBackfill = pgTable("crawl_backfill", {
   id: serial("id").primaryKey(),
@@ -251,6 +251,23 @@ export const crawlBackfill = pgTable("crawl_backfill", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 })
+
+/**
+ * 复制状态：单行表(id 固定为 1)，记录 Neon→Supabase 最近一次同步的时间、
+ * 结果与错误。只增表，向后兼容。仅在主库维护（备库是副本）。
+ */
+export const replicationState = pgTable("replication_state", {
+  id: integer("id").primaryKey().default(1),
+  /** 最近一次成功同步完成时间 */
+  lastSyncAt: timestamp("last_sync_at", { withTimezone: true }),
+  /** 最近一次同步结果：{ tables: { name: rows }, durationMs, mode } */
+  lastResult: jsonb("last_result"),
+  /** 最近一次同步的错误信息（成功时为空） */
+  lastError: text("last_error"),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
+export type ReplicationStateRow = typeof replicationState.$inferSelect
 
 export type CrawlBackfillRow = typeof crawlBackfill.$inferSelect
 

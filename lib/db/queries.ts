@@ -1,5 +1,6 @@
 import { and, asc, count, desc, eq, max, min, sql, type SQL } from "drizzle-orm"
-import { db } from "@/lib/db"
+// 公开前台/API 只读查询走故障切换连接：主库(Neon)不可用时自动切备库(Supabase)
+import { dbRead as db } from "@/lib/db"
 import { crawlJobs, prices, registrars, tlds } from "@/lib/db/schema"
 import { getUsdRates } from "@/lib/fx"
 

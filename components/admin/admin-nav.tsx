@@ -10,6 +10,7 @@ import {
   DollarSign,
   Globe,
   KeyRound,
+  DatabaseBackup,
   Settings,
   Menu,
   X,

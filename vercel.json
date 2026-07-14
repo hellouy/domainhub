@@ -7,6 +7,10 @@
     {
       "path": "/api/cron/backfill",
       "schedule": "30 3 * * *"
+    },
+    {
+      "path": "/api/cron/replicate",
+      "schedule": "0 4 * * *"
     }
   ]
 }
