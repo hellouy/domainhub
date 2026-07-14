@@ -37,6 +37,18 @@ export async function getRegistrarHealthRows() {
     .where(eq(tlds.isValid, true))
     .then((r) => r[0]?.c ?? 0)
 
+  // 用 LEFT JOIN + 聚合，避免 drizzle 相关子查询中 ${table} 展开带别名导致的
+  // 相关引用失效（曾使 priceCount 恒为 1）。
+  const priceAgg = db
+    .select({
+      registrarId: prices.registrarId,
+      cnt: sql<number>`count(*)::int`.as("cnt"),
+      lastAt: sql<string | null>`max(${prices.updatedAt})`.as("last_at"),
+    })
+    .from(prices)
+    .groupBy(prices.registrarId)
+    .as("price_agg")
+
   const rows = await db
     .select({
       id: registrars.id,
@@ -44,12 +56,13 @@ export async function getRegistrarHealthRows() {
       name: registrars.name,
       isActive: registrars.isActive,
       health: registrars.health,
-      priceCount: sql<number>`(SELECT count(*)::int FROM ${prices} WHERE ${prices.registrarId} = ${registrars.id})`,
-      lastPriceAt: sql<string | null>`(SELECT max(${prices.updatedAt}) FROM ${prices} WHERE ${prices.registrarId} = ${registrars.id})`,
-      lastJobStatus: sql<string | null>`(SELECT status FROM ${crawlJobs} WHERE ${crawlJobs.registrarId} = ${registrars.id} ORDER BY ${crawlJobs.createdAt} DESC LIMIT 1)`,
-      lastJobAt: sql<string | null>`(SELECT created_at FROM ${crawlJobs} WHERE ${crawlJobs.registrarId} = ${registrars.id} ORDER BY ${crawlJobs.createdAt} DESC LIMIT 1)`,
+      priceCount: sql<number>`coalesce(${priceAgg.cnt}, 0)`,
+      lastPriceAt: priceAgg.lastAt,
+      lastJobStatus: sql<string | null>`(SELECT status FROM ${crawlJobs} cj WHERE cj.registrar_id = ${registrars.id} ORDER BY cj.created_at DESC LIMIT 1)`,
+      lastJobAt: sql<string | null>`(SELECT created_at FROM ${crawlJobs} cj WHERE cj.registrar_id = ${registrars.id} ORDER BY cj.created_at DESC LIMIT 1)`,
     })
     .from(registrars)
+    .leftJoin(priceAgg, eq(priceAgg.registrarId, registrars.id))
     .orderBy(desc(registrars.isActive), asc(registrars.name))
 
   return rows.map((r) => ({
@@ -124,6 +137,16 @@ export async function searchTlds(opts: {
   else if (opts.filter === "invalid") conds.push(eq(tlds.isValid, false))
   const where = conds.length ? and(...conds) : undefined
 
+  // 价格数用 LEFT JOIN 聚合，避免相关子查询别名 bug
+  const priceAgg = db
+    .select({
+      tldId: prices.tldId,
+      cnt: sql<number>`count(*)::int`.as("cnt"),
+    })
+    .from(prices)
+    .groupBy(prices.tldId)
+    .as("price_agg_tld")
+
   const rows = await db
     .select({
       id: tlds.id,
@@ -133,9 +156,10 @@ export async function searchTlds(opts: {
       isPopular: tlds.isPopular,
       isValid: tlds.isValid,
       popularity: tlds.popularity,
-      priceCount: sql<number>`(SELECT count(*)::int FROM ${prices} WHERE ${prices.tldId} = ${tlds.id})`,
+      priceCount: sql<number>`coalesce(${priceAgg.cnt}, 0)`,
     })
     .from(tlds)
+    .leftJoin(priceAgg, eq(priceAgg.tldId, tlds.id))
     .where(where)
     .orderBy(desc(tlds.popularity), desc(tlds.isPopular), asc(tlds.tld))
     .limit(pageSize)

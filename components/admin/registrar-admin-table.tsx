@@ -42,6 +42,10 @@ type Registrar = {
   health?: Record<string, unknown> | null
   adapterVersion?: string | null
   owner?: string | null
+  priceCount?: number
+  coverage?: number
+  lastPriceAt?: string | null
+  lastJobStatus?: string | null
 }
 
 function HealthBadge({ health }: { health: RegistrarHealth | null }) {
@@ -71,6 +75,20 @@ function StrategyCell({ health, adapterVersion }: { health: RegistrarHealth | nu
         {adapterVersion ? `v${adapterVersion}` : ""}
         {typeof health?.avgLatencyMs === "number" ? ` · ${Math.round(health.avgLatencyMs)}ms` : ""}
       </span>
+    </div>
+  )
+}
+
+function CoverageCell({ registrar }: { registrar: Registrar }) {
+  const count = registrar.priceCount ?? 0
+  const coverage = registrar.coverage ?? 0
+  if (count === 0) {
+    return <span className="text-xs text-muted-foreground/50">无数据</span>
+  }
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-sm font-medium text-foreground">{count.toLocaleString()}</span>
+      <span className="text-xs text-muted-foreground">覆盖 {Math.round(coverage * 100)}%</span>
     </div>
   )
 }
@@ -154,6 +172,7 @@ export function RegistrarAdminTable({ registrars }: { registrars: Registrar[] })
             <TableHead>注册商</TableHead>
             <TableHead>官网</TableHead>
             <TableHead>健康分</TableHead>
+            <TableHead>价格 / 覆盖</TableHead>
             <TableHead>策略 / 版本</TableHead>
             <TableHead>状态</TableHead>
             <TableHead>启用</TableHead>
@@ -180,6 +199,9 @@ export function RegistrarAdminTable({ registrars }: { registrars: Registrar[] })
               </TableCell>
               <TableCell>
                 <HealthBadge health={(r.health as RegistrarHealth | null) ?? null} />
+              </TableCell>
+              <TableCell>
+                <CoverageCell registrar={r} />
               </TableCell>
               <TableCell>
                 <StrategyCell health={(r.health as RegistrarHealth | null) ?? null} adapterVersion={r.adapterVersion} />
