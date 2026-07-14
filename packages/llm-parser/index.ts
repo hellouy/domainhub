@@ -74,13 +74,19 @@ export function isLlmConfigured(): boolean {
  * 清洗 HTML：剥离 script/style/head、压缩空白，控制体积以省 token。
  * 只保留 body 可见结构，价格数据通常在其中。
  */
-export function cleanHtmlForLlm(html: string, maxChars = 24_000): string {
+export function cleanHtmlForLlm(html: string, maxChars = 40_000): string {
   let s = html
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<head[\s\S]*?<\/head>/gi, " ")
     .replace(/<!--[\s\S]*?-->/g, " ")
     .replace(/<svg[\s\S]*?<\/svg>/gi, " ")
+    .replace(/<(nav|header|footer|aside|form|iframe|noscript)[\s\S]*?<\/\1>/gi, " ")
+    // 剥离所有标签属性(class/style/data-* 等)——它们占满 token 预算却无价格信息，
+    // 只保留标签名本身以维持结构
+    .replace(/<([a-zA-Z][a-zA-Z0-9]*)\b[^>]*>/g, "<$1>")
+    // 折叠连续的开闭标签噪音
+    .replace(/(<\/?[a-zA-Z][a-zA-Z0-9]*>\s*){3,}/g, (m) => m.replace(/\s+/g, ""))
     .replace(/\s+/g, " ")
     .trim()
   // 优先保留含价格符号/数字的区段：若超长，从首个价格特征附近截取

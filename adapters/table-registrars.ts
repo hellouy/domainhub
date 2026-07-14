@@ -45,7 +45,9 @@ export const eurodnsAdapter = createTableAdapter({
   currency: "EUR",
   urls: ["https://www.eurodns.com/domain-extensions"],
   columnOrder: ["register", "renew", "transfer"],
+  // 无标准 <table>,价格为 JS 卡片布局,渲染后走 LLM 兜底(等 JS 而非 table)
   useRenderer: true,
+  renderWaitFor: 4000,
 })
 
 export const registercomAdapter = createTableAdapter({
@@ -115,7 +117,9 @@ export const lwsAdapter = createTableAdapter({
   numberFormat: "fr",
   urls: ["https://www.lws.fr/nom-de-domaine.php"],
   columnOrder: ["register", "renew", "transfer"],
+  // 无标准 <table>,渲染后走 LLM 兜底(等 JS 而非 table)
   useRenderer: true,
+  renderWaitFor: 4000,
 })
 
 export const amenAdapter = createTableAdapter({
@@ -164,9 +168,7 @@ export const dreamhostAdapter = createTableAdapter({
   currency: "USD",
   urls: ["https://www.dreamhost.com/domains/"],
   columnOrder: ["register", "renew", "transfer"],
-  // 页面无 <table>,价格为 JS 渲染的卡片布局,渲染后走 LLM 兜底解析
-  useRenderer: true,
-  renderWaitFor: 4000,
+  // 注:/domains/ 为营销落地页,无真实价格表;待找到真实价目页 URL 再启用
 })
 
 export const savAdapter = createTableAdapter({
@@ -185,8 +187,6 @@ export const njallaAdapter = createTableAdapter({
   currency: "EUR",
   urls: ["https://njal.la/pricing/"],
   columnOrder: ["register", "renew", "transfer"],
-  useRenderer: true,
-  renderWaitFor: 4000,
 })
 
 export const epikAdapter = createTableAdapter({
@@ -196,8 +196,6 @@ export const epikAdapter = createTableAdapter({
   currency: "USD",
   urls: ["https://www.epik.com/domains/"],
   columnOrder: ["register", "renew", "transfer"],
-  useRenderer: true,
-  renderWaitFor: 4000,
 })
 
 // Truehost —— 非洲主流注册商(500+ TLD 静态价格表)
