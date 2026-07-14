@@ -153,14 +153,9 @@ export function createTableAdapter(config: TableAdapterConfig) {
           }
           const pages: string[] = []
           for (const url of effective.urls) {
-            const res = await ctx.fetch(url, {
-              headers: {
-                "User-Agent":
-                  "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
-                Accept: "text/html,application/xhtml+xml",
-                ...config.headers,
-              },
-            })
+            // 不再硬编码 UA/Accept：平台 fetch 层已默认发送完整真实浏览器头，
+            // 这里只在适配器需要时追加专用头（如 Referer）。
+            const res = await ctx.fetch(url, config.headers ? { headers: config.headers } : undefined)
             if (!res.ok) throw new Error(`${config.slug} 价格页 ${url} 返回 HTTP ${res.status}`)
             pages.push(await res.text())
           }
