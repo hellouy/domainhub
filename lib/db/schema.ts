@@ -204,6 +204,28 @@ export const adapterRules = pgTable("adapter_rules", {
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 })
 
+/** 站点设置：单行表(id 固定为 1),后台可编辑标题/描述/Logo/图标/页脚,修改即时生效 */
+export const siteSettings = pgTable("site_settings", {
+  id: integer("id").primaryKey().default(1),
+  // 品牌字标(与语言无关):主体 + 强调色 + 后缀标签,如 TLD | bi | .com
+  brandTextMain: text("brand_text_main").notNull().default("TLD"),
+  brandTextAccent: text("brand_text_accent").notNull().default("bi"),
+  brandSuffix: text("brand_suffix").notNull().default(".com"),
+  // 可选图片:填写则覆盖文字标 / 覆盖内置 favicon
+  logoUrl: text("logo_url"),
+  faviconUrl: text("favicon_url"),
+  // SEO / 展示文案:中英双版
+  titleZh: text("title_zh").notNull().default(""),
+  titleEn: text("title_en").notNull().default(""),
+  descriptionZh: text("description_zh").notNull().default(""),
+  descriptionEn: text("description_en").notNull().default(""),
+  footerDisclaimerZh: text("footer_disclaimer_zh").notNull().default(""),
+  footerDisclaimerEn: text("footer_disclaimer_en").notNull().default(""),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
+export type SiteSettingsRow = typeof siteSettings.$inferSelect
+
 export type Registrar = typeof registrars.$inferSelect
 export type Tld = typeof tlds.$inferSelect
 export type Price = typeof prices.$inferSelect

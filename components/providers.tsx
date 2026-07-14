@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react"
+import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react"
 import { ThemeProvider } from "next-themes"
 import useSWR from "swr"
 import { DEFAULT_LOCALE, getDict, LOCALE_COOKIE, type DictKey, type Locale } from "@/lib/i18n"
@@ -63,7 +63,9 @@ function LocaleProvider({
 
 export const CURRENCY_OPTIONS = ["USD", "EUR", "GBP", "CNY", "JPY", "HKD", "SGD", "CAD", "AUD"] as const
 export type Currency = (typeof CURRENCY_OPTIONS)[number]
-const CURRENCY_COOKIE = "currency"
+
+/** 各语言的默认展示币种:中文→人民币,英文→美元 */
+const CURRENCY_BY_LOCALE: Record<Locale, Currency> = { zh: "CNY", en: "USD" }
 
 type CurrencyContextValue = {
   currency: Currency
@@ -74,7 +76,7 @@ type CurrencyContextValue = {
 }
 
 const CurrencyContext = createContext<CurrencyContextValue>({
-  currency: "USD",
+  currency: CURRENCY_BY_LOCALE[DEFAULT_LOCALE],
   setCurrency: () => {},
   money: (v, from) => formatMoney(v, from, from, null),
   rates: null,
@@ -84,21 +86,21 @@ export function useCurrency() {
   return useContext(CurrencyContext)
 }
 
-function readCookieCurrency(): Currency {
-  if (typeof document === "undefined") return "USD"
-  const m = document.cookie.match(new RegExp(`${CURRENCY_COOKIE}=([A-Z]{3})`))
-  const c = m?.[1] as Currency | undefined
-  return c && (CURRENCY_OPTIONS as readonly string[]).includes(c) ? c : "USD"
-}
-
 const ratesFetcher = (url: string) => fetch(url).then((r) => r.json())
 
 function CurrencyProvider({ children }: { children: React.ReactNode }) {
-  const [currency, setCurrencyState] = useState<Currency>("USD")
+  const { locale } = useLocale()
+  const [currency, setCurrencyState] = useState<Currency>(CURRENCY_BY_LOCALE[locale])
 
+  // 货币默认跟随语言:中文→CNY,英文→USD。语言切换时自动联动。
+  // 手动选择的币种仅在当前语言下临时生效,下次切换语言时重置为该语言默认币种。
+  const prevLocale = useRef(locale)
   useEffect(() => {
-    setCurrencyState(readCookieCurrency())
-  }, [])
+    if (prevLocale.current !== locale) {
+      prevLocale.current = locale
+      setCurrencyState(CURRENCY_BY_LOCALE[locale])
+    }
+  }, [locale])
 
   const { data } = useSWR<{ rates: Record<string, number> }>("/api/v1/rates", ratesFetcher, {
     revalidateOnFocus: false,
@@ -108,7 +110,6 @@ function CurrencyProvider({ children }: { children: React.ReactNode }) {
 
   const setCurrency = useCallback((next: Currency) => {
     setCurrencyState(next)
-    document.cookie = `${CURRENCY_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`
   }, [])
 
   const money = useCallback(

@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { registrars } from "@/lib/db/schema"
+import { registrars, siteSettings } from "@/lib/db/schema"
 import {
   createAdminSession,
   destroyAdminSession,
@@ -9,6 +9,7 @@ import {
   verifyPassword,
 } from "@/lib/admin-auth"
 import { runCrawlJob } from "@/lib/crawler/runner"
+import { invalidateSiteSettings } from "@/lib/site-settings"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
@@ -72,4 +73,45 @@ export async function updateRegistrar(registrarId: number, formData: FormData) {
     .where(eq(registrars.id, registrarId))
   revalidatePath("/admin/registrars")
   revalidatePath("/", "layout")
+}
+
+/** 保存站点设置(标题/描述/Logo/图标/页脚),保存后即时生效 */
+export async function updateSiteSettings(
+  _prevState: { ok?: boolean; error?: string } | null,
+  formData: FormData,
+): Promise<{ ok?: boolean; error?: string }> {
+  await requireAdmin()
+  const str = (k: string) => String(formData.get(k) ?? "").trim()
+
+  const brandTextMain = str("brandTextMain")
+  if (!brandTextMain) return { error: "品牌主体文字为必填项" }
+
+  try {
+    const values = {
+      brandTextMain,
+      brandTextAccent: str("brandTextAccent"),
+      brandSuffix: str("brandSuffix"),
+      logoUrl: str("logoUrl") || null,
+      faviconUrl: str("faviconUrl") || null,
+      titleZh: str("titleZh"),
+      titleEn: str("titleEn"),
+      descriptionZh: str("descriptionZh"),
+      descriptionEn: str("descriptionEn"),
+      footerDisclaimerZh: str("footerDisclaimerZh"),
+      footerDisclaimerEn: str("footerDisclaimerEn"),
+      updatedAt: new Date(),
+    }
+    await db
+      .insert(siteSettings)
+      .values({ id: 1, ...values })
+      .onConflictDoUpdate({ target: siteSettings.id, set: values })
+
+    invalidateSiteSettings()
+    revalidatePath("/", "layout")
+    revalidatePath("/admin/settings")
+    return { ok: true }
+  } catch (error) {
+    console.error("[v0] 保存站点设置失败:", error)
+    return { error: "保存失败，请重试" }
+  }
 }

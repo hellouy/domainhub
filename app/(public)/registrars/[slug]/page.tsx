@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Money } from "@/components/money"
 import { T, RelativeTime, RegistrarDescription } from "@/components/i18n-text"
 import { getPricesForRegistrar, getRegistrarBySlug } from "@/lib/db/queries"
+import { normalizeUrl } from "@/lib/utils"
 
 export const revalidate = 300
 
@@ -83,15 +84,17 @@ export default async function RegistrarPage({ params }: Props) {
             </Badge>
           ))}
         </div>
-        <a
-          href={row.website}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="inline-flex w-fit items-center gap-1.5 bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-        >
-          <T k="registrar.visit" />
-          <ExternalLink aria-hidden="true" className="size-4" />
-        </a>
+        {normalizeUrl(row.website) && (
+          <a
+            href={normalizeUrl(row.website)}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex w-fit items-center gap-1.5 bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            <T k="registrar.visit" />
+            <ExternalLink aria-hidden="true" className="size-4" />
+          </a>
+        )}
       </header>
 
       <section aria-labelledby="registrar-prices" className="flex flex-col gap-4">

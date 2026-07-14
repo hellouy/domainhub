@@ -5,7 +5,7 @@ import Link from "next/link"
 import useSWR from "swr"
 import { ArrowUpRight, ExternalLink, Search, X } from "lucide-react"
 import { convertAmount } from "@/lib/format"
-import { cn } from "@/lib/utils"
+import { cn, normalizeUrl } from "@/lib/utils"
 import { useCurrency, useLocale } from "@/components/providers"
 import type { DictKey } from "@/lib/i18n"
 
@@ -133,15 +133,19 @@ function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
                   {t("explorer.panel.renew")} {money(r.renewPrice, r.currency)}
                 </span>
               </span>
-              <a
-                href={r.sourceUrl ?? "#"}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={`${t("explorer.panel.visit")} ${r.registrarName}`}
-                className="shrink-0 text-muted-foreground hover:text-primary"
-              >
-                <ExternalLink aria-hidden="true" className="size-3.5" />
-              </a>
+              {normalizeUrl(r.sourceUrl) ? (
+                <a
+                  href={normalizeUrl(r.sourceUrl)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${t("explorer.panel.visit")} ${r.registrarName}`}
+                  className="shrink-0 text-muted-foreground hover:text-primary"
+                >
+                  <ExternalLink aria-hidden="true" className="size-3.5" />
+                </a>
+              ) : (
+                <ExternalLink aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground/30" />
+              )}
             </li>
           ))}
         </ul>

@@ -3,21 +3,42 @@
 import Link from "next/link"
 import { useLocale } from "@/components/providers"
 
-export function SiteFooter() {
-  const { t } = useLocale()
+type SiteFooterProps = {
+  brandTextMain: string
+  brandTextAccent: string
+  brandSuffix: string
+  logoUrl: string
+  disclaimerZh: string
+  disclaimerEn: string
+}
+
+export function SiteFooter({
+  brandTextMain,
+  brandTextAccent,
+  brandSuffix,
+  logoUrl,
+  disclaimerZh,
+  disclaimerEn,
+}: SiteFooterProps) {
+  const { t, locale } = useLocale()
+  const brandName = `${brandTextMain}${brandTextAccent}${brandSuffix}`
+  const disclaimer = locale === "en" ? disclaimerEn : disclaimerZh
 
   return (
     <footer className="border-t border-border">
       <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-10 md:flex-row md:items-start md:justify-between md:px-6">
         <div className="flex flex-col gap-2">
           <div className="flex items-center gap-2">
-            <span
-              aria-hidden="true"
-              className="flex size-5 items-center justify-center rounded bg-primary font-mono text-xs font-bold text-primary-foreground"
-            >
-              t.
-            </span>
-            <span className="font-mono text-sm font-semibold">tldbi.com</span>
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={logoUrl} alt={brandName} className="h-5 w-auto object-contain" />
+            ) : (
+              <span className="flex items-baseline font-mono text-sm font-semibold">
+                {brandTextMain}
+                <span className="text-primary">{brandTextAccent}</span>
+                <span className="ml-0.5 rounded bg-primary px-1 text-xs text-primary-foreground">{brandSuffix}</span>
+              </span>
+            )}
           </div>
           <p className="max-w-sm text-sm leading-relaxed text-muted-foreground">{t("footer.desc")}</p>
         </div>
@@ -51,8 +72,8 @@ export function SiteFooter() {
       </div>
       <div className="border-t border-border">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 md:px-6">
-          <p className="text-xs text-muted-foreground">{t("footer.disclaimer")}</p>
-          <p className="font-mono text-xs text-muted-foreground">tldbi.com</p>
+          <p className="text-xs text-muted-foreground">{disclaimer}</p>
+          <p className="font-mono text-xs text-muted-foreground">{brandName}</p>
         </div>
       </div>
     </footer>

@@ -6,7 +6,7 @@ import { ArrowUpDown, ExternalLink } from "lucide-react"
 import { formatRelative } from "@/lib/format"
 import { useCurrency, useLocale } from "@/components/providers"
 import type { DictKey } from "@/lib/i18n"
-import { cn } from "@/lib/utils"
+import { cn, normalizeUrl } from "@/lib/utils"
 
 export type PriceRow = {
   priceId: number
@@ -137,15 +137,19 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
                   </td>
                 )}
                 <td className="px-4 py-3.5 text-right">
-                  <a
-                    href={row.sourceUrl ?? row.registrarWebsite}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={t("pt.visitAria").replace("{name}", row.registrarName)}
-                    className="inline-flex text-muted-foreground hover:text-primary"
-                  >
-                    <ExternalLink aria-hidden="true" className="size-4" />
-                  </a>
+                  {normalizeUrl(row.sourceUrl, row.registrarWebsite) ? (
+                    <a
+                      href={normalizeUrl(row.sourceUrl, row.registrarWebsite)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={t("pt.visitAria").replace("{name}", row.registrarName)}
+                      className="inline-flex text-muted-foreground hover:text-primary"
+                    >
+                      <ExternalLink aria-hidden="true" className="size-4" />
+                    </a>
+                  ) : (
+                    <ExternalLink aria-hidden="true" className="inline-flex size-4 text-muted-foreground/30" />
+                  )}
                 </td>
               </tr>
             ))}
