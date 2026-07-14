@@ -41,6 +41,13 @@ export interface TableAdapterConfig {
   headers?: Record<string, string>
   /** 自定义行过滤(返回 false 跳过该行) */
   rowFilter?: (cells: string[]) => boolean
+  /**
+   * LLM 兜底解析: 默认 true。当 html 表格策略解析为空(页面价格不在标准
+   * <table> 里,如卡片/列表布局)且已配置 ZHIPU_API_KEY 时,自动降级用
+   * LLM 从 HTML 抽取价格。仅在传统解析失败时触发,不产生无谓 token 消耗。
+   * 置为 false 可对特定注册商禁用。
+   */
+  llmFallback?: boolean
 }
 
 /** 清洗单元格中的价格数字, 失败返回 null */
@@ -200,5 +207,59 @@ export function createTableAdapter(config: TableAdapterConfig) {
       },
     ],
   }
+
+  // LLM 兜底策略: 追加到策略链末端。只有当上面的 html 策略解析为空、
+  // 降级到此、且已配置 ZHIPU_API_KEY 时才真正调用 LLM。
+  if (config.llmFallback !== false) {
+    definition.strategies.push({
+      type: "html",
+      url: effective.urls?.[0] ?? config.urls[0],
+      async fetch(ctx) {
+        const { isLlmConfigured } = await import("@/packages/llm-parser")
+        if (!isLlmConfigured()) {
+          // 未配置 LLM: 直接失败,让策略引擎归类为普通失败(不误导为可解析)
+          throw new Error(`${config.slug} LLM 兜底未启用(未配置 ZHIPU_API_KEY)`)
+        }
+        const pages: string[] = []
+        for (const url of effective.urls) {
+          const res = await ctx.fetch(url, config.headers ? { headers: config.headers } : undefined)
+          if (!res.ok) throw new Error(`${config.slug} 价格页 ${url} 返回 HTTP ${res.status}`)
+          pages.push(await res.text())
+        }
+        return pages.join("\n<!--PAGE_BREAK-->\n")
+      },
+      async parse(raw, ctx): Promise<RawPrice[]> {
+        const { extractPricesWithLlm } = await import("@/packages/llm-parser")
+        await ctx.log("info", `${config.slug} 传统解析为空,启用 LLM 兜底抽取`)
+        const result = await extractPricesWithLlm(raw, {
+          registrar: config.name,
+          currency: effective.currency,
+          sourceUrl: effective.urls[0],
+        })
+        const currency =
+          result.currency && result.currency !== "UNKNOWN" ? result.currency : effective.currency
+        const prices: RawPrice[] = []
+        const seen = new Set<string>()
+        for (const row of result.prices) {
+          const tld = row.tld.trim().replace(/^\./, "").toLowerCase()
+          if (!tld || seen.has(tld)) continue
+          if (row.registerPrice == null && row.renewPrice == null && row.transferPrice == null) continue
+          seen.add(tld)
+          prices.push({
+            tld,
+            currency,
+            registerPrice: row.registerPrice,
+            renewPrice: row.renewPrice,
+            transferPrice: row.transferPrice,
+            sourceUrl: effective.urls[0],
+          })
+        }
+        await ctx.log("info", `${config.slug} LLM 抽取到 ${prices.length} 条价格`)
+        if (prices.length === 0) throw new Error(`${config.slug} LLM 兜底也未抽取到价格`)
+        return prices
+      },
+    })
+  }
+
   return defineAdapter(definition)
 }
