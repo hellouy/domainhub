@@ -60,6 +60,26 @@ function getState(slug: string, config?: RateLimitConfig): LimiterState {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
 
+/**
+ * 默认真实浏览器请求头。很多注册商站点会拒绝机器人 UA 或缺失 Accept 头的请求
+ * （返回 403 / 406），发送接近真实 Chrome 的头集能显著提升抓取成功率。
+ * 适配器可通过 init.headers 覆盖其中任意项。
+ */
+const DEFAULT_BROWSER_HEADERS: Record<string, string> = {
+  "User-Agent":
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36",
+  Accept: "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+  "Accept-Language": "en-US,en;q=0.9",
+  "Sec-Fetch-Dest": "document",
+  "Sec-Fetch-Mode": "navigate",
+  "Sec-Fetch-Site": "none",
+  "Sec-Fetch-User": "?1",
+  "Upgrade-Insecure-Requests": "1",
+  "Sec-Ch-Ua": '"Chromium";v="122", "Not(A:Brand";v="24", "Google Chrome";v="122"',
+  "Sec-Ch-Ua-Mobile": "?0",
+  "Sec-Ch-Ua-Platform": '"Windows"',
+}
+
 /** 计算带抖动的指数退避时长 */
 function backoffDelay(attempt: number, cfg: ResolvedConfig): number {
   const base = cfg.backoffMs * 2 ** (attempt - 1)
@@ -119,7 +139,7 @@ export async function rateLimitedFetch(
         ...init,
         signal: controller.signal,
         headers: {
-          "User-Agent": "tldbi/2.0 (+https://tldbi.com)",
+          ...DEFAULT_BROWSER_HEADERS,
           ...((init?.headers as Record<string, string>) ?? {}),
         },
         cache: "no-store",
