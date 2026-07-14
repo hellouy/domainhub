@@ -82,9 +82,16 @@ export const netimAdapter = defineAdapter({
         ).toString("base64")
 
         // 1. 开启会话
+        // Netim REST 1.0 要求会话创建请求显式携带 Content-Type: application/json,
+        // 否则服务端内容协商失败返回 HTTP 406。请求体为空 JSON 对象即可。
         const sessRes = await ctx.fetch(`${API_BASE}/session/`, {
           method: "POST",
-          headers: { Authorization: `Basic ${basic}`, Accept: "application/json" },
+          headers: {
+            Authorization: `Basic ${basic}`,
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: "{}",
         })
         if (!sessRes.ok) {
           throw new Error(`Netim 会话创建失败 HTTP ${sessRes.status}(检查代理商 ID/密钥与 API 是否已启用)`)
