@@ -16,8 +16,7 @@
  */
 
 import { createOpenAICompatible } from "@ai-sdk/openai-compatible"
-import { generateText, Output } from "ai"
-import { z } from "zod"
+import { generateText } from "ai"
 
 /** LLM 未配置错误：供策略引擎捕获并降级/跳过 */
 export class LlmNotConfiguredError extends Error {
@@ -31,20 +30,17 @@ const DEFAULT_BASE_URL = "https://open.bigmodel.cn/api/paas/v4"
 const DEFAULT_MODEL = "glm-4.7-flash"
 
 /** LLM 抽取出的单条价格（与 RawPrice 对齐的子集） */
-const priceRowSchema = z.object({
-  tld: z.string().describe("后缀，带点或不带点均可，如 .com 或 com"),
-  registerPrice: z.number().nullable().describe("注册价，纯数字，无货币符号；无则 null"),
-  renewPrice: z.number().nullable().describe("续费价，纯数字；无则 null"),
-  transferPrice: z.number().nullable().describe("转入价，纯数字；无则 null"),
-})
+export type LlmPriceRow = {
+  tld: string
+  registerPrice: number | null
+  renewPrice: number | null
+  transferPrice: number | null
+}
 
-const extractionSchema = z.object({
-  currency: z.string().describe("整页价格的 ISO 4217 货币代码，如 USD/EUR/CNY；无法判断填 UNKNOWN"),
-  prices: z.array(priceRowSchema).describe("页面中所有后缀的价格行"),
-})
-
-export type LlmPriceRow = z.infer<typeof priceRowSchema>
-export type LlmExtraction = z.infer<typeof extractionSchema>
+export type LlmExtraction = {
+  currency: string
+  prices: LlmPriceRow[]
+}
 
 let cachedModelKey = ""
 let cachedModel: ReturnType<ReturnType<typeof createOpenAICompatible>["chatModel"]> | null = null
@@ -112,7 +108,10 @@ export async function extractPricesWithLlm(
     "你是一个域名价格数据抽取器。从给定的注册商价格页 HTML 中提取每个顶级后缀（TLD）的" +
     "注册价、续费价、转入价。只输出确实出现在页面中的数据，不要臆造或估算。" +
     "价格必须是纯数字（去掉货币符号、千分位、货币代码）。找不到的字段填 null。" +
-    "忽略与域名价格无关的内容（导航、页脚、广告）。"
+    "忽略与域名价格无关的内容（导航、页脚、广告）。\n" +
+    "严格只输出一个 JSON 对象，格式为：" +
+    '{"currency":"EUR","prices":[{"tld":"com","registerPrice":9.99,"renewPrice":12.99,"transferPrice":9.99}]}。' +
+    "currency 用 ISO 4217 代码，无法判断填 UNKNOWN。不要输出 JSON 以外的任何文字。"
 
   const prompt =
     (hint?.registrar ? `注册商：${hint.registrar}\n` : "") +
@@ -120,12 +119,78 @@ export async function extractPricesWithLlm(
     (hint?.sourceUrl ? `来源：${hint.sourceUrl}\n` : "") +
     `\n以下是价格页 HTML（已清洗）：\n${content}`
 
-  const { output } = await generateText({
+  const { text } = await generateText({
     model,
     system,
     prompt,
-    output: Output.object({ schema: extractionSchema }),
+    // 智谱 GLM 支持 json_object 强制返回 JSON；但不保证严格字段名，故手动宽松解析
+    providerOptions: { zhipu: { response_format: { type: "json_object" } } },
   })
 
-  return output
+  return parseLlmJson(text, hint?.currency)
+}
+
+/** 从任意值里提取数字（去货币符号/千分位/货币代码） */
+function toNumber(v: unknown): number | null {
+  if (typeof v === "number" && Number.isFinite(v)) return v
+  if (typeof v !== "string") return null
+  const m = v.replace(/[^\d.,]/g, "").replace(/,(?=\d{3}\b)/g, "").replace(/,/g, ".")
+  const n = Number.parseFloat(m)
+  return Number.isFinite(n) ? n : null
+}
+
+/** 取对象里第一个存在的字段（容错 LLM 的字段名变体） */
+function pick(obj: Record<string, unknown>, keys: string[]): unknown {
+  for (const k of keys) {
+    for (const actual of Object.keys(obj)) {
+      if (actual.toLowerCase() === k.toLowerCase()) return obj[actual]
+    }
+  }
+  return undefined
+}
+
+/**
+ * 宽松解析 LLM 返回的 JSON：容忍 markdown 代码块包裹、字段名变体
+ * （renewalPrice/renewal/renew 等）、价格为字符串等情况。
+ */
+export function parseLlmJson(text: string, fallbackCurrency?: string): LlmExtraction {
+  let jsonStr = text.trim()
+  // 去掉可能的 ```json ... ``` 包裹
+  const fence = jsonStr.match(/```(?:json)?\s*([\s\S]*?)```/i)
+  if (fence) jsonStr = fence[1].trim()
+  // 截取第一个 { 到最后一个 }
+  const start = jsonStr.indexOf("{")
+  const end = jsonStr.lastIndexOf("}")
+  if (start >= 0 && end > start) jsonStr = jsonStr.slice(start, end + 1)
+
+  let data: Record<string, unknown>
+  try {
+    data = JSON.parse(jsonStr) as Record<string, unknown>
+  } catch {
+    throw new Error("LLM 返回的内容不是合法 JSON")
+  }
+
+  const rawRows = pick(data, ["prices", "data", "items", "results"])
+  const arr = Array.isArray(rawRows) ? rawRows : []
+  const currencyRaw = pick(data, ["currency", "curr", "ccy"])
+  const currency =
+    typeof currencyRaw === "string" && currencyRaw.trim() && currencyRaw.toUpperCase() !== "UNKNOWN"
+      ? currencyRaw.trim().toUpperCase()
+      : (fallbackCurrency ?? "UNKNOWN")
+
+  const prices: LlmPriceRow[] = []
+  for (const item of arr) {
+    if (!item || typeof item !== "object") continue
+    const o = item as Record<string, unknown>
+    const tldRaw = pick(o, ["tld", "extension", "suffix", "domain"])
+    if (typeof tldRaw !== "string" || !tldRaw.trim()) continue
+    prices.push({
+      tld: tldRaw.trim(),
+      registerPrice: toNumber(pick(o, ["registerPrice", "register", "registration", "reg", "new", "price"])),
+      renewPrice: toNumber(pick(o, ["renewPrice", "renewalPrice", "renewal", "renew"])),
+      transferPrice: toNumber(pick(o, ["transferPrice", "transfer"])),
+    })
+  }
+
+  return { currency, prices }
 }
