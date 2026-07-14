@@ -78,6 +78,34 @@ async function main() {
   )
   console.log(`IANA 官方后缀数: ${ianaSet.size}`)
 
+  // ---- 2.5 回填:把 IANA 官方列表里缺失的顶级后缀插入 tlds（幂等，只增不改） ----
+  // 现有记录可能是多级后缀(如 co.uk)，按最后一段建立已有集合，避免与顶级后缀重复
+  const existingRows: { tld: string }[] = (
+    await db.execute(sql`SELECT tld FROM tlds`)
+  ).rows as never[]
+  const existingLast = new Set(
+    existingRows.map((r) => (r.tld.split(".").pop() ?? r.tld).toLowerCase()),
+  )
+  const toInsert = [...ianaSet].filter((t) => !existingLast.has(t))
+  if (toInsert.length > 0) {
+    // 分批插入，避免单条 SQL 参数过多
+    const CHUNK = 200
+    let inserted = 0
+    for (let i = 0; i < toInsert.length; i += CHUNK) {
+      const batch = toInsert.slice(i, i + CHUNK)
+      await db.execute(
+        sql`INSERT INTO tlds (tld) VALUES ${sql.join(
+          batch.map((t) => sql`(${t})`),
+          sql`, `,
+        )} ON CONFLICT (tld) DO NOTHING`,
+      )
+      inserted += batch.length
+    }
+    console.log(`[2.5] 回填完成: 从 IANA 新增 ${toInsert.length} 个缺失后缀`)
+  } else {
+    console.log(`[2.5] 回填完成: 无缺失后缀`)
+  }
+
   const all: { id: number; tld: string }[] = (
     await db.execute(sql`SELECT id, tld FROM tlds`)
   ).rows as never[]
