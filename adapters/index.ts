@@ -49,6 +49,7 @@ import {
   transipAdapter,
   truehostAdapter,
 } from "./table-registrars"
+import { inwxAdapter, combellAdapter } from "./auto-registrars"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -84,6 +85,8 @@ export const allAdapters = [
   njallaAdapter,
   epikAdapter,
   truehostAdapter,
+  inwxAdapter,
+  combellAdapter,
 ]
 
 for (const adapter of allAdapters) {
