@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useTransition } from "react"
+import { normalizeUrl } from "@/lib/utils"
 import { toggleRegistrarActive, updateRegistrar } from "@/app/actions/admin"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -164,14 +165,18 @@ export function RegistrarAdminTable({ registrars }: { registrars: Registrar[] })
             <TableRow key={r.id}>
               <TableCell className="font-medium text-foreground">{r.name}</TableCell>
               <TableCell>
-                <a
-                  href={r.website}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm text-muted-foreground hover:text-primary"
-                >
-                  {r.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
-                </a>
+                {normalizeUrl(r.website) ? (
+                  <a
+                    href={normalizeUrl(r.website)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-muted-foreground hover:text-primary"
+                  >
+                    {r.website.replace(/^https?:\/\//, "").replace(/\/$/, "")}
+                  </a>
+                ) : (
+                  <span className="text-sm text-muted-foreground/50">—</span>
+                )}
               </TableCell>
               <TableCell>
                 <HealthBadge health={(r.health as RegistrarHealth | null) ?? null} />
