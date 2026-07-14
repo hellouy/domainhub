@@ -3,7 +3,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { PriceTable } from "@/components/price-table"
 import { Money } from "@/components/money"
-import { formatRelative, TLD_TYPE_LABELS } from "@/lib/format"
+import { T, TldType, DataUpdated } from "@/components/i18n-text"
 import { getPricesForTld, getTldByName, getTldLastUpdated } from "@/lib/db/queries"
 import { getUsdRates, toUsd, type UsdRates } from "@/lib/fx"
 
@@ -79,13 +79,13 @@ export default async function TldPage({ params }: Props) {
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <nav aria-label="面包屑" className="text-xs text-muted-foreground">
+      <nav aria-label="breadcrumb" className="text-xs text-muted-foreground">
         <Link href="/" className="hover:text-primary">
-          首页
+          <T k="nav.home" />
         </Link>
         <span aria-hidden="true"> / </span>
         <Link href="/tlds" className="hover:text-primary">
-          全部后缀
+          <T k="nav.tlds" />
         </Link>
         <span aria-hidden="true"> / </span>
         <span className="text-foreground">.{row.tld}</span>
@@ -93,38 +93,44 @@ export default async function TldPage({ params }: Props) {
 
       <header className="flex flex-col gap-3">
         <p className="text-xs font-medium uppercase tracking-widest text-primary">
-          {TLD_TYPE_LABELS[row.type] ?? row.type}
+          <TldType type={row.type} />
         </p>
         <h1 className="font-mono text-4xl font-bold tracking-tight md:text-5xl">.{row.tld}</h1>
         <p className="max-w-2xl text-pretty leading-relaxed text-muted-foreground">{row.description}</p>
-        <p className="text-xs text-muted-foreground">数据更新于 {formatRelative(lastUpdated)}</p>
+        <p className="text-xs text-muted-foreground">
+          <DataUpdated date={lastUpdated} />
+        </p>
       </header>
 
-      <section aria-label="最低价格" className="grid grid-cols-3 gap-px border border-border bg-border">
-        {[
-          { label: "最低注册", value: minRegister, note: "首年" },
-          { label: "最低续费", value: minRenew, note: "每年" },
-          { label: "最低转入", value: minTransfer, note: "含续期" },
-        ].map((item) => (
+      <section aria-label="lowest prices" className="grid grid-cols-3 gap-px border border-border bg-border">
+        {(
+          [
+            { label: "tld.minRegister", value: minRegister, note: "tld.noteFirst" },
+            { label: "tld.minRenew", value: minRenew, note: "tld.noteYear" },
+            { label: "tld.minTransfer", value: minTransfer, note: "tld.noteTransfer" },
+          ] as const
+        ).map((item) => (
           <div key={item.label} className="flex flex-col gap-1 bg-card p-3 md:gap-2 md:p-6">
             <span className="text-[10px] uppercase tracking-wide text-muted-foreground md:text-xs md:tracking-widest">
-              {item.label}
+              <T k={item.label} />
             </span>
             <span className="font-mono text-lg font-bold tabular-nums text-primary md:text-3xl">
               {item.value != null ? <Money value={item.value} from="USD" /> : "—"}
             </span>
-            <span className="text-[10px] text-muted-foreground md:text-xs">{item.note}</span>
+            <span className="text-[10px] text-muted-foreground md:text-xs">
+              <T k={item.note} />
+            </span>
           </div>
         ))}
       </section>
 
       <section aria-labelledby="price-list" className="flex flex-col gap-4">
         <h2 id="price-list" className="text-xl font-bold tracking-tight">
-          全部注册商价格（{priceRows.length}）
+          <T k="tld.allRegistrarPrices" /> ({priceRows.length})
         </h2>
         <PriceTable rows={priceRows} />
         <p className="text-xs leading-relaxed text-muted-foreground">
-          提示：许多注册商首年注册价低廉，但续费明显更高。若计划长期持有，请重点比较续费价。
+          <T k="tld.tip" />
         </p>
       </section>
     </div>

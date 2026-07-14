@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
-import { TLD_TYPE_LABELS } from "@/lib/format"
 import { Money } from "@/components/money"
+import { T, TCount, TldType } from "@/components/i18n-text"
 import { getTldsWithMinPrice } from "@/lib/db/queries"
 
 export const revalidate = 300
@@ -18,10 +18,14 @@ export default async function TldsPage() {
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-12 md:px-6">
       <header className="flex flex-col gap-3">
-        <p className="text-xs font-medium uppercase tracking-widest text-primary">索引</p>
-        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">全部域名后缀</h1>
+        <p className="text-xs font-medium uppercase tracking-widest text-primary">
+          <T k="page.tlds.eyebrow" />
+        </p>
+        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">
+          <T k="page.tlds.title" />
+        </h1>
         <p className="max-w-2xl leading-relaxed text-muted-foreground">
-          共收录 {rows.length} 个后缀，点击任意后缀查看各注册商的详细价格。
+          <TCount k="page.tlds.desc" vars={{ n: rows.length }} />
         </p>
       </header>
       <div className="overflow-x-auto border border-border">
@@ -29,16 +33,16 @@ export default async function TldsPage() {
           <thead>
             <tr className="border-b border-border bg-secondary text-left">
               <th scope="col" className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                后缀
+                <T k="th.tld" />
               </th>
               <th scope="col" className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                类型
+                <T k="th.type" />
               </th>
               <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                最低注册价
+                <T k="th.minRegister" />
               </th>
               <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                注册商数
+                <T k="th.registrarCount" />
               </th>
             </tr>
           </thead>
@@ -50,7 +54,9 @@ export default async function TldsPage() {
                     .{t.tld}
                   </Link>
                 </td>
-                <td className="px-4 py-3.5 text-muted-foreground">{TLD_TYPE_LABELS[t.type] ?? t.type}</td>
+                <td className="px-4 py-3.5 text-muted-foreground">
+                  <TldType type={t.type} />
+                </td>
                 <td className="px-4 py-3.5 text-right font-mono tabular-nums text-primary">
                   <Money value={t.minRegister} from="USD" />
                 </td>

@@ -2,8 +2,7 @@ import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 import { HomeHero } from "@/components/home-hero"
 import { TldExplorer } from "@/components/tld-explorer"
-import { T } from "@/components/i18n-text"
-import { formatRelative } from "@/lib/format"
+import { T, RegistrarDescription } from "@/components/i18n-text"
 import { getActiveRegistrars, getStats, getTldsWithMinPrice } from "@/lib/db/queries"
 
 export const revalidate = 300
@@ -38,7 +37,7 @@ export default async function HomePage() {
           registrarCount: stats.registrarCount,
           tldCount: stats.tldCount,
           priceCount: stats.priceCount,
-          lastUpdatedText: formatRelative(stats.lastUpdated),
+          lastUpdatedISO: stats.lastUpdated ? new Date(stats.lastUpdated).toISOString() : null,
         }}
         searchOptions={searchOptions}
       />
@@ -84,7 +83,7 @@ export default async function HomePage() {
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold group-hover:text-primary">{r.name}</span>
                     <span className="block truncate text-xs leading-relaxed text-muted-foreground">
-                      {r.description}
+                      <RegistrarDescription slug={r.slug} fallback={r.description} />
                     </span>
                   </span>
                   <span className="shrink-0 font-mono text-xs text-muted-foreground">

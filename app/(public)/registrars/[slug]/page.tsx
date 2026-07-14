@@ -3,7 +3,8 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { ExternalLink } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
-import { formatPrice, formatRelative } from "@/lib/format"
+import { Money } from "@/components/money"
+import { T, RelativeTime, RegistrarDescription } from "@/components/i18n-text"
 import { getPricesForRegistrar, getRegistrarBySlug } from "@/lib/db/queries"
 
 export const revalidate = 300
@@ -43,13 +44,13 @@ export default async function RegistrarPage({ params }: Props) {
         // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
-      <nav aria-label="面包屑" className="text-xs text-muted-foreground">
+      <nav aria-label="breadcrumb" className="text-xs text-muted-foreground">
         <Link href="/" className="hover:text-primary">
-          首页
+          <T k="nav.home" />
         </Link>
         <span aria-hidden="true"> / </span>
         <Link href="/registrars" className="hover:text-primary">
-          注册商
+          <T k="nav.registrars" />
         </Link>
         <span aria-hidden="true"> / </span>
         <span className="text-foreground">{row.name}</span>
@@ -57,11 +58,25 @@ export default async function RegistrarPage({ params }: Props) {
 
       <header className="flex flex-col gap-4">
         <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{row.name}</h1>
-        <p className="max-w-2xl text-pretty leading-relaxed text-muted-foreground">{row.description}</p>
+        <p className="max-w-2xl text-pretty leading-relaxed text-muted-foreground">
+          <RegistrarDescription slug={row.slug} fallback={row.description} />
+        </p>
         <div className="flex flex-wrap items-center gap-2">
-          {row.icannAccredited && <Badge variant="secondary">ICANN 认证</Badge>}
-          {row.whoisPrivacy && <Badge variant="secondary">免费 WHOIS 隐私</Badge>}
-          {row.dnssec && <Badge variant="secondary">DNSSEC</Badge>}
+          {row.icannAccredited && (
+            <Badge variant="secondary">
+              <T k="badge.icann" />
+            </Badge>
+          )}
+          {row.whoisPrivacy && (
+            <Badge variant="secondary">
+              <T k="badge.whois" />
+            </Badge>
+          )}
+          {row.dnssec && (
+            <Badge variant="secondary">
+              <T k="badge.dnssec" />
+            </Badge>
+          )}
           {row.paymentMethods.map((m) => (
             <Badge key={m} variant="outline">
               {m}
@@ -74,33 +89,33 @@ export default async function RegistrarPage({ params }: Props) {
           rel="noopener noreferrer"
           className="inline-flex w-fit items-center gap-1.5 bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
         >
-          访问官网
+          <T k="registrar.visit" />
           <ExternalLink aria-hidden="true" className="size-4" />
         </a>
       </header>
 
       <section aria-labelledby="registrar-prices" className="flex flex-col gap-4">
         <h2 id="registrar-prices" className="text-xl font-bold tracking-tight">
-          全部后缀价格（{priceRows.length}）
+          <T k="registrar.allPrices" /> ({priceRows.length})
         </h2>
         <div className="overflow-x-auto border border-border">
           <table className="w-full min-w-[520px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-border bg-secondary text-left">
                 <th scope="col" className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                  后缀
+                  <T k="th.tld" />
                 </th>
                 <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                  注册
+                  <T k="th.register" />
                 </th>
                 <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                  续费
+                  <T k="th.renew" />
                 </th>
                 <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                  转入
+                  <T k="th.transfer" />
                 </th>
                 <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
-                  更新时间
+                  <T k="th.updated" />
                 </th>
               </tr>
             </thead>
@@ -112,10 +127,18 @@ export default async function RegistrarPage({ params }: Props) {
                       .{p.tld}
                     </Link>
                   </td>
-                  <td className="px-4 py-3.5 text-right font-mono tabular-nums">{formatPrice(p.registerPrice, p.currency)}</td>
-                  <td className="px-4 py-3.5 text-right font-mono tabular-nums">{formatPrice(p.renewPrice, p.currency)}</td>
-                  <td className="px-4 py-3.5 text-right font-mono tabular-nums">{formatPrice(p.transferPrice, p.currency)}</td>
-                  <td className="px-4 py-3.5 text-right text-xs text-muted-foreground">{formatRelative(p.updatedAt)}</td>
+                  <td className="px-4 py-3.5 text-right font-mono tabular-nums">
+                    <Money value={p.registerPrice} from={p.currency} />
+                  </td>
+                  <td className="px-4 py-3.5 text-right font-mono tabular-nums">
+                    <Money value={p.renewPrice} from={p.currency} />
+                  </td>
+                  <td className="px-4 py-3.5 text-right font-mono tabular-nums">
+                    <Money value={p.transferPrice} from={p.currency} />
+                  </td>
+                  <td className="px-4 py-3.5 text-right text-xs text-muted-foreground">
+                    <RelativeTime date={p.updatedAt} />
+                  </td>
                 </tr>
               ))}
             </tbody>
