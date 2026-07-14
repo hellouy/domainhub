@@ -9,18 +9,24 @@
  *   const { html } = await renderer.render(url, { waitFor: ".price" })
  *
  * 环境变量：
- * - RENDERER_PROVIDER = browserless | scrapingbee | none（默认 none）
- * - Browserless：BROWSERLESS_URL, BROWSERLESS_TOKEN
- * - ScrapingBee：SCRAPINGBEE_API_KEY
+ * - RENDERER_PROVIDER = playwright | browserless | scrapingbee（默认 playwright）
+ * - Playwright（默认，本地无头浏览器）：无需任何 key，开箱即用
+ *   可选 PLAYWRIGHT_HEADLESS / PLAYWRIGHT_EXECUTABLE_PATH
+ * - Browserless（可选云 provider）：BROWSERLESS_URL, BROWSERLESS_TOKEN
+ * - ScrapingBee（可选云 provider）：SCRAPINGBEE_API_KEY
  *
- * 切换 provider 只改 RENDERER_PROVIDER，不动任何适配器代码。
+ * 默认用本地 Playwright，无需配置即可渲染 JS 站点。
+ * 云端 serverless 无法跑本地 chromium 时，配 RENDERER_PROVIDER + 对应凭证
+ * 即可切换到 Browserless/ScrapingBee，适配器代码完全不用改。
  */
 
 import { BrowserlessProvider } from "./providers/browserless"
+import { PlaywrightProvider } from "./providers/playwright"
 import { ScrapingBeeProvider } from "./providers/scrapingbee"
 import { RendererNotConfiguredError, type RenderProvider } from "./types"
 
 export * from "./types"
+export { PlaywrightProvider } from "./providers/playwright"
 export { BrowserlessProvider } from "./providers/browserless"
 export { ScrapingBeeProvider } from "./providers/scrapingbee"
 
@@ -32,7 +38,8 @@ let cachedKey = ""
  * 供策略引擎捕获并降级到下一策略。
  */
 export function resolveRenderer(): RenderProvider {
-  const provider = (process.env.RENDERER_PROVIDER ?? "none").toLowerCase()
+  // 默认本地 Playwright，无需任何凭证即可渲染 JS 站点
+  const provider = (process.env.RENDERER_PROVIDER ?? "playwright").toLowerCase()
 
   // 简单缓存：provider 与其凭证不变时复用实例
   const key = [
@@ -45,6 +52,11 @@ export function resolveRenderer(): RenderProvider {
 
   let instance: RenderProvider
   switch (provider) {
+    case "playwright":
+    case "local": {
+      instance = new PlaywrightProvider()
+      break
+    }
     case "browserless": {
       const url = process.env.BROWSERLESS_URL
       const token = process.env.BROWSERLESS_TOKEN

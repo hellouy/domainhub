@@ -191,6 +191,7 @@ export const epikAdapter = createTableAdapter({
 // Truehost —— 非洲主流注册商(500+ TLD 静态价格表)
 // 表头: Domain Extensions | Category | Register | Renew | Transfer
 // TLD 列后紧跟 Category 列需跳过(skip),后缀带 Hot/New/Sale 促销标签由 findTldCell 自动清洗
+// 站点走 Cloudflare challenge,node fetch 被拦(403),故用无头浏览器渲染穿透
 export const truehostAdapter = createTableAdapter({
   slug: "truehost",
   name: "Truehost",
@@ -198,4 +199,6 @@ export const truehostAdapter = createTableAdapter({
   currency: "USD",
   urls: ["https://truehost.com/domains/"],
   columnOrder: ["skip", "register", "renew", "transfer"],
+  useRenderer: true,
+  renderWaitFor: "table",
 })

@@ -42,6 +42,17 @@ export interface TableAdapterConfig {
   /** 自定义行过滤(返回 false 跳过该行) */
   rowFilter?: (cells: string[]) => boolean
   /**
+   * 用无头浏览器渲染: 默认 false(普通 fetch)。置为 true 时改用 ctx.render()
+   * 经渲染器(默认本地 Playwright)加载页面, 用于穿透 Cloudflare challenge
+   * 或抓取 JS 动态渲染的价格。渲染器未配置/不可用时该策略失败并降级。
+   */
+  useRenderer?: boolean
+  /**
+   * 渲染等待条件(仅 useRenderer=true 时生效): CSS 选择器(等其出现)
+   * 或毫秒数(额外等待)。默认等 "table" 出现。
+   */
+  renderWaitFor?: string | number
+  /**
    * LLM 兜底解析: 默认 true。当 html 表格策略解析为空(页面价格不在标准
    * <table> 里,如卡片/列表布局)且已配置 ZHIPU_API_KEY 时,自动降级用
    * LLM 从 HTML 抽取价格。仅在传统解析失败时触发,不产生无谓 token 消耗。
@@ -168,11 +179,20 @@ export function createTableAdapter(config: TableAdapterConfig) {
           }
           const pages: string[] = []
           for (const url of effective.urls) {
-            // 不再硬编码 UA/Accept：平台 fetch 层已默认发送完整真实浏览器头，
-            // 这里只在适配器需要时追加专用头（如 Referer）。
-            const res = await ctx.fetch(url, config.headers ? { headers: config.headers } : undefined)
-            if (!res.ok) throw new Error(`${config.slug} 价格页 ${url} 返回 HTTP ${res.status}`)
-            pages.push(await res.text())
+            if (config.useRenderer) {
+              // 经无头浏览器渲染(默认本地 Playwright),穿透 CF challenge / 抓 JS 价格
+              const rendered = await ctx.render(url, {
+                waitFor: config.renderWaitFor ?? "table",
+                headers: config.headers,
+              })
+              pages.push(rendered.html)
+            } else {
+              // 普通 fetch: 平台 fetch 层已默认发送完整真实浏览器头,
+              // 这里只在适配器需要时追加专用头(如 Referer)。
+              const res = await ctx.fetch(url, config.headers ? { headers: config.headers } : undefined)
+              if (!res.ok) throw new Error(`${config.slug} 价格页 ${url} 返回 HTTP ${res.status}`)
+              pages.push(await res.text())
+            }
           }
           return pages.join("\n<!--PAGE_BREAK-->\n")
         },
@@ -230,9 +250,17 @@ export function createTableAdapter(config: TableAdapterConfig) {
         }
         const pages: string[] = []
         for (const url of effective.urls) {
-          const res = await ctx.fetch(url, config.headers ? { headers: config.headers } : undefined)
-          if (!res.ok) throw new Error(`${config.slug} 价格页 ${url} 返回 HTTP ${res.status}`)
-          pages.push(await res.text())
+          if (config.useRenderer) {
+            const rendered = await ctx.render(url, {
+              waitFor: config.renderWaitFor ?? "table",
+              headers: config.headers,
+            })
+            pages.push(rendered.html)
+          } else {
+            const res = await ctx.fetch(url, config.headers ? { headers: config.headers } : undefined)
+            if (!res.ok) throw new Error(`${config.slug} 价格页 ${url} 返回 HTTP ${res.status}`)
+            pages.push(await res.text())
+          }
         }
         return pages.join("\n<!--PAGE_BREAK-->\n")
       },
