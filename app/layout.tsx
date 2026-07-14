@@ -51,7 +51,7 @@ export async function generateMetadata(): Promise<Metadata> {
     robots: { index: true, follow: true },
     icons: {
       icon,
-      apple: settings.faviconUrl ?? '/icon.svg',
+      apple: settings.faviconUrl || '/icon.svg',
     },
   }
 }
