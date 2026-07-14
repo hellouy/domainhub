@@ -43,6 +43,12 @@ export default async function AdminLayout({ children }: { children: React.ReactN
               >
                 凭证
               </Link>
+              <Link
+                href="/admin/settings"
+                className="rounded px-2 py-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
+              >
+                站点设置
+              </Link>
             </nav>
           </div>
           <div className="flex items-center gap-2">
