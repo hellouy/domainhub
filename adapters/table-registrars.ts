@@ -15,7 +15,7 @@ export const hoverAdapter = createTableAdapter({
   name: "Hover",
   website: "https://www.hover.com",
   currency: "USD",
-  urls: ["https://www.hover.com/tlds"],
+  urls: ["https://www.hover.com/domains"],
   columnOrder: ["register", "renew", "transfer"],
 })
 
@@ -60,7 +60,7 @@ export const metanameAdapter = createTableAdapter({
   name: "Metaname",
   website: "https://metaname.net",
   currency: "NZD",
-  urls: ["https://metaname.net/pricing"],
+  urls: ["https://metaname.net/public/pricing"],
   columnOrder: ["register", "renew", "transfer"],
 })
 
@@ -79,7 +79,7 @@ export const loopiaAdapter = createTableAdapter({
   website: "https://www.loopia.se",
   currency: "SEK",
   numberFormat: "eu",
-  urls: ["https://www.loopia.se/domain/"],
+  urls: ["https://www.loopia.se/domannamn/detaljerad_prislista/"],
   columnOrder: ["register", "renew", "transfer"],
 })
 
