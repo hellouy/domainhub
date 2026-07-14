@@ -70,12 +70,21 @@ export function isLlmConfigured(): boolean {
   return Boolean(process.env.ZHIPU_API_KEY)
 }
 
+/** 分块参数：每块字符数与重叠区域（避免价格记录被切断） */
+const CHUNK_SIZE = 18_000
+const CHUNK_OVERLAP = 1_000
+/** 分块数量上限：防止病态大页面导致 token 失控（约 8×18k=144k 字符） */
+const MAX_CHUNKS = 8
+/** 清洗后安全上限：超过则说明页面异常庞大，仅保留前段（分块仍在其上进行） */
+const CLEAN_SAFETY_CEILING = MAX_CHUNKS * CHUNK_SIZE
+
 /**
- * 清洗 HTML：剥离 script/style/head、压缩空白，控制体积以省 token。
- * 只保留 body 可见结构，价格数据通常在其中。
+ * 清洗 HTML：剥离 script/style/head/噪音块与所有标签属性，压缩空白。
+ * 不再为了塞进单次请求而截断到固定长度——完整清洗后交给分块器处理，
+ * 让长页面的后段价格也能进入 LLM。仅在超过安全上限时截断以防失控。
  */
-export function cleanHtmlForLlm(html: string, maxChars = 40_000): string {
-  let s = html
+export function cleanHtmlForLlm(html: string): string {
+  const s = html
     .replace(/<script[\s\S]*?<\/script>/gi, " ")
     .replace(/<style[\s\S]*?<\/style>/gi, " ")
     .replace(/<head[\s\S]*?<\/head>/gi, " ")
@@ -89,13 +98,22 @@ export function cleanHtmlForLlm(html: string, maxChars = 40_000): string {
     .replace(/(<\/?[a-zA-Z][a-zA-Z0-9]*>\s*){3,}/g, (m) => m.replace(/\s+/g, ""))
     .replace(/\s+/g, " ")
     .trim()
-  // 优先保留含价格符号/数字的区段：若超长，从首个价格特征附近截取
-  if (s.length > maxChars) {
-    const anchor = s.search(/[€$£¥]|\d+[.,]\d{2}/)
-    const start = anchor > 2000 ? anchor - 2000 : 0
-    s = s.slice(start, start + maxChars)
+  return s.length > CLEAN_SAFETY_CEILING ? s.slice(0, CLEAN_SAFETY_CEILING) : s
+}
+
+/**
+ * 把清洗后的文本按 CHUNK_SIZE 分块，相邻块保留 CHUNK_OVERLAP 重叠区域，
+ * 避免同一条"后缀+价格"记录恰好被块边界切断而丢失。
+ */
+export function chunkForLlm(text: string): string[] {
+  if (text.length <= CHUNK_SIZE) return [text]
+  const chunks: string[] = []
+  let start = 0
+  while (start < text.length && chunks.length < MAX_CHUNKS) {
+    chunks.push(text.slice(start, start + CHUNK_SIZE))
+    start += CHUNK_SIZE - CHUNK_OVERLAP
   }
-  return s
+  return chunks
 }
 
 /**
@@ -108,32 +126,72 @@ export async function extractPricesWithLlm(
   hint?: { registrar?: string; currency?: string; sourceUrl?: string },
 ): Promise<LlmExtraction> {
   const model = resolveModel()
-  const content = cleanHtmlForLlm(html)
+  const cleaned = cleanHtmlForLlm(html)
+  const chunks = chunkForLlm(cleaned)
 
   const system =
-    "你是一个域名价格数据抽取器。从给定的注册商价格页 HTML 中提取每个顶级后缀（TLD）的" +
-    "注册价、续费价、转入价。只输出确实出现在页面中的数据，不要臆造或估算。" +
+    "你是一个域名价格数据抽取器。从给定的注册商价格页 HTML 片段中提取每个顶级后缀（TLD）的" +
+    "注册价、续费价、转入价。只输出确实出现在片段中的数据，不要臆造或估算。" +
     "价格必须是纯数字（去掉货币符号、千分位、货币代码）。找不到的字段填 null。" +
     "忽略与域名价格无关的内容（导航、页脚、广告）。\n" +
     "严格只输出一个 JSON 对象，格式为：" +
     '{"currency":"EUR","prices":[{"tld":"com","registerPrice":9.99,"renewPrice":12.99,"transferPrice":9.99}]}。' +
     "currency 用 ISO 4217 代码，无法判断填 UNKNOWN。不要输出 JSON 以外的任何文字。"
 
-  const prompt =
+  const hintPrefix =
     (hint?.registrar ? `注册商：${hint.registrar}\n` : "") +
     (hint?.currency ? `预期货币：${hint.currency}\n` : "") +
-    (hint?.sourceUrl ? `来源：${hint.sourceUrl}\n` : "") +
-    `\n以下是价格页 HTML（已清洗）：\n${content}`
+    (hint?.sourceUrl ? `来源：${hint.sourceUrl}\n` : "")
 
-  const { text } = await generateText({
-    model,
-    system,
-    prompt,
-    // 智谱 GLM 支持 json_object 强制返回 JSON；但不保证严格字段名，故手动宽松解析
-    providerOptions: { zhipu: { response_format: { type: "json_object" } } },
-  })
+  // 逐块调用 LLM，合并结果并按 TLD 去重（重叠区可能产生重复，后出现的补全空字段）
+  const byTld = new Map<string, LlmPriceRow>()
+  let currency = hint?.currency ?? "UNKNOWN"
 
-  return parseLlmJson(text, hint?.currency)
+  // 并发受限地处理各块（避免一次性打爆限流），此处顺序执行以复用限流器
+  for (let i = 0; i < chunks.length; i++) {
+    const prompt =
+      hintPrefix +
+      (chunks.length > 1 ? `\n（这是第 ${i + 1}/${chunks.length} 段）` : "") +
+      `\n以下是价格页 HTML 片段（已清洗）：\n${chunks[i]}`
+    let text: string
+    try {
+      const res = await generateText({
+        model,
+        system,
+        prompt,
+        providerOptions: { zhipu: { response_format: { type: "json_object" } } },
+      })
+      text = res.text
+    } catch {
+      continue // 单块失败不影响其它块
+    }
+    let parsed: LlmExtraction
+    try {
+      parsed = parseLlmJson(text, hint?.currency)
+    } catch {
+      continue
+    }
+    if (parsed.currency && parsed.currency !== "UNKNOWN") currency = parsed.currency
+    for (const row of parsed.prices) {
+      mergeRow(byTld, row)
+    }
+  }
+
+  return { currency, prices: [...byTld.values()] }
+}
+
+/** 合并一条价格行：同 TLD 时用非空值补全已存在记录 */
+function mergeRow(map: Map<string, LlmPriceRow>, row: LlmPriceRow) {
+  const tld = row.tld.trim().replace(/^\./, "").toLowerCase()
+  if (!tld) return
+  const existing = map.get(tld)
+  if (!existing) {
+    map.set(tld, { ...row, tld })
+    return
+  }
+  existing.registerPrice ??= row.registerPrice
+  existing.renewPrice ??= row.renewPrice
+  existing.transferPrice ??= row.transferPrice
 }
 
 /** 从任意值里提取数字（去货币符号/千分位/货币代码） */

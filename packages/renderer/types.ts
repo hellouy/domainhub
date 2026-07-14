@@ -34,6 +34,20 @@ export interface RenderOptions {
    * provider 支持时用于直接抽取数据，不支持时忽略。
    */
   evaluate?: string
+  /**
+   * 捕获页面加载期间的 XHR/fetch JSON 响应（默认 false）。
+   * 开启后 provider 会收集 content-type 为 JSON 的响应体，供发现引擎
+   * 直接解析真实数据源，避免依赖 DOM 或 LLM。仅本地 Playwright 支持。
+   */
+  captureJson?: boolean
+  /** 只捕获 URL 匹配这些子串的响应（省略时捕获全部 JSON 响应） */
+  captureUrlIncludes?: string[]
+}
+
+/** 捕获到的一个 XHR/fetch JSON 响应 */
+export interface CapturedResponse {
+  url: string
+  body: string
 }
 
 /** 渲染结果 */
@@ -48,6 +62,8 @@ export interface RenderResult {
   provider: string
   /** 渲染耗时毫秒 */
   elapsedMs: number
+  /** captureJson 开启时捕获到的 XHR/fetch JSON 响应 */
+  capturedJson?: CapturedResponse[]
 }
 
 /** 可插拔渲染 provider 接口 */

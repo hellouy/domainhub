@@ -14,7 +14,7 @@
  */
 
 import type { Browser, BrowserContext } from "playwright"
-import type { RenderOptions, RenderProvider, RenderResult } from "../types"
+import type { CapturedResponse, RenderOptions, RenderProvider, RenderResult } from "../types"
 
 export class PlaywrightProvider implements RenderProvider {
   readonly name = "playwright"
@@ -61,6 +61,29 @@ export class PlaywrightProvider implements RenderProvider {
       })
       const page = await context.newPage()
 
+      // 捕获 XHR/fetch JSON 响应(供发现引擎解析真实数据源)
+      const captured: CapturedResponse[] = []
+      if (options.captureJson) {
+        const includes = options.captureUrlIncludes
+        page.on("response", (response) => {
+          void (async () => {
+            try {
+              const req = response.request()
+              const rt = req.resourceType()
+              if (rt !== "xhr" && rt !== "fetch") return
+              const url = response.url()
+              if (includes && includes.length > 0 && !includes.some((s) => url.includes(s))) return
+              const ct = response.headers()["content-type"] ?? ""
+              if (!/json/i.test(ct)) return
+              const body = await response.text()
+              if (body && body.length < 5_000_000) captured.push({ url, body })
+            } catch {
+              // 忽略无法读取的响应(重定向/被中断等)
+            }
+          })()
+        })
+      }
+
       // 屏蔽图片/字体/媒体/样式表以加速（默认开启）
       if (options.blockAssets !== false) {
         await page.route("**/*", (route) => {
@@ -99,6 +122,7 @@ export class PlaywrightProvider implements RenderProvider {
         evaluated,
         provider: this.name,
         elapsedMs: Date.now() - started,
+        capturedJson: options.captureJson ? captured : undefined,
       }
     } finally {
       // 关闭 context（释放页面），但保留 browser 实例复用
