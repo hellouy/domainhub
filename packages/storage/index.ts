@@ -45,10 +45,23 @@ export interface SaveStats {
 export async function createPriceSink(registrarId: number): Promise<{
   sink: PriceSink
   knownTlds: Set<string>
+  knownTldsRanked: string[]
+  validTldsRanked: string[]
 }> {
   const allTlds = await db.select().from(tlds)
   const tldIdMap = new Map(allTlds.map((t) => [t.tld, t.id]))
   const knownTlds = new Set(allTlds.map((t) => t.tld))
+
+  // 热度降序排序：popularity 分 → isPopular 标记 → 字母序（稳定）。
+  // knownTldsRanked 含全部；validTldsRanked 仅含 IANA 有效后缀（供全量回填用）。
+  const byRank = (a: (typeof allTlds)[number], b: (typeof allTlds)[number]) => {
+    if (b.popularity !== a.popularity) return b.popularity - a.popularity
+    if (a.isPopular !== b.isPopular) return a.isPopular ? -1 : 1
+    return a.tld.localeCompare(b.tld)
+  }
+  const sorted = [...allTlds].sort(byRank)
+  const knownTldsRanked = sorted.map((t) => t.tld)
+  const validTldsRanked = sorted.filter((t) => t.isValid).map((t) => t.tld)
 
   const existing = await db.select().from(prices).where(eq(prices.registrarId, registrarId))
   const existingByTldId = new Map(existing.map((p) => [p.tldId, p]))
@@ -135,7 +148,7 @@ export async function createPriceSink(registrarId: number): Promise<{
     return { inserted, updated, skipped, databaseMs: Date.now() - started }
   }
 
-  return { sink: { lookupExisting, save }, knownTlds }
+  return { sink: { lookupExisting, save }, knownTlds, knownTldsRanked, validTldsRanked }
 }
 
 /**
@@ -145,8 +158,10 @@ export async function createPriceSink(registrarId: number): Promise<{
 export async function createDryRunSink(registrarId: number): Promise<{
   sink: PriceSink
   knownTlds: Set<string>
+  knownTldsRanked: string[]
+  validTldsRanked: string[]
 }> {
-  const { sink: realSink, knownTlds } = await createPriceSink(registrarId)
+  const { sink: realSink, knownTlds, knownTldsRanked, validTldsRanked } = await createPriceSink(registrarId)
   const dryRun: PriceSink = {
     lookupExisting: realSink.lookupExisting,
     save: async (validated) => {
@@ -170,7 +185,7 @@ export async function createDryRunSink(registrarId: number): Promise<{
       return { inserted, updated, skipped, databaseMs: Date.now() - started }
     },
   }
-  return { sink: dryRun, knownTlds }
+  return { sink: dryRun, knownTlds, knownTldsRanked, validTldsRanked }
 }
 
 /**

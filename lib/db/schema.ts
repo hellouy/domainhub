@@ -224,6 +224,36 @@ export const siteSettings = pgTable("site_settings", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
 
+/**
+ * 分批回填进度：每注册商一行游标，供“逐 TLD 拉取”型注册商(如 Netim)
+ * 分批全量回填使用。cron 每次读取游标推进一批，采完自动置 completed。
+ * 只增量、幂等；不影响其它注册商与既有采集路径。
+ */
+export const crawlBackfill = pgTable("crawl_backfill", {
+  id: serial("id").primaryKey(),
+  registrarId: integer("registrar_id").notNull().unique(),
+  /** idle | running | completed | stopped */
+  status: text("status").notNull().default("idle"),
+  /** 下一批在有效后缀排序集中的起始下标 */
+  cursor: integer("cursor").notNull().default(0),
+  /** 每批后缀数量 */
+  batchSize: integer("batch_size").notNull().default(50),
+  /** 启动本轮回填时的有效后缀总数(快照) */
+  total: integer("total").notNull().default(0),
+  /** 已完成批次数 */
+  batchesDone: integer("batches_done").notNull().default(0),
+  /** 累计新增+更新的价格条数 */
+  pricesUpdated: integer("prices_updated").notNull().default(0),
+  /** 最近一批执行时间(cron 据此判断是否到达间隔) */
+  lastBatchAt: timestamp("last_batch_at", { withTimezone: true }),
+  /** 本轮回填启动时间 */
+  startedAt: timestamp("started_at", { withTimezone: true }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
+export type CrawlBackfillRow = typeof crawlBackfill.$inferSelect
+
 export type SiteSettingsRow = typeof siteSettings.$inferSelect
 
 export type Registrar = typeof registrars.$inferSelect

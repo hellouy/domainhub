@@ -259,6 +259,19 @@ export interface AdapterContext {
   getCredential: (type?: CredentialType) => Promise<CredentialPayload | null>
   /** 已收录的 TLD 集合（不含点），用于 coverage 计算 */
   knownTlds: Set<string>
+  /**
+   * 已收录 TLD 的“热度降序”列表（不含点）。
+   * 由平台按 popularity/isPopular 排序注入，供“逐 TLD 拉取”型适配器
+   * （如 Netim）在需要控制取价范围/顺序时使用。未注入时适配器回退到 knownTlds。
+   */
+  knownTldsRanked?: string[]
+  /**
+   * 本次采集的范围提示，由平台注入，供“逐 TLD 拉取”型适配器裁剪目标集合：
+   * - tlds: 显式后缀白名单（不含点，小写）。给定时适配器应只采这些后缀。
+   * - topN: 只采热度前 N 个（从 knownTldsRanked 取）。
+   * 二者都未提供时，适配器采用其默认范围（通常为 Top 300）。
+   */
+  crawlScope?: { tlds?: string[]; topN?: number }
   /** 记录重试次数（供指标） */
   addRetry: () => void
 }

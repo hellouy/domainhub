@@ -55,11 +55,26 @@ export interface CrawlResult {
   coverage?: number
 }
 
+/** 采集选项(可选, 向后兼容) */
+export interface CrawlOptions {
+  /**
+   * 后缀范围提示，注入 ctx.crawlScope，供“逐 TLD 拉取”型适配器(如 Netim)裁剪目标。
+   * - tlds: 显式后缀白名单(分批回填每批走这里)
+   * - topN: 只取热度前 N(日常默认由适配器决定)
+   */
+  tldScope?: { tlds?: string[]; topN?: number }
+  /** crawl_jobs.trigger 值，默认 "manual"(cron/回填可传 "cron"/"backfill") */
+  trigger?: string
+}
+
 /**
  * 对指定注册商执行一次采集(新 SDK 路径)。
  * 若该注册商没有注册新 SDK 适配器, 返回 null(调用方回退旧路径)。
  */
-export async function runCrawlWithSdk(registrarId: number): Promise<CrawlResult | null> {
+export async function runCrawlWithSdk(
+  registrarId: number,
+  options: CrawlOptions = {},
+): Promise<CrawlResult | null> {
   const [registrar] = await db.select().from(registrars).where(eq(registrars.id, registrarId))
   if (!registrar) {
     return {
@@ -74,14 +89,18 @@ export async function runCrawlWithSdk(registrarId: number): Promise<CrawlResult 
   const startedAt = new Date()
   const [job] = await db
     .insert(crawlJobs)
-    .values({ registrarId, status: "running", trigger: "manual", startedAt })
+    .values({ registrarId, status: "running", trigger: options.trigger ?? "manual", startedAt })
     .returning()
 
   const log = async (level: "info" | "warn" | "error", message: string) => {
     await db.insert(crawlLogs).values({ jobId: job.id, level, message })
   }
 
-  const { sink, knownTlds } = await createPriceSink(registrarId)
+  const { sink, knownTlds, knownTldsRanked, validTldsRanked } = await createPriceSink(registrarId)
+
+  // 全量回填时优先用 IANA 有效后缀排序集，其它场景用全部排序集
+  const rankedForCtx =
+    options.tldScope?.tlds && options.tldScope.tlds.length > 0 ? validTldsRanked : knownTldsRanked
 
   const ctx: AdapterContext = {
     registrarId,
@@ -93,6 +112,8 @@ export async function runCrawlWithSdk(registrarId: number): Promise<CrawlResult 
       }),
     getCredential: (type?: CredentialType) => getCredentialForRegistrar(registrarId, type),
     knownTlds,
+    knownTldsRanked: rankedForCtx,
+    crawlScope: options.tldScope,
     addRetry: () => {
       retries++
     },
