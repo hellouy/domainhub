@@ -13,9 +13,36 @@ import type {
   RawPrice,
   StrategyAttempt,
   StrategyDefinition,
+  StrategyErrorCategory,
   StrategyType,
 } from "./types"
 import { autoParse, parsePriceString } from "../parser"
+
+/** 空结果哨兵：解析成功但 0 条价格，单独归类为 "empty" */
+const EMPTY_RESULT_MARKER = "__EMPTY_RESULT__"
+
+/** 将错误消息归类，便于后台归因与告警聚合 */
+function classifyError(err: unknown): StrategyErrorCategory {
+  const name = err instanceof Error ? err.name : ""
+  const msg = err instanceof Error ? err.message : String(err)
+
+  if (name === "RendererNotConfiguredError") return "renderer-unconfigured"
+  if (msg === EMPTY_RESULT_MARKER || /解析结果为空|0 条价格/.test(msg)) return "empty"
+  if (name === "AbortError" || /timeout|超时|timed out/i.test(msg)) return "timeout"
+
+  const httpMatch = msg.match(/HTTP\s+(\d{3})/)
+  if (httpMatch) {
+    const code = Number(httpMatch[1])
+    if (code >= 400 && code < 500) return "http-4xx"
+    if (code >= 500) return "http-5xx"
+  }
+
+  if (/ENOTFOUND|ECONNREFUSED|ECONNRESET|EAI_AGAIN|fetch failed|network|socket/i.test(msg)) {
+    return "network"
+  }
+  if (/解析|parse|无法.*映射|非 JSON|invalid json|unexpected token/i.test(msg)) return "parse"
+  return "unknown"
+}
 
 export interface StrategyExecution {
   strategy: StrategyType
@@ -27,10 +54,21 @@ export interface StrategyExecution {
   parsingMs: number
 }
 
+/** 是否为需要 JS 渲染的策略 */
+function isRenderStrategy(type: StrategyType): boolean {
+  return type === "render" || type === "playwright"
+}
+
 /** 默认 fetch：用平台受控 fetch 拉取策略 URL 的文本 */
 async function defaultFetch(def: StrategyDefinition, ctx: AdapterContext): Promise<string> {
   if (!def.url) {
     throw new Error(`策略 ${def.type} 未提供 url，也未提供自定义 fetch`)
+  }
+  // render/playwright 策略走外部无头浏览器；未配置渲染器时 ctx.render 会 reject，
+  // 由 executeStrategies 捕获并降级到下一策略。
+  if (isRenderStrategy(def.type)) {
+    const result = await ctx.render(def.url, def.renderOptions)
+    return result.html
   }
   const res = await ctx.fetch(def.url)
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -80,7 +118,7 @@ export async function executeStrategies(
       const parsingMs = Date.now() - parseStarted
 
       if (rawPrices.length === 0) {
-        throw new Error("解析结果为空（0 条价格）")
+        throw new Error(EMPTY_RESULT_MARKER)
       }
 
       const latencyMs = Date.now() - started
@@ -92,14 +130,19 @@ export async function executeStrategies(
       return { strategy: def.type, rawPrices, attempts, downloadMs, parsingMs }
     } catch (err) {
       const latencyMs = Date.now() - started
-      const reason = err instanceof Error ? err.message : String(err)
-      attempts.push({ strategy: def.type, ok: false, latencyMs, failureReason: reason })
-      await ctx.log("warn", `策略 [${def.type}] 失败（${latencyMs}ms）：${reason}，降级到下一策略`)
+      const category = classifyError(err)
+      const rawReason = err instanceof Error ? err.message : String(err)
+      const reason = rawReason === EMPTY_RESULT_MARKER ? "解析结果为空（0 条价格）" : rawReason
+      attempts.push({ strategy: def.type, ok: false, latencyMs, failureReason: reason, errorCategory: category })
+      await ctx.log(
+        "warn",
+        `策略 [${def.type}] 失败（${latencyMs}ms，${category}）：${reason}，降级到下一策略`,
+      )
     }
   }
 
   const summary = attempts
-    .map((a) => `${a.strategy}: ${a.failureReason ?? "未知错误"}`)
+    .map((a) => `${a.strategy}[${a.errorCategory ?? "unknown"}]: ${a.failureReason ?? "未知错误"}`)
     .join("；")
   throw new Error(`全部 ${strategies.length} 个策略均失败 —— ${summary}`)
 }

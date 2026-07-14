@@ -58,6 +58,7 @@ async function main() {
 
   const { createPriceSink, createDryRunSink } = await import("@/packages/storage")
   const { rateLimitedFetch } = await import("@/packages/adapter-sdk")
+  const { resolveRenderer } = await import("@/packages/renderer")
 
   const sinkBundle = noDb ? await createDryRunSink(registrar.id) : await createPriceSink(registrar.id)
 
@@ -69,6 +70,7 @@ async function main() {
       logs.push(`[${level}] ${message}`)
     },
     fetch: (url: string, init?: RequestInit) => rateLimitedFetch(slug, url, init, adapter.definition.rateLimit),
+    render: (url: string, renderOptions?: unknown) => resolveRenderer().render(url, renderOptions as never),
     getCredential: async () => null,
     knownTlds: sinkBundle.knownTlds,
     addRetry: () => {},

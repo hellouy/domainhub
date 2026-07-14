@@ -27,6 +27,7 @@ import type {
   CredentialType,
 } from "@/packages/adapter-sdk"
 import { rateLimitedFetch } from "@/packages/adapter-sdk"
+import { resolveRenderer } from "@/packages/renderer"
 import { decryptCredential } from "@/packages/credentials"
 import { computeHealthScore, type HealthSnapshot } from "@/packages/metrics"
 import {
@@ -110,6 +111,7 @@ export async function runCrawlWithSdk(
       rateLimitedFetch(registrar.slug, url, init, adapter.definition.rateLimit, () => {
         retries++
       }),
+    render: (url, renderOptions) => resolveRenderer().render(url, renderOptions),
     getCredential: (type?: CredentialType) => getCredentialForRegistrar(registrarId, type),
     knownTlds,
     knownTldsRanked: rankedForCtx,

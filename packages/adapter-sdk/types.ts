@@ -8,6 +8,8 @@
  * 注册商特定逻辑只允许存在于适配器内部，业务逻辑不得依赖 UI 或队列实现。
  */
 
+import type { RenderOptions, RenderResult } from "../renderer/types"
+
 export const SDK_VERSION = "2.0.0"
 
 // ============================================================
@@ -28,7 +30,19 @@ export type StrategyType =
   | "csv" // CSV 下载
   | "xml" // XML 数据源
   | "rss" // RSS 订阅
-  | "playwright" // 无头浏览器（最后手段，需专用运行环境）
+  | "render" // 外部无头浏览器渲染（JS 动态站点，需配置 RENDERER_PROVIDER）
+  | "playwright" // render 的别名（历史命名，等价于 render）
+
+/** 策略失败的错误分类，便于后台归因与告警聚合 */
+export type StrategyErrorCategory =
+  | "network" // 连接失败/DNS/中断
+  | "timeout" // 超时
+  | "http-4xx" // 客户端错误（含 401/403/404/429）
+  | "http-5xx" // 服务端错误
+  | "parse" // 解析失败（格式不符）
+  | "empty" // 解析成功但 0 条价格
+  | "renderer-unconfigured" // render 策略但未配置渲染器
+  | "unknown" // 未归类
 
 /** 单个策略的执行记录（写入 metrics 与日志） */
 export interface StrategyAttempt {
@@ -36,6 +50,8 @@ export interface StrategyAttempt {
   ok: boolean
   latencyMs: number
   failureReason?: string
+  /** 失败时的错误分类（ok=true 时为 undefined） */
+  errorCategory?: StrategyErrorCategory
 }
 
 // ============================================================
@@ -255,12 +271,18 @@ export interface AdapterContext {
   log: (level: "info" | "warn" | "error", message: string) => Promise<void>
   /** 平台受控 fetch：自动应用限流、重试、退避、超时、熔断、代理 */
   fetch: (url: string, init?: RequestInit) => Promise<Response>
+  /**
+   * JS 动态渲染：通过外部无头浏览器 provider 渲染目标 URL，返回渲染后 HTML。
+   * 需配置 RENDERER_PROVIDER（browserless/scrapingbee）；未配置时 reject
+   * （策略引擎会捕获并降级到下一策略）。供必须执行 JS 才能拿到价格的站点使用。
+   */
+  render: (url: string, options?: RenderOptions) => Promise<RenderResult>
   /** 获取该注册商的解密凭证（无则返回 null） */
   getCredential: (type?: CredentialType) => Promise<CredentialPayload | null>
   /** 已收录的 TLD 集合（不含点），用于 coverage 计算 */
   knownTlds: Set<string>
   /**
-   * 已收录 TLD 的“热度降序”列表（不含点）。
+   * 已收�� TLD 的“热度降序”列表（不含点）。
    * 由平台按 popularity/isPopular 排序注入，供“逐 TLD 拉取”型适配器
    * （如 Netim）在需要控制取价范围/顺序时使用。未注入时适配器回退到 knownTlds。
    */
@@ -294,7 +316,7 @@ export interface AdapterResult {
 /**
  * 单个数据源策略的实现。
  * fetch 拿原始数据，parse 转成 RawPrice[]。
- * parse 省略时由 Parser 平台自动选择解析器。
+ * parse 省略时�� Parser 平台自动选择解析器。
  */
 export interface StrategyDefinition {
   type: StrategyType
@@ -304,6 +326,11 @@ export interface StrategyDefinition {
   fetch?: (ctx: AdapterContext) => Promise<string>
   /** 自定义解析；省略时用 Parser 平台 autoParser */
   parse?: (raw: string, ctx: AdapterContext) => Promise<RawPrice[]> | RawPrice[]
+  /**
+   * render/playwright 策略的渲染选项（等待选择器、超时等）。
+   * 仅对 type 为 "render"/"playwright" 的策略生效。
+   */
+  renderOptions?: RenderOptions
 }
 
 /** defineAdapter() 的配置对象 —— 新增注册商只需要写这一个对象 */

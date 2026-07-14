@@ -61,6 +61,54 @@ function MetricsPanel({ metrics }: { metrics: Record<string, unknown> | null }) 
   )
 }
 
+const ERROR_CATEGORY_LABEL: Record<string, string> = {
+  network: "网络",
+  timeout: "超时",
+  "http-4xx": "4xx",
+  "http-5xx": "5xx",
+  parse: "解析",
+  empty: "空结果",
+  "renderer-unconfigured": "渲染器未配置",
+  unknown: "未知",
+}
+
+function StrategyAttemptsPanel({ metrics }: { metrics: Record<string, unknown> | null }) {
+  if (!metrics || typeof metrics !== "object") return null
+  const attempts = metrics.strategyAttempts
+  if (!Array.isArray(attempts) || attempts.length === 0) return null
+  return (
+    <div>
+      <p className="mb-2 text-xs font-medium uppercase tracking-wide text-muted-foreground">策略尝试</p>
+      <ul className="flex flex-col gap-1.5">
+        {attempts.map((a: Record<string, unknown>, i) => {
+          const ok = a.ok === true
+          const strategy = String(a.strategy ?? "")
+          const latency = typeof a.latencyMs === "number" ? `${a.latencyMs}ms` : ""
+          const category = typeof a.errorCategory === "string" ? a.errorCategory : null
+          const reason = typeof a.failureReason === "string" ? a.failureReason : null
+          return (
+            <li key={i} className="flex flex-wrap items-center gap-2 rounded-md border border-border bg-background px-2.5 py-1.5 text-xs">
+              {ok ? (
+                <CircleCheck className="size-3.5 text-primary" aria-hidden />
+              ) : (
+                <CircleX className="size-3.5 text-destructive" aria-hidden />
+              )}
+              <code className="rounded bg-muted px-1.5 py-0.5 text-foreground">{strategy}</code>
+              {category ? (
+                <Badge variant="destructive" className="text-[10px]">
+                  {ERROR_CATEGORY_LABEL[category] ?? category}
+                </Badge>
+              ) : null}
+              {reason && !ok ? <span className="text-muted-foreground">{reason}</span> : null}
+              <span className="ml-auto font-mono text-muted-foreground">{latency}</span>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
+
 export default async function AdminCrawlsPage({
   searchParams,
 }: {
@@ -241,6 +289,7 @@ export default async function AdminCrawlsPage({
                   </span>
                 </div>
                 <MetricsPanel metrics={selectedJob.metrics as Record<string, unknown> | null} />
+                <StrategyAttemptsPanel metrics={selectedJob.metrics as Record<string, unknown> | null} />
               </div>
             ) : null}
 
