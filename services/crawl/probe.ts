@@ -74,7 +74,11 @@ export async function probeUrl(url: string): Promise<ProbeResult> {
   // 真实全量在 JS 渲染后的 XHR/API 里。最终取价格更多的结果。
   try {
     const rendered = await resolveRenderer().render(normalized, {
+      // domcontentloaded + 4s XHR 落地窗口: 快速拿到首屏与动态价格 API，
+      // 配合容错 goto, 即使页面长轮询不 idle 也不会空等到超时
+      waitUntil: "domcontentloaded",
       waitFor: 4000,
+      timeoutMs: 15_000,
       captureJson: true,
     })
     const captured = (rendered.capturedJson ?? []).map((c) => ({ url: c.url, body: c.body }))

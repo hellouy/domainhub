@@ -65,6 +65,9 @@ export function extractPricesFromHtmlStructured(
   // 去除明显噪音容器
   $("script,style,noscript,svg,nav,header,footer,form,aside,iframe").remove()
 
+  // 未显式传入币种时，从页面价格文本中尽力推断(便于探测/选择适配器币种)
+  const effectiveCurrency = currency ?? detectCurrencyFromText($.root().text())
+
   const byTld = new Map<string, DiscoveredPrice>()
 
   const consider = (tldText: string, priceNums: number[]) => {
@@ -78,7 +81,7 @@ export function extractPricesFromHtmlStructured(
       renewPrice: priceNums[1] ?? null,
       transferPrice: priceNums[2] ?? null,
       restorePrice: null,
-      currency,
+      currency: effectiveCurrency,
     })
   }
 
@@ -183,4 +186,36 @@ export function discoverPrices(input: DiscoveryInput): DiscoveryResult {
 function applyCurrency(prices: DiscoveredPrice[], currency?: string): DiscoveredPrice[] {
   if (!currency) return prices
   return prices.map((p) => ({ ...p, currency: p.currency ?? currency }))
+}
+
+/**
+ * 从价格文本中尽力推断币种(仅在无显式币种时用于探测/选择适配器)。
+ * 优先级：显式 ISO 代码 > 明确符号。¥/￥ 在本项目上下文按出现频次择 CNY/JPY。
+ * 推断不到时返回 undefined(保持 UNKNOWN，绝不臆造以免批量校验被误拒)。
+ */
+export function detectCurrencyFromText(text: string): string | undefined {
+  if (!text) return undefined
+  const t = text.slice(0, 200_000) // 扫描足够长的正文(价格表可能靠后)，正则开销可忽略
+  // 1. 显式 ISO 代码(紧邻数字更可信，但出现即采信)
+  const codeMatch = t.match(/\b(USD|EUR|GBP|CNY|RMB|JPY|AUD|CAD|INR|HKD|SGD)\b/)
+  if (codeMatch) {
+    const c = codeMatch[1].toUpperCase()
+    return c === "RMB" ? "CNY" : c
+  }
+  // 2. 货币符号计数，取最多者(避免页面零星混入其它符号误判)
+  const counts: Record<string, number> = {
+    USD: (t.match(/\$/g) ?? []).length,
+    EUR: (t.match(/€/g) ?? []).length,
+    GBP: (t.match(/£/g) ?? []).length,
+    CNY: (t.match(/[¥￥元]/g) ?? []).length,
+  }
+  let best: string | undefined
+  let bestN = 0
+  for (const [cur, n] of Object.entries(counts)) {
+    if (n > bestN) {
+      bestN = n
+      best = cur
+    }
+  }
+  return bestN > 0 ? best : undefined
 }

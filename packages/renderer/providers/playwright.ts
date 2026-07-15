@@ -95,16 +95,33 @@ export class PlaywrightProvider implements RenderProvider {
         })
       }
 
-      const gotoResponse = await page.goto(url, {
-        waitUntil: options.waitUntil ?? "networkidle",
-        timeout: timeoutMs,
-      })
+      // goto 采用容错策略：默认 "domcontentloaded"(快且可靠)，而非 "networkidle"。
+      // 很多站有广告/分析/长轮询/websocket，永远达不到 networkidle 会导致 30s 超时。
+      // 即便 goto 超时，页面通常已加载且 XHR 已被捕获——不能因超时丢弃全部结果。
+      let gotoResponse: Awaited<ReturnType<typeof page.goto>> = null
+      try {
+        gotoResponse = await page.goto(url, {
+          waitUntil: options.waitUntil ?? "domcontentloaded",
+          timeout: timeoutMs,
+        })
+      } catch (err) {
+        // 超时/导航中断：保留已加载内容与已捕获 XHR，继续后续解析
+        console.log(`[v0] renderer goto 未完全加载(继续解析已有内容): ${(err as Error).message}`)
+      }
 
-      // 等待条件
-      if (typeof options.waitFor === "number") {
-        await page.waitForTimeout(options.waitFor)
-      } else if (typeof options.waitFor === "string") {
-        await page.waitForSelector(options.waitFor, { timeout: timeoutMs })
+      // 等待条件（同样容错，不因等待失败而丢弃已捕获数据）
+      try {
+        if (typeof options.waitFor === "number") {
+          await page.waitForTimeout(options.waitFor)
+        } else if (typeof options.waitFor === "string") {
+          // 选择器等待上限收敛到 8s，避免长时间空等
+          await page.waitForSelector(options.waitFor, { timeout: Math.min(timeoutMs, 8_000) })
+        } else {
+          // 未指定等待条件时，给 XHR 一个短暂的落地窗口(捕获动态价格 API)
+          await page.waitForTimeout(1_500)
+        }
+      } catch {
+        // 等待条件未命中：仍尝试解析当前页面 + 已捕获的 XHR
       }
 
       let evaluated: unknown
