@@ -124,8 +124,8 @@ export function UrlProbe() {
               <div className="flex flex-col gap-1">
                 <p className="text-xs font-medium text-foreground">{"捕获到的数据源端点："}</p>
                 <ul className="flex flex-col gap-0.5">
-                  {result.capturedEndpoints.map((ep) => (
-                    <li key={ep} className="truncate font-mono text-[11px] text-muted-foreground">
+                  {[...new Set(result.capturedEndpoints)].map((ep, i) => (
+                    <li key={`${ep}-${i}`} className="truncate font-mono text-[11px] text-muted-foreground">
                       {ep}
                     </li>
                   ))}
