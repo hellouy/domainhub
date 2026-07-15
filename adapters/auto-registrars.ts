@@ -31,3 +31,27 @@ export const combellAdapter = createAutoAdapter({
   url: "https://www.combell.com/en/domain-names",
   useRenderer: true,
 })
+
+// ClouDNS(保加利亚)—— 渲染后整张价目表(1200+ 后缀, register+renew)以 Cheerio 结构化解析
+// 价格为纯数字, 站点默认 USD 计价
+export const cloudnsAdapter = createAutoAdapter({
+  slug: "cloudns",
+  name: "ClouDNS",
+  website: "https://www.cloudns.net",
+  currency: "USD",
+  url: "https://www.cloudns.net/domains/",
+  useRenderer: true,
+  renderWaitFor: "table",
+})
+
+// NameBright(美国)—— 价格由 XHR 接口 client.namebright.com/GetAllDomainPricing 返回(400+ 后缀)
+// 发现引擎捕获该 XHR JSON 直接解析, 完全不依赖 DOM 或 LLM
+export const namebrightAdapter = createAutoAdapter({
+  slug: "namebright",
+  name: "NameBright",
+  website: "https://www.namebright.com",
+  currency: "USD",
+  url: "https://www.namebright.com/DomainPricing",
+  useRenderer: true,
+  captureUrlIncludes: ["Pricing", "pricing"],
+})
