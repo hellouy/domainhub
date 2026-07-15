@@ -9,7 +9,9 @@ export async function getStats() {
   const [row] = await db
     .select({
       registrarCount: sql<number>`(SELECT count(*) FROM ${registrars} WHERE ${registrars.isActive} = true)`,
-      tldCount: sql<number>`(SELECT count(*) FROM ${tlds} WHERE ${tlds.isValid} = true)`,
+      // 与首页 explorer 口径一致：只统计「有效 且 至少有一条真实采集价格」的后缀，
+      // 避免展示无报价或被标为无效的后缀导致数字虚高/不一致
+      tldCount: sql<number>`(SELECT count(DISTINCT ${prices.tldId}) FROM ${prices} JOIN ${tlds} ON ${tlds.id} = ${prices.tldId} WHERE ${tlds.isValid} = true)`,
       priceCount: sql<number>`(SELECT count(*) FROM ${prices})`,
       lastUpdated: sql<string | null>`(SELECT max(${prices.updatedAt}) FROM ${prices})`,
     })

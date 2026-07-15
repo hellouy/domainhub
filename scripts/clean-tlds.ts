@@ -112,9 +112,12 @@ async function main() {
 
   const invalidIds: number[] = []
   for (const row of all) {
-    // 数据库存的是主后缀(如 "com"、"co.uk")。多级后缀取最后一段校验
-    const last = row.tld.split(".").pop() ?? row.tld
-    if (!ianaSet.has(last.toLowerCase())) invalidIds.push(row.id)
+    const t = row.tld.toLowerCase()
+    // 只认「单标签(无点) 且 在 IANA 官方根区列表」的真实顶级后缀。
+    // 剔除: 多级后缀(co.uk / hk.com / aaa.pro / 5g.in)、价格分组(100-199 / 50-99)、
+    //       含数字或连字符的伪后缀(0zebra / best-selling) —— 它们都不在 IANA 单标签集合里。
+    const isRealTld = !t.includes(".") && ianaSet.has(t)
+    if (!isRealTld) invalidIds.push(row.id)
   }
   if (invalidIds.length > 0) {
     await db.execute(
