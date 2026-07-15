@@ -114,6 +114,7 @@ function EditTldDialog({ row }: { row: TldRow }) {
                 <option value="gTLD">通用顶级域名 gTLD</option>
                 <option value="ccTLD">国家域名 ccTLD</option>
                 <option value="newG">新顶级域名 newG</option>
+                <option value="sld">二级域名 sld</option>
               </select>
             </div>
             <div className="flex flex-col gap-2">

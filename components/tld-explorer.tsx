@@ -34,6 +34,7 @@ const TYPE_TABS: { key: string; labelKey: DictKey }[] = [
   { key: "gTLD", labelKey: "explorer.tab.gtld" },
   { key: "ccTLD", labelKey: "explorer.tab.cctld" },
   { key: "newG", labelKey: "explorer.tab.newg" },
+  { key: "sld", labelKey: "explorer.tab.sld" },
 ]
 
 const PAGE_SIZE = 48

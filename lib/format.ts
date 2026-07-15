@@ -94,11 +94,13 @@ const TLD_TYPE_LABELS_ZH: Record<string, string> = {
   gTLD: "通用顶级域名",
   ccTLD: "国家域名",
   newG: "新顶级域名",
+  sld: "二级域名",
 }
 const TLD_TYPE_LABELS_EN: Record<string, string> = {
   gTLD: "Generic TLD",
   ccTLD: "Country-code TLD",
   newG: "New gTLD",
+  sld: "Second-level",
 }
 export function tldTypeLabel(type: string, locale: Locale = "zh") {
   const map = locale === "en" ? TLD_TYPE_LABELS_EN : TLD_TYPE_LABELS_ZH

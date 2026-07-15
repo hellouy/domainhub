@@ -6,41 +6,44 @@ async function main() {
   const p = new pg.Pool({ connectionString: process.env.DATABASE_URL, ssl: { rejectUnauthorized: false } })
   const q = async (s) => (await p.query(s)).rows
 
-  // 拉 PSL
   const res = await fetch(PSL_URL)
   const text = await res.text()
-  const psl = new Set()
-  let section = "ICANN"
+  const rules = new Set()      // 普通规则 e.g. "com.cn"
+  const wildcards = new Set()  // "*.ck" => 存 "ck"
+  const exceptions = new Set() // "!www.ck" => 存 "www.ck"
   for (const raw of text.split("\n")) {
     const line = raw.trim()
-    if (line.startsWith("// ===BEGIN PRIVATE")) section = "PRIVATE"
     if (!line || line.startsWith("//")) continue
-    // 去掉通配符/例外前缀
-    const rule = line.replace(/^[*!]\.?/, "").toLowerCase()
-    psl.add(rule)
+    if (line.startsWith("!")) { exceptions.add(line.slice(1).toLowerCase()); continue }
+    if (line.startsWith("*.")) { wildcards.add(line.slice(2).toLowerCase()); continue }
+    rules.add(line.toLowerCase())
   }
-  console.log("PSL 规则数:", psl.size)
+  console.log("PSL 普通规则:", rules.size, " 通配:", wildcards.size, " 例外:", exceptions.size)
 
-  // 当前被隐藏的后缀(is_valid=false)
+  // 判定 X 是否为公共后缀(可注册二级域名后缀)
+  const isPublicSuffix = (x) => {
+    x = x.toLowerCase()
+    if (exceptions.has(x)) return true
+    if (rules.has(x)) return true
+    const parent = x.split(".").slice(1).join(".")
+    if (parent && wildcards.has(parent)) return true // 匹配 *.parent
+    return false
+  }
+
   const hidden = await q("SELECT tld FROM tlds WHERE is_valid = false ORDER BY tld")
   console.log("当前隐藏后缀数:", hidden.length)
-
   const multi = hidden.filter((r) => r.tld.includes("."))
   const single = hidden.filter((r) => !r.tld.includes("."))
-  console.log("  其中多级(含点):", multi.length, " 单标签:", single.length)
+  console.log("  多级(含点):", multi.length, " 单标签:", single.length)
 
-  // 多级里: PSL 命中(应恢复) vs 未命中(仍垃圾)
-  const recover = multi.filter((r) => psl.has(r.tld.toLowerCase()))
-  const stillJunk = multi.filter((r) => !psl.has(r.tld.toLowerCase()))
-  console.log("\n多级后缀中 PSL 命中(应恢复为二级域名):", recover.length)
-  console.log("  样例:", recover.slice(0, 25).map((r) => r.tld).join(", "))
-  console.log("\n多级后缀中 PSL 未命中(仍视为垃圾):", stillJunk.length)
-  console.log("  样例:", stillJunk.slice(0, 30).map((r) => r.tld).join(", "))
+  const recover = multi.filter((r) => isPublicSuffix(r.tld))
+  const stillJunk = multi.filter((r) => !isPublicSuffix(r.tld))
+  console.log("\n多级 PSL 命中(应恢复):", recover.length)
+  console.log("\n多级 PSL 未命中(仍垃圾):", stillJunk.length)
+  console.log("  全部:", stillJunk.map((r) => r.tld).join(", "))
 
-  // 单标签隐藏里 PSL 命中的(可能被误伤)
-  const singleInPsl = single.filter((r) => psl.has(r.tld.toLowerCase()))
-  console.log("\n单标签隐藏中 PSL 命中数:", singleInPsl.length, "样例:", singleInPsl.slice(0, 20).map((r) => r.tld).join(", "))
-
+  const singleInPsl = single.filter((r) => isPublicSuffix(r.tld))
+  console.log("\n单标签隐藏中 PSL 命中:", singleInPsl.length, singleInPsl.slice(0, 20).map((r) => r.tld).join(", "))
   await p.end()
 }
 main().catch((e) => { console.error(e.message); process.exit(1) })

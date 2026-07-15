@@ -44,13 +44,50 @@ const LEGACY_GTLDS = new Set([
   "edu", "mil", "arpa", "post",
 ])
 
-/** 判定单个后缀的分类。tld 为主后缀(小写,如 "com"、"co"、"shop") */
-function classify(tld: string): "gTLD" | "ccTLD" | "newG" {
-  const base = tld.toLowerCase()
+/** 判定后缀分类。含点的多级后缀(com.cn / cn.com / co.uk)统一归「二级域名」sld */
+function classify(tld: string): "gTLD" | "ccTLD" | "newG" | "sld" {
+  const t = tld.toLowerCase()
+  if (t.includes(".")) return "sld"
   // ICANN 规定:所有两字母顶级域专属国家/地区(ccTLD)
-  if (/^[a-z]{2}$/.test(base)) return "ccTLD"
-  if (LEGACY_GTLDS.has(base)) return "gTLD"
+  if (/^[a-z]{2}$/.test(t)) return "ccTLD"
+  if (LEGACY_GTLDS.has(t)) return "gTLD"
   return "newG"
+}
+
+/**
+ * 一个 DNS 标签是否"像"真实域名段(用于校验 PSL 未收录的真实二级后缀,
+ * 同时挡住价格分组/伪后缀):字母数字连字符, 但排除纯数字段(35/247)与价格区间(100-199)。
+ * xn-- 开头的 IDN 段含连字符, 合法保留。
+ */
+function isPlausibleLabel(seg: string): boolean {
+  if (!/^[a-z0-9-]+$/.test(seg)) return false
+  if (/^\d+$/.test(seg)) return false // 纯数字段
+  if (/^\d+-\d+$/.test(seg)) return false // 价格区间分组
+  return true
+}
+
+/** 解析 Public Suffix List, 返回判定函数 isPublicSuffix(含通配 *. 与例外 ! 规则) */
+async function loadPublicSuffixList(): Promise<(x: string) => boolean> {
+  const res = await fetch("https://publicsuffix.org/list/public_suffix_list.dat")
+  if (!res.ok) throw new Error(`PSL 拉取失败: HTTP ${res.status}`)
+  const text = await res.text()
+  const rules = new Set<string>()
+  const wildcards = new Set<string>()
+  const exceptions = new Set<string>()
+  for (const raw of text.split("\n")) {
+    const line = raw.trim()
+    if (!line || line.startsWith("//")) continue
+    if (line.startsWith("!")) exceptions.add(line.slice(1).toLowerCase())
+    else if (line.startsWith("*.")) wildcards.add(line.slice(2).toLowerCase())
+    else rules.add(line.toLowerCase())
+  }
+  return (x: string) => {
+    x = x.toLowerCase()
+    if (exceptions.has(x)) return true
+    if (rules.has(x)) return true
+    const parent = x.split(".").slice(1).join(".")
+    return parent !== "" && wildcards.has(parent)
+  }
 }
 
 async function main() {
@@ -77,6 +114,10 @@ async function main() {
       .map((l) => l.trim().toLowerCase()),
   )
   console.log(`IANA 官方后缀数: ${ianaSet.size}`)
+
+  // 拉 Public Suffix List, 用于校验真实可注册的二级域名后缀(com.cn / cn.com / co.uk 等)
+  const isPublicSuffix = await loadPublicSuffixList()
+  console.log("PSL 已加载(用于二级域名校验)")
 
   // ---- 2.5 回填:把 IANA 官方列表里缺失的顶级后缀插入 tlds（幂等，只增不改） ----
   // 现有记录可能是多级后缀(如 co.uk)，按最后一段建立已有集合，避免与顶级后缀重复
@@ -113,11 +154,21 @@ async function main() {
   const invalidIds: number[] = []
   for (const row of all) {
     const t = row.tld.toLowerCase()
-    // 只认「单标签(无点) 且 在 IANA 官方根区列表」的真实顶级后缀。
-    // 剔除: 多级后缀(co.uk / hk.com / aaa.pro / 5g.in)、价格分组(100-199 / 50-99)、
-    //       含数字或连字符的伪后缀(0zebra / best-selling) —— 它们都不在 IANA 单标签集合里。
-    const isRealTld = !t.includes(".") && ianaSet.has(t)
-    if (!isRealTld) invalidIds.push(row.id)
+    let ok: boolean
+    if (!t.includes(".")) {
+      // 一级后缀:必须在 IANA 官方根区。挡住价格分组(100-199/50-99)、纯数字、伪后缀。
+      ok = ianaSet.has(t)
+    } else {
+      // 二级后缀:PSL 命中(官方 ccTLD 二级 + CentralNic 商业二级)即收;
+      // PSL 偶有漏收的真实二级(com.tc / arc.pro / presse.fr)用兜底判据:
+      // 顶层段在 IANA 且各段都像真实域名段(排除纯数字/价格区间), 段数≤3。
+      const labels = t.split(".")
+      const top = labels[labels.length - 1]
+      ok =
+        isPublicSuffix(t) ||
+        (ianaSet.has(top) && labels.length <= 3 && labels.every(isPlausibleLabel))
+    }
+    if (!ok) invalidIds.push(row.id)
   }
   if (invalidIds.length > 0) {
     await db.execute(
@@ -155,24 +206,31 @@ async function main() {
   )
   console.log(`[3/4] 热度标注完成: ${entries.length} 个后缀已打分,前 ${POPULAR_FLAG_COUNT} 个设为热门`)
 
-  // ---- 4. 精确三分类:通用 / 国家 / 新顶级 ----
-  const byType: Record<"gTLD" | "ccTLD" | "newG", number[]> = { gTLD: [], ccTLD: [], newG: [] }
+  // ---- 4. 精确四分类:通用 / 国家 / 新顶级 / 二级域名 ----
+  const invalidSet = new Set(invalidIds)
+  const byType: Record<"gTLD" | "ccTLD" | "newG" | "sld", number[]> = {
+    gTLD: [], ccTLD: [], newG: [], sld: [],
+  }
   for (const row of all) {
-    if (invalidIds.includes(row.id)) continue // 无效后缀不重标
-    const main = row.tld.split(".").pop() ?? row.tld
-    byType[classify(main)].push(row.id)
+    if (invalidSet.has(row.id)) continue // 无效后缀不重标
+    byType[classify(row.tld)].push(row.id)
   }
   for (const [type, ids] of Object.entries(byType)) {
     if (ids.length === 0) continue
-    await db.execute(
-      sql`UPDATE tlds SET type = ${type} WHERE id IN (${sql.join(
-        ids.map((i) => sql`${i}`),
-        sql`, `,
-      )})`,
-    )
+    // 分批更新, 避免单条 SQL 参数过多(二级域名可能上千)
+    const CHUNK = 500
+    for (let i = 0; i < ids.length; i += CHUNK) {
+      const batch = ids.slice(i, i + CHUNK)
+      await db.execute(
+        sql`UPDATE tlds SET type = ${type} WHERE id IN (${sql.join(
+          batch.map((n) => sql`${n}`),
+          sql`, `,
+        )})`,
+      )
+    }
   }
   console.log(
-    `[4/4] 分类完成: 通用 ${byType.gTLD.length} · 国家 ${byType.ccTLD.length} · 新顶级 ${byType.newG.length}`,
+    `[4/4] 分类完成: 通用 ${byType.gTLD.length} · 国家 ${byType.ccTLD.length} · 新顶级 ${byType.newG.length} · 二级域名 ${byType.sld.length}`,
   )
   process.exit(0)
 }
