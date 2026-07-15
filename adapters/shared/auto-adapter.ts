@@ -115,6 +115,74 @@ export function createAutoAdapter(config: AutoAdapterConfig) {
     return { html: renderedHtml, captured: capturedJson }
   }
 
+  // ---- 各策略定义(装配顺序在下方按 useRenderer 决定) ----
+
+  // 静态 HTML 内嵌 JSON
+  const staticJsonStrategy = {
+    type: "embedded-json" as const,
+    url: primaryUrl,
+    async fetch(ctx: AdapterContext) {
+      return fetchStatic(ctx)
+    },
+    parse(raw: string) {
+      const sources = collectJsonSources(raw)
+      const { prices } = extractPricesFromJsonSources(sources)
+      const rows = toRawPrices(prices, config.currency, primaryUrl)
+      if (rows.length === 0) throw new Error(`${config.slug} 未在静态 HTML 内嵌 JSON 中发现价格`)
+      return rows
+    },
+  }
+
+  // Cheerio 结构化 HTML
+  const staticHtmlStrategy = {
+    type: "html" as const,
+    url: primaryUrl,
+    async fetch(ctx: AdapterContext) {
+      return fetchStatic(ctx)
+    },
+    parse(raw: string) {
+      const prices = extractPricesFromHtmlStructured(raw, config.currency)
+      const rows = toRawPrices(prices, config.currency, primaryUrl)
+      if (rows.length === 0) throw new Error(`${config.slug} 结构化 HTML 未解析到价格`)
+      return rows
+    },
+  }
+
+  // 渲染 + 捕获 XHR + 发现引擎(真实数据源优先)
+  const renderStrategy = {
+    type: "render" as const,
+    url: primaryUrl,
+    async fetch(ctx: AdapterContext) {
+      const { html, captured } = await fetchRendered(ctx)
+      return JSON.stringify({ html, captured })
+    },
+    parse(raw: string) {
+      const { html, captured } = JSON.parse(raw) as {
+        html: string
+        captured: { url: string; body: string }[]
+      }
+      const { prices } = discoverPrices({
+        html,
+        capturedJson: captured,
+        currency: config.currency,
+      })
+      const rows = toRawPrices(prices, config.currency, primaryUrl)
+      if (rows.length === 0) throw new Error(`${config.slug} 渲染后发现引擎未找到价格`)
+      for (const r of rows) r.region = null
+      return rows
+    },
+  }
+
+  // 装配顺序:声明了 useRenderer 的站点为 JS/XHR 动态站,
+  // 渲染+XHR 发现优先(避免静态页里的少量诱饵 JSON 提前命中导致数据不全);
+  // 否则静态策略优先(更快更省)。
+  const strategies =
+    config.useRenderer === true
+      ? [renderStrategy, staticJsonStrategy, staticHtmlStrategy]
+      : config.useRenderer === false
+        ? [staticJsonStrategy, staticHtmlStrategy]
+        : [staticJsonStrategy, staticHtmlStrategy, renderStrategy]
+
   const definition: AdapterDefinition = {
     slug: config.slug,
     name: config.name,
@@ -131,68 +199,7 @@ export function createAutoAdapter(config: AutoAdapterConfig) {
       supportedCurrencies: [config.currency],
     },
     rateLimit: { concurrency: 1, rpm: 10, retries: 2, timeoutMs: 60_000 },
-    strategies: [
-      // 1. 静态 HTML 内嵌 JSON
-      {
-        type: "embedded-json",
-        url: primaryUrl,
-        async fetch(ctx) {
-          return fetchStatic(ctx)
-        },
-        parse(raw) {
-          const sources = collectJsonSources(raw)
-          const { prices } = extractPricesFromJsonSources(sources)
-          const rows = toRawPrices(prices, config.currency, primaryUrl)
-          if (rows.length === 0) throw new Error(`${config.slug} 未在静态 HTML 内嵌 JSON 中发现价格`)
-          return rows
-        },
-      },
-      // 2. Cheerio 结构化 HTML
-      {
-        type: "html",
-        url: primaryUrl,
-        async fetch(ctx) {
-          return fetchStatic(ctx)
-        },
-        parse(raw) {
-          const prices = extractPricesFromHtmlStructured(raw, config.currency)
-          const rows = toRawPrices(prices, config.currency, primaryUrl)
-          if (rows.length === 0) throw new Error(`${config.slug} 结构化 HTML 未解析到价格`)
-          return rows
-        },
-      },
-    ],
-  }
-
-  // 3. 渲染 + 捕获 XHR + 发现引擎
-  if (config.useRenderer !== false) {
-    definition.strategies.push({
-      type: "render",
-      url: primaryUrl,
-      async fetch(ctx) {
-        const { html, captured } = await fetchRendered(ctx)
-        // 把捕获的 XHR 用哨兵拼接到 html 后, 交给 parse 一并处理
-        return JSON.stringify({ html, captured })
-      },
-      parse(raw) {
-        const { html, captured } = JSON.parse(raw) as {
-          html: string
-          captured: { url: string; body: string }[]
-        }
-        const { prices, method, origin } = discoverPrices({
-          html,
-          capturedJson: captured,
-          currency: config.currency,
-        })
-        const rows = toRawPrices(prices, config.currency, primaryUrl)
-        if (rows.length === 0) throw new Error(`${config.slug} 渲染后发现引擎未找到价格`)
-        // method/origin 记录在价格来源里便于诊断
-        for (const r of rows) r.region = null
-        void method
-        void origin
-        return rows
-      },
-    })
+    strategies,
   }
 
   // 4. LLM 分块兜底(最后一级)
