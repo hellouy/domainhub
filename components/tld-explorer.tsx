@@ -186,6 +186,23 @@ export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
 
   const shown = filtered.slice(0, visible)
 
+  // 各分类计数(一次计算), 显示在 tab 上帮助用户了解分布
+  const counts = useMemo(() => {
+    const c: Record<string, number> = {
+      all: tlds.length,
+      popular: 0,
+      gTLD: 0,
+      ccTLD: 0,
+      newG: 0,
+      sld: 0,
+    }
+    for (const t of tlds) {
+      if (t.isPopular) c.popular++
+      if (t.type in c) c[t.type]++
+    }
+    return c
+  }, [tlds])
+
   function selectTab(key: string) {
     setTab(key)
     setQuery("")
@@ -210,13 +227,21 @@ export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
               aria-selected={tab === tabItem.key && !query}
               onClick={() => selectTab(tabItem.key)}
               className={cn(
-                "shrink-0 px-3.5 py-1.5 text-sm font-medium transition-colors",
+                "flex shrink-0 items-center gap-1.5 px-3.5 py-1.5 text-sm font-medium transition-colors",
                 tab === tabItem.key && !query
                   ? "bg-primary text-primary-foreground"
                   : "bg-secondary text-secondary-foreground hover:bg-accent",
               )}
             >
-              {t(tabItem.labelKey)}
+              <span>{t(tabItem.labelKey)}</span>
+              <span
+                className={cn(
+                  "font-mono text-[11px] tabular-nums",
+                  tab === tabItem.key && !query ? "text-primary-foreground/70" : "text-muted-foreground",
+                )}
+              >
+                {counts[tabItem.key] ?? 0}
+              </span>
             </button>
           ))}
         </div>

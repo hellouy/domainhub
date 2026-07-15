@@ -64,6 +64,22 @@ function poolMax(): number {
   return Number.isFinite(max) && max > 0 ? max : 5
 }
 
+/**
+ * 去除连接串里的 sslmode/ssl 查询参数。
+ * 我们已用显式 ssl 对象(rejectUnauthorized:false)控制 TLS，连接串里再带 sslmode=require
+ * 会触发 pg 的弃用警告(未来版本将改用 libpq 语义)。剥离后消除警告且行为不变。
+ */
+function sanitizeConnectionString(url: string): string {
+  try {
+    const u = new URL(url)
+    u.searchParams.delete("sslmode")
+    u.searchParams.delete("ssl")
+    return u.toString()
+  } catch {
+    return url
+  }
+}
+
 /** 连接级错误（值得故障切换）：区别于 SQL 逻辑错误（不该切换） */
 const CONNECTION_ERROR_CODES = new Set([
   "ECONNREFUSED",
@@ -156,7 +172,7 @@ if (!primaryUrl) {
 
 // 主库池（写路径专用，永不故障切换）
 export const pool = new Pool({
-  connectionString: primaryUrl,
+  connectionString: sanitizeConnectionString(primaryUrl),
   ssl: resolveSsl(primaryUrl),
   max: poolMax(),
 })
@@ -164,7 +180,7 @@ export const pool = new Pool({
 // 备库池（只读；仅在配置了 REPLICA_DATABASE_URL 时创建）
 const replicaPool: Pool | null = replicaUrl
   ? new Pool({
-      connectionString: replicaUrl,
+      connectionString: sanitizeConnectionString(replicaUrl),
       ssl: resolveSsl(replicaUrl),
       max: poolMax(),
     })
@@ -172,7 +188,7 @@ const replicaPool: Pool | null = replicaUrl
 
 // 读路径池：故障切换（主 Neon → 备 Supabase）
 const readPool = new FailoverPool(
-  { connectionString: primaryUrl, ssl: resolveSsl(primaryUrl), max: poolMax() },
+  { connectionString: sanitizeConnectionString(primaryUrl), ssl: resolveSsl(primaryUrl), max: poolMax() },
   replicaPool,
 )
 
