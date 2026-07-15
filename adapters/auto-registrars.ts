@@ -16,7 +16,7 @@ export const inwxAdapter = createAutoAdapter({
   name: "INWX",
   website: "https://www.inwx.com",
   currency: "EUR",
-  url: "https://www.inwx.com/en/domain/prices",
+  url: "https://www.inwx.com/en/domain/pricelist",
   useRenderer: true,
   captureUrlIncludes: ["price", "domain"],
 })
