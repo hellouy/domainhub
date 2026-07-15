@@ -5,6 +5,7 @@ import Link from "next/link"
 import useSWR from "swr"
 import { ArrowUpRight, ExternalLink, Search, X } from "lucide-react"
 import { convertAmount } from "@/lib/format"
+import { toUnicodeTld } from "@/lib/tld-display"
 import { cn, normalizeUrl } from "@/lib/utils"
 import { useCurrency, useLocale } from "@/components/providers"
 import type { DictKey } from "@/lib/i18n"
@@ -69,7 +70,7 @@ function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
     <div className="col-span-full border border-primary/40 bg-card">
       <div className="flex items-center justify-between border-b border-border px-4 py-3">
         <h3 className="font-mono text-base font-semibold">
-          .{tld}{" "}
+          .{toUnicodeTld(tld)}{" "}
           <span className="ml-1 text-xs font-normal text-muted-foreground">{t("explorer.panel.lowest")}</span>
         </h3>
         <div className="flex items-center gap-3">
@@ -170,9 +171,11 @@ export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
     const q = query.trim().toLowerCase().replace(/^\.+/, "")
     let list = tlds
     if (q) {
+      // 同时匹配 punycode 存储形式与 Unicode 展示形式(如输入 "网址" 命中 xn--ses554g)
+      const key = (t: ExplorerTld) => `${t.tld} ${toUnicodeTld(t.tld)}`.toLowerCase()
       // 搜索优先级：前缀匹配 > 包含匹配
-      const starts = list.filter((t) => t.tld.startsWith(q))
-      const contains = list.filter((t) => !t.tld.startsWith(q) && t.tld.includes(q))
+      const starts = list.filter((t) => t.tld.startsWith(q) || toUnicodeTld(t.tld).toLowerCase().startsWith(q))
+      const contains = list.filter((t) => !starts.includes(t) && key(t).includes(q))
       return [...starts, ...contains]
     }
     if (tab === "popular") list = list.filter((t) => t.isPopular)
@@ -262,7 +265,7 @@ export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
                   : "border-border bg-card hover:border-primary hover:bg-accent",
               )}
             >
-              <span className="truncate font-mono text-[13px] font-semibold md:text-sm">.{t.tld}</span>
+                <span className="truncate font-mono text-[13px] font-semibold md:text-sm">.{toUnicodeTld(t.tld)}</span>
               <span className="truncate font-mono text-[11px] tabular-nums text-muted-foreground md:text-xs">
                 {t.minRegister != null ? money(t.minRegister, "USD") : "—"}
               </span>

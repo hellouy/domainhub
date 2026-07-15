@@ -3,6 +3,7 @@
 import { useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Search } from "lucide-react"
+import { toUnicodeTld } from "@/lib/tld-display"
 import { useCurrency, useLocale } from "@/components/providers"
 
 export type TldSearchOption = {
@@ -85,7 +86,7 @@ export function TldSearch({ options }: { options: TldSearchOption[] }) {
                 onClick={() => go(s.tld)}
                 className="flex w-full items-center justify-between px-4 py-2.5 text-left hover:bg-accent"
               >
-                <span className="font-mono text-sm font-medium">.{s.tld}</span>
+                <span className="font-mono text-sm font-medium">.{toUnicodeTld(s.tld)}</span>
                 <span className="text-xs text-muted-foreground">
                   {s.minRegister ? `最低 ${money(s.minRegister, "USD")}` : "暂无价格"}
                 </span>

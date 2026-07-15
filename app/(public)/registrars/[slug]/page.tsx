@@ -7,6 +7,7 @@ import { Money } from "@/components/money"
 import { T, RelativeTime, RegistrarDescription } from "@/components/i18n-text"
 import { getPricesForRegistrar, getRegistrarBySlug } from "@/lib/db/queries"
 import { normalizeUrl } from "@/lib/utils"
+import { toUnicodeTld } from "@/lib/tld-display"
 
 export const revalidate = 300
 
@@ -127,7 +128,7 @@ export default async function RegistrarPage({ params }: Props) {
                 <tr key={p.priceId} className="border-b border-border last:border-b-0 hover:bg-accent/50">
                   <td className="px-4 py-3.5">
                     <Link href={`/tld/${p.tld}`} className="font-mono font-semibold hover:text-primary">
-                      .{p.tld}
+                      .{toUnicodeTld(p.tld)}
                     </Link>
                   </td>
                   <td className="px-4 py-3.5 text-right font-mono tabular-nums">

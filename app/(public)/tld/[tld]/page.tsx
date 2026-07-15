@@ -6,6 +6,7 @@ import { Money } from "@/components/money"
 import { T, TldType, DataUpdated } from "@/components/i18n-text"
 import { getPricesForTld, getTldByName, getTldLastUpdated } from "@/lib/db/queries"
 import { getUsdRates, toUsd, type UsdRates } from "@/lib/fx"
+import { toUnicodeTld } from "@/lib/tld-display"
 
 export const revalidate = 300
 
@@ -15,13 +16,14 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { tld } = await params
   const row = await getTldByName(decodeURIComponent(tld))
   if (!row) return { title: "未找到该后缀" }
+  const name = toUnicodeTld(row.tld)
   return {
-    title: `.${row.tld} 域名价格比较 — 注册、续费、转入最低价`,
-    description: `比较各大注册商的 .${row.tld} 域名注册、续费与转入价格，实时找到最便宜的 .${row.tld} 注册商。${row.description.slice(0, 60)}`,
+    title: `.${name} 域名价格比较 — 注册、续费、转入最低价`,
+    description: `比较各大注册商的 .${name} 域名注册、续费与转入价格，实时找到最便宜的 .${name} 注册商。${row.description.slice(0, 60)}`,
     alternates: { canonical: `/tld/${row.tld}` },
     openGraph: {
-      title: `.${row.tld} 域名价格比较`,
-      description: `找到最便宜的 .${row.tld} 域名注册商`,
+      title: `.${name} 域名价格比较`,
+      description: `找到最便宜的 .${name} 域名注册商`,
     },
   }
 }
@@ -62,7 +64,7 @@ export default async function TldPage({ params }: Props) {
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "Product",
-    name: `.${row.tld} 域名`,
+    name: `.${toUnicodeTld(row.tld)} 域名`,
     description: row.description,
     offers: {
       "@type": "AggregateOffer",
@@ -88,14 +90,14 @@ export default async function TldPage({ params }: Props) {
           <T k="nav.tlds" />
         </Link>
         <span aria-hidden="true"> / </span>
-        <span className="text-foreground">.{row.tld}</span>
+        <span className="text-foreground">.{toUnicodeTld(row.tld)}</span>
       </nav>
 
       <header className="flex flex-col gap-3">
         <p className="text-xs font-medium uppercase tracking-widest text-primary">
           <TldType type={row.type} />
         </p>
-        <h1 className="font-mono text-4xl font-bold tracking-tight md:text-5xl">.{row.tld}</h1>
+        <h1 className="font-mono text-4xl font-bold tracking-tight md:text-5xl">.{toUnicodeTld(row.tld)}</h1>
         <p className="max-w-2xl text-pretty leading-relaxed text-muted-foreground">{row.description}</p>
         <p className="text-xs text-muted-foreground">
           <DataUpdated date={lastUpdated} />

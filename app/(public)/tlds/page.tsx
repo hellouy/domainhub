@@ -3,6 +3,7 @@ import Link from "next/link"
 import { Money } from "@/components/money"
 import { T, TCount, TldType } from "@/components/i18n-text"
 import { getTldsWithMinPrice } from "@/lib/db/queries"
+import { toUnicodeTld } from "@/lib/tld-display"
 
 export const revalidate = 300
 
@@ -51,7 +52,7 @@ export default async function TldsPage() {
               <tr key={t.id} className="border-b border-border last:border-b-0 hover:bg-accent/50">
                 <td className="px-4 py-3.5">
                   <Link href={`/tld/${t.tld}`} className="font-mono font-semibold hover:text-primary">
-                    .{t.tld}
+                    .{toUnicodeTld(t.tld)}
                   </Link>
                 </td>
                 <td className="px-4 py-3.5 text-muted-foreground">
