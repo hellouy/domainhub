@@ -15,7 +15,8 @@ export const inwxAdapter = createAutoAdapter({
   slug: "inwx",
   name: "INWX",
   website: "https://www.inwx.com",
-  currency: "EUR",
+  // /api/v1/domain/all-prices 默认按访问地返回 USD(发现引擎已按行读取真实币种)
+  currency: "USD",
   url: "https://www.inwx.com/en/domain/pricelist",
   useRenderer: true,
   captureUrlIncludes: ["price", "domain"],
