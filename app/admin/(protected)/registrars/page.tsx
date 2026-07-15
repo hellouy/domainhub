@@ -4,6 +4,7 @@ import { asc } from "drizzle-orm"
 import { Store, CheckCircle2, DollarSign, Activity } from "lucide-react"
 import { getRegistrarHealthRows } from "@/lib/db/admin-queries"
 import { RegistrarAdminTable } from "@/components/admin/registrar-admin-table"
+import { UrlProbe } from "@/components/admin/url-probe"
 import { PageHeader, StatCard } from "@/components/admin/ui"
 
 export default async function AdminRegistrarsPage() {
@@ -51,6 +52,8 @@ export default async function AdminRegistrarsPage() {
         <StatCard icon={Activity} label="有价格数据" value={`${withData}/${rows.length}`} />
         <StatCard icon={DollarSign} label="价格记录总数" value={totalPrices.toLocaleString()} />
       </div>
+
+      <UrlProbe />
 
       <RegistrarAdminTable registrars={tableRows} />
     </div>

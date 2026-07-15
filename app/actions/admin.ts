@@ -41,6 +41,16 @@ export async function triggerCrawl(registrarId: number) {
   return result
 }
 
+/**
+ * 探测一个价格页 URL 的可抓取性(不写库)。
+ * 管理员在添加注册商时输入网址即可自动尝试多策略抓取并预览结果。
+ */
+export async function probeRegistrarUrl(url: string) {
+  await requireAdmin()
+  const { probeUrl } = await import("@/services/crawl/probe")
+  return probeUrl(url)
+}
+
 export async function triggerCrawlAll() {
   await requireAdmin()
   const active = await db.select().from(registrars).where(eq(registrars.isActive, true))
