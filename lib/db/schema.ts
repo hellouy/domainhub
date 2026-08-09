@@ -39,6 +39,8 @@ export const registrars = pgTable("registrars", {
   ianaId: text("iana_id"),
   /** 生命周期状态：active | discovered | paused（默认 active，不影响既有行） */
   status: text("status").notNull().default("active"),
+  /** 采集连接地址（价格页 URL 列表，后台可手动增删改）；AI 修复与动态采集据此抓取 */
+  crawlUrls: jsonb("crawl_urls").$type<string[]>(),
 })
 
 export const tlds = pgTable("tlds", {
