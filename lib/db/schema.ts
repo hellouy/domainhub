@@ -32,6 +32,13 @@ export const registrars = pgTable("registrars", {
   adapterVersion: text("adapter_version"),
   /** 采集优先级（数字越小越优先） */
   priority: integer("priority"),
+  // ---- 发现系统新增列（可空，向后兼容） ----
+  /** 注册商所属国家/地区（ISO 或自由文本，发现时填充） */
+  country: text("country"),
+  /** IANA 认证 registrar ID（如有） */
+  ianaId: text("iana_id"),
+  /** 生命周期状态：active | discovered | paused（默认 active，不影响既有行） */
+  status: text("status").notNull().default("active"),
 })
 
 export const tlds = pgTable("tlds", {
@@ -251,6 +258,34 @@ export const crawlBackfill = pgTable("crawl_backfill", {
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 })
+
+/**
+ * 注册商候选池：发现引擎产出的未审核结果，人工审核通过后才提升进 registrars。
+ * 避免自动发现直接污染正式表；只增量、幂等（按 website 去重）。
+ */
+export const registrarCandidates = pgTable("registrar_candidates", {
+  id: serial("id").primaryKey(),
+  /** 猜测的名称（发现引擎从页面标题/域名推断） */
+  name: text("name").notNull().default(""),
+  /** 主站 URL（去重键） */
+  website: text("website").notNull().unique(),
+  /** 探测到的价格页 URL */
+  pricePage: text("price_page"),
+  /** 发现来源：seed | crawl | manual | iana */
+  source: text("source").notNull().default("manual"),
+  /** 发现信心分 0-100（价格信号强度） */
+  confidence: integer("confidence").notNull().default(0),
+  /** pending | approved | rejected | promoted */
+  status: text("status").notNull().default("pending"),
+  /** 扫描器/发现引擎的原始证据：{ signals, detectedStrategy, sampleTlds, contentType, ... } */
+  evidence: jsonb("evidence"),
+  /** 审核通过后提升成的 registrars.id（回填） */
+  promotedRegistrarId: integer("promoted_registrar_id"),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
+export type RegistrarCandidate = typeof registrarCandidates.$inferSelect
 
 export type CrawlBackfillRow = typeof crawlBackfill.$inferSelect
 
