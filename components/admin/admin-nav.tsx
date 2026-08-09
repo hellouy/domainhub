@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
   Store,
+  Compass,
+  FileCode2,
   Radio,
   DollarSign,
   Globe,
