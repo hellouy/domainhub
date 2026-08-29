@@ -12,5 +12,6 @@
 INSERT INTO registrars (slug, name, website, description, is_active)
 VALUES
   ('xserver', 'Xserver', 'https://www.xserver.ne.jp', '日本注册商。SSR 价格表，覆盖约 255 个 TLD（JPY）。', true),
-  ('value-domain', 'Value Domain', 'https://www.value-domain.com', '日本注册商。SSR 全量价格表，覆盖约 469 个 TLD（JPY）。', true)
+  ('value-domain', 'Value Domain', 'https://www.value-domain.com', '日本注册商。SSR 全量价格表，覆盖约 469 个 TLD（JPY）。', true),
+  ('muumuu-domain', 'ムームードメイン', 'https://muumuu-domain.com', '日本注册商（GMO 系）。SSR 价格表，覆盖约 417 个 TLD（JPY）。', true)
 ON CONFLICT (slug) DO NOTHING;

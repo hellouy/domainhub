@@ -5,8 +5,8 @@
   "description": "远程浏览器渲染/内容提取服务 —— 供主站 Adapter SDK playwright 策略调用（Playwright + 内置提取器）",
   "type": "module",
   "scripts": {
-    "start": "tsx src/server.ts",
-    "dev": "tsx watch src/server.ts",
+    "start": "node --experimental-strip-types src/server.ts",
+    "dev": "node --experimental-strip-types --watch src/server.ts",
     "install-browser": "playwright install chromium"
   },
   "dependencies": {

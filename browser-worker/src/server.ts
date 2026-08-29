@@ -16,6 +16,10 @@
  * 主站 Adapter SDK 的 playwright 策略通过环境变量 BROWSER_SERVICE_URL 调用本服务，
  * 渲染完成后拿着提取 JSON 继续原有 parse -> validate -> save 生命周期。
  *
+ * 注意：必须用 `node --experimental-strip-types` 启动（见 package.json start 脚本）。
+ * 用 tsx 启动时页面端 page.evaluate 会抛 “__name is not defined” 使全部渲染失败。
+ * 启动：npx playwright install chromium && npm start
+ *
  * 默认提取脚本复用 /workspace/scripts/browser-capture/extract.js
  * （表格优先、div 网格兜底），输出规范化为 RawPrice 形状。
  */
