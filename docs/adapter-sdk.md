@@ -125,10 +125,11 @@ Vercel serverless 无法运行无头浏览器。JS 渲染 / SPA / 动态表格 /
 
 - `extract: "extract-json"`(默认):服务端 `browser-worker` 加载页面后注入 `scripts/browser-capture/extract.js`(表格优先、div 网格兜底),规范化输出 `[{ tld, registerPrice, renewPrice, transferPrice, sourceUrl }]`,SDK 默认 parse 直接消费。
 - `extract: "html"`:返回渲染后的完整 HTML,配合自定义 `parse`(如复用 table-adapter 解析)使用。
+- `extract: "xhr-json"`:捕获页面加载期间发出的 XHR/fetch 的 JSON 响应(默认过滤 URL 含 `json|api|price|pricing|domain`,或按 `captureXhrFilter` 指定子串),返回 `[{ url, status, body }]`,配合自定义 `parse` 解析 SPA / XHR 驱动的定价接口。示例见 `adapters/hostinger.ts`(捕获 `tlds-pricing` 接口拿真实续费/转入价)。
 
 ### 表格型注册商一键降级
 
-直接用 `createTableAdapter`(见 `adapters/shared/table-adapter.ts`)的注册商(15 家 table 注册商),工厂已内置浏览器降级,只需把 HTML 策略当作降级触发、追加 `browser` 配置:
+直接用 `createTableAdapter`(见 `adapters/shared/table-adapter.ts`)的注册商(18 家 table 注册商),工厂已内置浏览器降级,只需把 HTML 策略当作降级触发、追加 `browser` 配置:
 
 ```ts
 createTableAdapter({
@@ -156,8 +157,8 @@ HTML 解析拿不到价格时,工厂自动追加一个指向同一价格页的 p
 独立 Node 服务,任意可运行 Playwright 的主机部署(`npm install && npx playwright install --with-deps chromium && npm start`):
 
 ```
-POST /render  { url, extract?, waitFor?, waitForTimeoutMs?, scrollToBottom?, locale?, headers?, script? }
-→ { ok, finalUrl, title, extracted[] | html, error?, durationMs }
+POST /render  { url, extract?, waitFor?, waitForTimeoutMs?, scrollToBottom?, locale?, headers?, script?, captureXhrFilter? }
+→ { ok, finalUrl, title, extracted[] | html | xhrResponses[], error?, durationMs }
 GET  /health  { ok, chromiumAvailable, activeTasks, concurrency }
 ```
 
