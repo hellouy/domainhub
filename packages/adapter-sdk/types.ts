@@ -303,8 +303,12 @@ export interface BrowserStrategyOptions {
    * - "extract-json"（默认）：服务端注入内置提取脚本（scripts/browser-capture/extract.js），
    *   返回 [{ tld, registerPrice, renewPrice, transferPrice }]，SDK 默认 parse 直接消费。
    * - "html"：返回渲染后的完整 HTML，配合自定义 parse（如复用 table-adapter 解析）。
+   * - "xhr-json"：捕获页面发出的 XHR/fetch 的 JSON 响应（按 captureXhrFilter 过滤），
+   *   返回 [{ url, status, body }]，配合自定义 parse 解析 JS 驱动站点（SPA/XHR 定价接口）。
    */
-  extract?: "extract-json" | "html"
+  extract?: "extract-json" | "html" | "xhr-json"
+  /** xhr-json 形态的 URL 子串过滤（命中任一即捕获）；缺省捕获 JSON 定价类接口 */
+  captureXhrFilter?: string[]
   /** 等待页面出现该 CSS 选择器后再提取（如 ".price-table tr"），默认 null */
   waitFor?: string
   /** 等待超时毫秒，默认 30_000 */

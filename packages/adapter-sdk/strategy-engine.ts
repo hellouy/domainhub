@@ -63,6 +63,7 @@ async function browserStrategyFetch(def: StrategyDefinition, ctx: AdapterContext
     locale: opts.locale ?? null,
     headers: opts.headers ?? {},
     script: opts.script ?? null,
+    captureXhrFilter: opts.captureXhrFilter ?? [],
   }
   const res = await ctx.fetch(`${BROWSER_SERVICE_URL}/render`, {
     method: "POST",
@@ -74,12 +75,16 @@ async function browserStrategyFetch(def: StrategyDefinition, ctx: AdapterContext
     ok?: boolean
     extracted?: unknown[]
     html?: string
+    xhrResponses?: Array<{ url: string; status: number; body: string }>
     error?: string
   }
   if (!data.ok) throw new Error(data.error ?? "浏览器服务报告渲染失败")
   if (opts.extract === "html") {
     if (typeof data.html !== "string") throw new Error("浏览器服务未返回 html")
     return data.html
+  }
+  if (opts.extract === "xhr-json") {
+    return JSON.stringify(data.xhrResponses ?? [])
   }
   return JSON.stringify(data.extracted ?? [])
 }

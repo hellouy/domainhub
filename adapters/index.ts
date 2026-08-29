@@ -34,7 +34,7 @@ import {
   hoverAdapter,
   infomaniakAdapter,
   internetbsAdapter,
-  loopiaAdapter,
+loopiaAdapter,
   lwsAdapter,
   metanameAdapter,
   netcupAdapter,
@@ -42,7 +42,11 @@ import {
   openproviderAdapter,
   registercomAdapter,
   transipAdapter,
+  xserverAdapter,
+  valueDomainAdapter,
+  muumuuDomainAdapter,
 } from "./table-registrars"
+import { hostingerAdapter } from "./hostinger"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -72,6 +76,10 @@ export const allAdapters = [
   arubaAdapter,
   transipAdapter,
   openproviderAdapter,
+  xserverAdapter,
+  valueDomainAdapter,
+  muumuuDomainAdapter,
+  hostingerAdapter,
 ]
 
 for (const adapter of allAdapters) {

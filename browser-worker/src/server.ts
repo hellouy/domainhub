@@ -51,8 +51,8 @@ const REAL_UA =
 
 interface RenderRequest {
   url: string
-  /** 返回形态：extract-json（默认）| html */
-  extract?: "extract-json" | "html"
+  /** 返回形态：extract-json（默认）| html | xhr-json */
+  extract?: "extract-json" | "html" | "xhr-json"
   /** 等待页面出现该 CSS 选择器后再提取 */
   waitFor?: string | null
   /** 等待选择器的超时毫秒（默认 30_000） */
@@ -65,6 +65,8 @@ interface RenderRequest {
   headers?: Record<string, string>
   /** 自定义提取脚本（JS 源码，默认用内置 extract.js） */
   script?: string | null
+  /** xhr-json 形态的 URL 子串过滤（命中任一即捕获） */
+  captureXhrFilter?: string[]
 }
 
 interface RenderResponse {
@@ -77,8 +79,15 @@ interface RenderResponse {
   extracted?: Array<Record<string, unknown>>
   /** html 形态的完整渲染后页面 */
   html?: string
+  /** xhr-json 形态捕获的 XHR/fetch JSON 响应（[{ url, status, body }]） */
+  xhrResponses?: Array<{ url: string; status: number; body: string }>
   error?: string
 }
+
+/** 单个 XHR/fetch 响应体的大小上限（超过截断，防止内存暴涨） */
+const XHR_BODY_CAP = 200 * 1024
+/** xhr-json 单次任务最多捕获的响应条数 */
+const XHR_RESP_CAP = 100
 
 const app = express()
 app.use(express.json({ limit: "1mb" }))
@@ -128,6 +137,26 @@ async function render(input: RenderRequest): Promise<RenderResponse> {
     extraHTTPHeaders: input.headers ?? {},
   })
   const page = await context.newPage()
+
+  // 提前挂载 XHR/fetch 响应捕获（须在 goto 之前，否则页面加载期发出的请求会漏掉）
+  const xhrFilter = input.captureXhrFilter ?? []
+  const xhrHit: Array<{ url: string; status: number; body: string }> = []
+  const onResponse = async (res: import("playwright").Response) => {
+    try {
+      const req = res.request()
+      if (!["xhr", "fetch"].includes(req.resourceType())) return
+      const u = res.url()
+      const match = xhrFilter.length > 0 ? xhrFilter.some((f) => u.includes(f)) : /json|api|price|pricing|domain/i.test(u)
+      if (!match) return
+      let body = await res.text()
+      if (body.length > XHR_BODY_CAP) body = body.slice(0, XHR_BODY_CAP)
+      xhrHit.push({ url: u, status: res.status(), body })
+    } catch {
+      // 读取响应体失败（如已销毁）直接忽略
+    }
+  }
+  page.on("response", onResponse)
+
   try {
     await page.setDefaultTimeout(NAV_TIMEOUT_MS)
 
@@ -159,6 +188,18 @@ async function render(input: RenderRequest): Promise<RenderResponse> {
 
     const finalUrl = page.url()
     const title = await page.title().catch(() => "")
+
+    // xhr-json：返回已捕获的 XHR/fetch JSON 响应（供 JS 驱动站的自定义 parse 使用）
+    if (input.extract === "xhr-json") {
+      return {
+        ok: true,
+        url: input.url,
+        finalUrl,
+        title,
+        durationMs: Date.now() - started,
+        xhrResponses: xhrHit.slice(0, XHR_RESP_CAP),
+      }
+    }
 
     if (input.extract === "html") {
       return {
