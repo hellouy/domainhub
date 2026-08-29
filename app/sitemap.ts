@@ -10,10 +10,16 @@ function getBaseUrl() {
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = getBaseUrl()
-  const [allTlds, activeRegistrars] = await Promise.all([
-    db.select({ tld: tlds.tld }).from(tlds),
-    db.select({ slug: registrars.slug }).from(registrars).where(eq(registrars.isActive, true)),
-  ])
+  let allTlds: { tld: string }[] = []
+  let activeRegistrars: { slug: string }[] = []
+  try {
+    ;[allTlds, activeRegistrars] = await Promise.all([
+      db.select({ tld: tlds.tld }).from(tlds),
+      db.select({ slug: registrars.slug }).from(registrars).where(eq(registrars.isActive, true)),
+    ])
+  } catch (err) {
+    console.error("[db] sitemap query failed, returning static routes only:", err)
+  }
 
   const staticRoutes: MetadataRoute.Sitemap = [
     { url: base, changeFrequency: "daily", priority: 1 },

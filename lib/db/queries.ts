@@ -3,17 +3,43 @@ import { db } from "@/lib/db"
 import { crawlJobs, prices, registrars, tlds } from "@/lib/db/schema"
 import { getUsdRates } from "@/lib/fx"
 
+/**
+ * 前台查询统一容错包装:数据库不可用时回退到默认值,避免整站 500。
+ * 与 lib/site-settings.ts 的兜底策略保持一致,保证公共页面永不因 DB 挂掉而崩溃。
+ */
+async function safeQuery<T>(label: string, run: () => Promise<T>, fallback: T): Promise<T> {
+  try {
+    return await run()
+  } catch (err) {
+    console.error(`[db] ${label} failed, returning fallback:`, err)
+    return fallback
+  }
+}
+
 /** 站点统计 */
-export async function getStats() {
-  const [row] = await db
-    .select({
-      registrarCount: sql<number>`(SELECT count(*) FROM ${registrars} WHERE ${registrars.isActive} = true)`,
-      tldCount: sql<number>`(SELECT count(*) FROM ${tlds} WHERE ${tlds.isValid} = true)`,
-      priceCount: sql<number>`(SELECT count(*) FROM ${prices})`,
-      lastUpdated: sql<string | null>`(SELECT max(${prices.updatedAt}) FROM ${prices})`,
-    })
-    .from(sql`(SELECT 1) AS one`)
-  return row
+export type StatsRow = {
+  registrarCount: number
+  tldCount: number
+  priceCount: number
+  lastUpdated: string | null
+}
+
+export async function getStats(): Promise<StatsRow> {
+  return safeQuery(
+    "getStats",
+    async () => {
+      const [row] = await db
+        .select({
+          registrarCount: sql<number>`(SELECT count(*) FROM ${registrars} WHERE ${registrars.isActive} = true)`,
+          tldCount: sql<number>`(SELECT count(*) FROM ${tlds} WHERE ${tlds.isValid} = true)`,
+          priceCount: sql<number>`(SELECT count(*) FROM ${prices})`,
+          lastUpdated: sql<string | null>`(SELECT max(${prices.updatedAt}) FROM ${prices})`,
+        })
+        .from(sql`(SELECT 1) AS one`)
+      return row ?? { registrarCount: 0, tldCount: 0, priceCount: 0, lastUpdated: null }
+    },
+    { registrarCount: 0, tldCount: 0, priceCount: 0, lastUpdated: null },
+  )
 }
 
 /**
@@ -40,139 +66,187 @@ async function usdEquivalentExpr(): Promise<SQL<string>> {
  * 只返回 IANA 认可的有效后缀，按热度分降序排列。
  */
 export async function getTldsWithMinPrice(onlyPopular = false) {
-  const usdEquivalent = await usdEquivalentExpr()
-  const rows = await db
-    .select({
-      id: tlds.id,
-      tld: tlds.tld,
-      type: tlds.type,
-      isPopular: tlds.isPopular,
-      popularity: tlds.popularity,
-      minRegister: min(sql<string>`CASE WHEN ${usdEquivalent} >= 1 THEN ${usdEquivalent} ELSE NULL END`),
-      registrarCount: count(prices.id),
-    })
-    .from(tlds)
-    .leftJoin(
-      prices,
-      and(
-        eq(prices.tldId, tlds.id),
-        sql`${prices.registrarId} IN (SELECT id FROM ${registrars} WHERE ${registrars.isActive} = true)`,
-      ),
-    )
-    .where(
-      onlyPopular ? and(eq(tlds.isValid, true), eq(tlds.isPopular, true)) : eq(tlds.isValid, true),
-    )
-    .groupBy(tlds.id)
-    .orderBy(desc(tlds.popularity), desc(count(prices.id)), asc(tlds.tld))
-  return rows
+  return safeQuery(
+    "getTldsWithMinPrice",
+    async () => {
+      const usdEquivalent = await usdEquivalentExpr()
+      const rows = await db
+        .select({
+          id: tlds.id,
+          tld: tlds.tld,
+          type: tlds.type,
+          isPopular: tlds.isPopular,
+          popularity: tlds.popularity,
+          minRegister: min(sql<string>`CASE WHEN ${usdEquivalent} >= 1 THEN ${usdEquivalent} ELSE NULL END`),
+          registrarCount: count(prices.id),
+        })
+        .from(tlds)
+        .leftJoin(
+          prices,
+          and(
+            eq(prices.tldId, tlds.id),
+            sql`${prices.registrarId} IN (SELECT id FROM ${registrars} WHERE ${registrars.isActive} = true)`,
+          ),
+        )
+        .where(
+          onlyPopular ? and(eq(tlds.isValid, true), eq(tlds.isPopular, true)) : eq(tlds.isValid, true),
+        )
+        .groupBy(tlds.id)
+        .orderBy(desc(tlds.popularity), desc(count(prices.id)), asc(tlds.tld))
+      return rows
+    },
+    [],
+  )
 }
 
 /** 启用的注册商列表 + 支持后缀数 */
 export async function getActiveRegistrars() {
-  const rows = await db
-    .select({
-      id: registrars.id,
-      slug: registrars.slug,
-      name: registrars.name,
-      website: registrars.website,
-      description: registrars.description,
-      icannAccredited: registrars.icannAccredited,
-      whoisPrivacy: registrars.whoisPrivacy,
-      dnssec: registrars.dnssec,
-      tldCount: count(prices.id),
-    })
-    .from(registrars)
-    .leftJoin(prices, eq(prices.registrarId, registrars.id))
-    .where(eq(registrars.isActive, true))
-    .groupBy(registrars.id)
-    .orderBy(asc(registrars.name))
-  return rows
+  return safeQuery(
+    "getActiveRegistrars",
+    async () => {
+      const rows = await db
+        .select({
+          id: registrars.id,
+          slug: registrars.slug,
+          name: registrars.name,
+          website: registrars.website,
+          description: registrars.description,
+          icannAccredited: registrars.icannAccredited,
+          whoisPrivacy: registrars.whoisPrivacy,
+          dnssec: registrars.dnssec,
+          tldCount: count(prices.id),
+        })
+        .from(registrars)
+        .leftJoin(prices, eq(prices.registrarId, registrars.id))
+        .where(eq(registrars.isActive, true))
+        .groupBy(registrars.id)
+        .orderBy(asc(registrars.name))
+      return rows
+    },
+    [],
+  )
 }
 
 /** 后缀详情：后缀信息 */
 export async function getTldByName(tld: string) {
-  const [row] = await db.select().from(tlds).where(eq(tlds.tld, tld.toLowerCase())).limit(1)
-  return row ?? null
+  return safeQuery(
+    "getTldByName",
+    async () => {
+      const [row] = await db.select().from(tlds).where(eq(tlds.tld, tld.toLowerCase())).limit(1)
+      return row ?? null
+    },
+    null,
+  )
 }
 
 /** 某后缀下全部启用注册商的价格 */
 export async function getPricesForTld(tldId: number) {
-  const rows = await db
-    .select({
-      priceId: prices.id,
-      registerPrice: prices.registerPrice,
-      renewPrice: prices.renewPrice,
-      transferPrice: prices.transferPrice,
-      currency: prices.currency,
-      sourceUrl: prices.sourceUrl,
-      updatedAt: prices.updatedAt,
-      registrarId: registrars.id,
-      registrarSlug: registrars.slug,
-      registrarName: registrars.name,
-      registrarWebsite: registrars.website,
-    })
-    .from(prices)
-    .innerJoin(registrars, and(eq(prices.registrarId, registrars.id), eq(registrars.isActive, true)))
-    .where(eq(prices.tldId, tldId))
-    .orderBy(sql`${prices.registerPrice} ASC NULLS LAST`)
-  return rows
+  return safeQuery(
+    "getPricesForTld",
+    async () => {
+      const rows = await db
+        .select({
+          priceId: prices.id,
+          registerPrice: prices.registerPrice,
+          renewPrice: prices.renewPrice,
+          transferPrice: prices.transferPrice,
+          currency: prices.currency,
+          sourceUrl: prices.sourceUrl,
+          updatedAt: prices.updatedAt,
+          registrarId: registrars.id,
+          registrarSlug: registrars.slug,
+          registrarName: registrars.name,
+          registrarWebsite: registrars.website,
+        })
+        .from(prices)
+        .innerJoin(registrars, and(eq(prices.registrarId, registrars.id), eq(registrars.isActive, true)))
+        .where(eq(prices.tldId, tldId))
+        .orderBy(sql`${prices.registerPrice} ASC NULLS LAST`)
+      return rows
+    },
+    [],
+  )
 }
 
 /** 注册商详情 */
 export async function getRegistrarBySlug(slug: string) {
-  const [row] = await db.select().from(registrars).where(eq(registrars.slug, slug)).limit(1)
-  return row ?? null
+  return safeQuery(
+    "getRegistrarBySlug",
+    async () => {
+      const [row] = await db.select().from(registrars).where(eq(registrars.slug, slug)).limit(1)
+      return row ?? null
+    },
+    null,
+  )
 }
 
 /** 某注册商全部后缀价格 */
 export async function getPricesForRegistrar(registrarId: number) {
-  const rows = await db
-    .select({
-      priceId: prices.id,
-      registerPrice: prices.registerPrice,
-      renewPrice: prices.renewPrice,
-      transferPrice: prices.transferPrice,
-      currency: prices.currency,
-      updatedAt: prices.updatedAt,
-      tldId: tlds.id,
-      tld: tlds.tld,
-      tldType: tlds.type,
-    })
-    .from(prices)
-    .innerJoin(tlds, eq(prices.tldId, tlds.id))
-    .where(eq(prices.registrarId, registrarId))
-    .orderBy(asc(tlds.tld))
-  return rows
+  return safeQuery(
+    "getPricesForRegistrar",
+    async () => {
+      const rows = await db
+        .select({
+          priceId: prices.id,
+          registerPrice: prices.registerPrice,
+          renewPrice: prices.renewPrice,
+          transferPrice: prices.transferPrice,
+          currency: prices.currency,
+          updatedAt: prices.updatedAt,
+          tldId: tlds.id,
+          tld: tlds.tld,
+          tldType: tlds.type,
+        })
+        .from(prices)
+        .innerJoin(tlds, eq(prices.tldId, tlds.id))
+        .where(eq(prices.registrarId, registrarId))
+        .orderBy(asc(tlds.tld))
+      return rows
+    },
+    [],
+  )
 }
 
 /** 后缀的最近价格更新时间 */
 export async function getTldLastUpdated(tldId: number) {
-  const [row] = await db
-    .select({ lastUpdated: max(prices.updatedAt) })
-    .from(prices)
-    .where(eq(prices.tldId, tldId))
-  return row?.lastUpdated ?? null
+  return safeQuery(
+    "getTldLastUpdated",
+    async () => {
+      const [row] = await db
+        .select({ lastUpdated: max(prices.updatedAt) })
+        .from(prices)
+        .where(eq(prices.tldId, tldId))
+      return row?.lastUpdated ?? null
+    },
+    null,
+  )
 }
 
 /** 最近成功的采集任务（供首页“数据更新”展示） */
 export async function getRecentJobs(limit = 10) {
-  const rows = await db
-    .select({
-      id: crawlJobs.id,
-      status: crawlJobs.status,
-      trigger: crawlJobs.trigger,
-      startedAt: crawlJobs.startedAt,
-      finishedAt: crawlJobs.finishedAt,
-      pricesUpdated: crawlJobs.pricesUpdated,
-      totalTlds: crawlJobs.totalTlds,
-      errorMessage: crawlJobs.errorMessage,
-      createdAt: crawlJobs.createdAt,
-      registrarName: registrars.name,
-      registrarSlug: registrars.slug,
-    })
-    .from(crawlJobs)
-    .innerJoin(registrars, eq(crawlJobs.registrarId, registrars.id))
-    .orderBy(desc(crawlJobs.createdAt))
-    .limit(limit)
-  return rows
+  return safeQuery(
+    "getRecentJobs",
+    async () => {
+      const rows = await db
+        .select({
+          id: crawlJobs.id,
+          status: crawlJobs.status,
+          trigger: crawlJobs.trigger,
+          startedAt: crawlJobs.startedAt,
+          finishedAt: crawlJobs.finishedAt,
+          pricesUpdated: crawlJobs.pricesUpdated,
+          totalTlds: crawlJobs.totalTlds,
+          errorMessage: crawlJobs.errorMessage,
+          createdAt: crawlJobs.createdAt,
+          registrarName: registrars.name,
+          registrarSlug: registrars.slug,
+        })
+        .from(crawlJobs)
+        .innerJoin(registrars, eq(crawlJobs.registrarId, registrars.id))
+        .orderBy(desc(crawlJobs.createdAt))
+        .limit(limit)
+      return rows
+    },
+    [],
+  )
 }

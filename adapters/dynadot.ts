@@ -8,10 +8,12 @@
  * 2. xhr: /dynadot-vue-api/dynadot-service/domain-search?command=get_current_list
  *    —— 站点前端使用的内部 XHR 端点, 返回 800+ 后缀全量定价
  *    (含注册/续费/转入/赎回价与促销原价) ✓ 首选
- * 3. html: /domain/tlds 页面为 Vue 客户端渲染, 直接解析 HTML 拿不到
- *    价格, 故 XHR 失败时无静态 HTML 可降级(保留 playwright 位)
+ * 3. playwright: /domain/tlds 页面为 Vue 客户端渲染, 直接 fetch HTML 拿不到价格。
+ *    XHR 被反爬拦截时, 降级到远程浏览器服务(BROWSER_SERVICE_URL),
+ *    渲染页面 + 注入提取脚本(scripts/browser-capture/extract.js)拿价格。
  *
  * 促销检测: original_reg_price != "-1" 时表示当前注册价为促销价。
+ * (注: playwright 降级链路为兜底, 不解析促销标志, 只保证拿到常规三价。)
  */
 
 import { defineAdapter, type RawPrice } from "@/packages/adapter-sdk"
@@ -97,6 +99,17 @@ export const dynadotAdapter = defineAdapter({
           })
         }
         return prices
+      },
+    },
+    {
+      // XHR 被反爬拦截 / 接口结构变化时的兜底：远程浏览器渲染后提取
+      type: "playwright",
+      url: PRICING_PAGE,
+      browser: {
+        extract: "extract-json",
+        waitFor: "body table, body [class*='tld']",
+        scrollToBottom: true,
+        locale: "en-US",
       },
     },
   ],

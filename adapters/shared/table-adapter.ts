@@ -41,6 +41,26 @@ export interface TableAdapterConfig {
   headers?: Record<string, string>
   /** 自定义行过滤(返回 false 跳过该行) */
   rowFilter?: (cells: string[]) => boolean
+  /**
+   * 浏览器降级(仅当价格表由 JS 渲染、直接 fetch 拿不到时配置)。
+   * 配置后工厂自动追加一个 playwright 策略：
+   * HTML 解析为空时降级到远程浏览器服务(BROWSER_SERVICE_URL)渲染 +
+   * extract.js 提取。waitFor 必填：表格挂载后出现的 CSS 选择器。
+   */
+  browser?: {
+    /** 表格数据挂载后出现的选择器(必填),如 "table.pricing-table tbody tr" */
+    waitFor: string
+    /** waitFor 等待超时毫秒,默认 30000 */
+    waitForTimeoutMs?: number
+    /** 提取前滚动到底触发动态加载,默认 true */
+    scrollToBottom?: boolean
+    /** 模拟地区 locale(影响 GeoIP 分区定价) */
+    locale?: string
+    /** 初始导航附加请求头 */
+    headers?: Record<string, string>
+    /** 自定义提取脚本(默认服务端内置 extract.js) */
+    script?: string
+  }
 }
 
 /** 清洗单元格中的价格数字, 失败返回 null */
@@ -86,17 +106,17 @@ export function extractTableRows(html: string): string[][] {
   return rows
 }
 
-/** 在一行单元格中找出 TLD(形如 .com / .co.uk),返回 [tld, 索引] */
+/** 在一行单元格中找出 TLD(形如 .com / .co.uk / "com （eNom）"),返回 [tld, 索引] */
 export function findTldCell(cells: string[]): [string, number] | null {
   for (let i = 0; i < cells.length; i++) {
-    const m = cells[i].match(/^\.?([a-z0-9-]{1,63}(?:\.[a-z0-9-]{1,63}){0,2})$/i)
-    if (m && /^\./.test(cells[i].trim()) === true) {
-      return [m[1].toLowerCase(), i]
-    }
-    // 也接受不带点但看起来像 TLD 的首列(如 "com")——仅限第一列且长度合理
-    if (i === 0) {
-      const m2 = cells[i].match(/^([a-z0-9-]{2,20}(?:\.[a-z0-9-]{2,10})?)$/i)
-      if (m2 && !/^\d+$/.test(cells[i])) return [m2[1].toLowerCase(), i]
+    const c = cells[i].trim()
+    // TLD 单元格可能带后端备注(如 ".com（eNom）"),提取前导 tld 即可
+    const m = c.match(/^\.?([a-z0-9-]{2,20}(?:\.[a-z0-9-]{2,15}){0,2})(?:\s|$)/i)
+    if (m) {
+      const tld = m[1].toLowerCase()
+      if (/^\./.test(c) || (i === 0 && !/^\d+$/.test(tld))) {
+        return [tld, i]
+      }
     }
   }
   return null
@@ -203,6 +223,25 @@ export function createTableAdapter(config: TableAdapterConfig) {
           return prices
         },
       },
+        // JS 渲染表格的浏览器降级：HTML 解析拿不到时，把同一个价格页交给
+        // 远程浏览器服务(BROWSER_SERVICE_URL)渲染并提取，再走默认 parse。
+        ...(config.browser
+          ? [
+              {
+                type: "playwright" as const,
+                url: config.urls[0],
+                browser: {
+                  extract: "extract-json" as const,
+                  waitFor: config.browser.waitFor,
+                  waitForTimeoutMs: config.browser.waitForTimeoutMs,
+                  scrollToBottom: config.browser.scrollToBottom,
+                  locale: config.browser.locale,
+                  headers: config.browser.headers,
+                  script: config.browser.script,
+                },
+              },
+            ]
+          : []),
     ],
   }
   return defineAdapter(definition)

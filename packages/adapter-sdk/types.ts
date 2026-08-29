@@ -292,6 +292,34 @@ export interface AdapterResult {
 // ============================================================
 
 /**
+ * playwright（远程浏览器渲染）策略的附加选项。
+ * 采集时由 SDK 将请求转发到按 BROWSER_SERVICE_URL 配置的浏览器服务
+ * （独立部署的 Playwright worker），服务端渲染后返回 HTML 或
+ * 注入默认提取脚本得到的价格 JSON，SDK 再走原有 parse → validate → save。
+ */
+export interface BrowserStrategyOptions {
+  /**
+   * 返回形态：
+   * - "extract-json"（默认）：服务端注入内置提取脚本（scripts/browser-capture/extract.js），
+   *   返回 [{ tld, registerPrice, renewPrice, transferPrice }]，SDK 默认 parse 直接消费。
+   * - "html"：返回渲染后的完整 HTML，配合自定义 parse（如复用 table-adapter 解析）。
+   */
+  extract?: "extract-json" | "html"
+  /** 等待页面出现该 CSS 选择器后再提取（如 ".price-table tr"），默认 null */
+  waitFor?: string
+  /** 等待超时毫秒，默认 30_000 */
+  waitForTimeoutMs?: number
+  /** 提取前滚动到底部触发动态加载，默认 true */
+  scrollToBottom?: boolean
+  /** 模拟地区（影响 GeoIP 定价），如 "de"/"en-US"，默认 null */
+  locale?: string
+  /** 初始导航附加请求头（部分站点校验 Referer 等） */
+  headers?: Record<string, string>
+  /** 自定义提取脚本（默认服务端内置 extract.js） */
+  script?: string
+}
+
+/**
  * 单个数据源策略的实现。
  * fetch 拿原始数据，parse 转成 RawPrice[]。
  * parse 省略时由 Parser 平台自动选择解析器。
@@ -300,10 +328,12 @@ export interface StrategyDefinition {
   type: StrategyType
   /** 数据源 URL（供发现元数据与默认 fetch 使用） */
   url?: string
-  /** 自定义抓取；省略时用 ctx.fetch(url) */
+  /** custom fetch；省略时用 ctx.fetch(url)。type=playwright 时默认走浏览器服务 */
   fetch?: (ctx: AdapterContext) => Promise<string>
   /** 自定义解析；省略时用 Parser 平台 autoParser */
   parse?: (raw: string, ctx: AdapterContext) => Promise<RawPrice[]> | RawPrice[]
+  /** playwright 策略的浏览器渲染选项（仅 type=playwright 时生效） */
+  browser?: BrowserStrategyOptions
 }
 
 /** defineAdapter() 的配置对象 —— 新增注册商只需要写这一个对象 */

@@ -151,3 +151,36 @@ export const openproviderAdapter = createTableAdapter({
   urls: ["https://www.openprovider.com/domain-price-list"],
   columnOrder: ["register", "renew", "transfer"],
 })
+
+export const xserverAdapter = createTableAdapter({
+  slug: "xserver",
+  name: "Xserver",
+  website: "https://www.xserver.ne.jp",
+  currency: "JPY",
+  urls: ["https://www.xserver.ne.jp/domain/"],
+  columnOrder: ["register", "renew", "transfer"],
+  owner: "Data Team",
+  capabilities: { registration: true, renewal: true, transfer: true, supportedCurrencies: ["JPY"] },
+})
+
+export const valueDomainAdapter = createTableAdapter({
+  slug: "value-domain",
+  name: "Value Domain",
+  website: "https://www.value-domain.com",
+  currency: "JPY",
+  urls: ["https://www.value-domain.com/domain/price/"],
+  columnOrder: ["register", "renew", "transfer"],
+  owner: "Data Team",
+})
+
+export const muumuuDomainAdapter = createTableAdapter({
+  slug: "muumuu-domain",
+  name: "\u30e0\u30fc\u30e0\u30fc\u30c9\u30e1\u30a4\u30f3",
+  website: "https://muumuu-domain.com",
+  currency: "JPY",
+  urls: ["https://muumuu-domain.com/domain/price/"],
+  columnOrder: ["register", "renew", "transfer"],
+  owner: "Data Team",
+})
+
+
