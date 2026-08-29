@@ -305,8 +305,21 @@ export interface BrowserStrategyOptions {
    * - "html"：返回渲染后的完整 HTML，配合自定义 parse（如复用 table-adapter 解析）。
    * - "xhr-json"：捕获页面发出的 XHR/fetch 的 JSON 响应（按 captureXhrFilter 过滤），
    *   返回 [{ url, status, body }]，配合自定义 parse 解析 JS 驱动站点（SPA/XHR 定价接口）。
+   * - "api-fetch"：用页面会话（同一浏览器 context，cookie 自动携带）重放 apiFetch 指定的
+   *   价格接口（GET/POST），返回接口响应体；适合“页面建立会话 + API 直采”的站点。
    */
-  extract?: "extract-json" | "html" | "xhr-json"
+  extract?: "extract-json" | "html" | "xhr-json" | "api-fetch"
+  /**
+   * api-fetch 形态的重放目标（method/headers/body 按页面真实请求复刻）。
+   * 示例见 adapters/hostinger.ts（POST tlds-pricing 定价接口）。
+   */
+  apiFetch?: {
+    url: string
+    method?: "GET" | "POST" | "PUT" | "PATCH"
+    headers?: Record<string, string>
+    /** 对象会被序列化为 JSON 请求体 */
+    body?: Record<string, unknown>
+  }
   /** xhr-json 形态的 URL 子串过滤（命中任一即捕获）；缺省捕获 JSON 定价类接口 */
   captureXhrFilter?: string[]
   /** 等待页面出现该 CSS 选择器后再提取（如 ".price-table tr"），默认 null */

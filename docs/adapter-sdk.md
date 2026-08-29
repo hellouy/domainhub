@@ -125,7 +125,24 @@ Vercel serverless 无法运行无头浏览器。JS 渲染 / SPA / 动态表格 /
 
 - `extract: "extract-json"`(默认):服务端 `browser-worker` 加载页面后注入 `scripts/browser-capture/extract.js`(表格优先、div 网格兜底),规范化输出 `[{ tld, registerPrice, renewPrice, transferPrice, sourceUrl }]`,SDK 默认 parse 直接消费。
 - `extract: "html"`:返回渲染后的完整 HTML,配合自定义 `parse`(如复用 table-adapter 解析)使用。
-- `extract: "xhr-json"`:捕获页面加载期间发出的 XHR/fetch 的 JSON 响应(默认过滤 URL 含 `json|api|price|pricing|domain`,或按 `captureXhrFilter` 指定子串),返回 `[{ url, status, body }]`,配合自定义 `parse` 解析 SPA / XHR 驱动的定价接口。示例见 `adapters/hostinger.ts`(捕获 `tlds-pricing` 接口拿真实续费/转入价)。
+- `extract: "xhr-json"`:捕获页面加载期间发出的 XHR/fetch 的 JSON 响应(默认过滤 URL 含 `json|api|price|pricing|domain`,或按 `captureXhrFilter` 指定子串),返回 `[{ method, url, reqHeaders, postBody, status, body }]`(含请求头模板与 POST body,可完整复刻请求),并附带 `cookies[]`(会话 cookie)。配合自定义 `parse` 解析 SPA / XHR 驱动的定价接口,也可作为 API 直采前的“接口定位/模板采集”步骤。
+- `extract: "api-fetch"`:在页面上下文内用原生 fetch 重放定价接口(自动携带会话 cookie、保持同源特征),直接返回 `{ status, body }`。适合目标接口除 cookie 外还校验额外请求头(如 `authorization` token)的站点——worker 一侧一次渲染即可拿到带会话的接口响应,SDK 侧无需手工拼接 Cookie。示例见 `adapters/hostinger.ts`(`tlds-pricing` 需 `authorization: Bearer www.hostinger.com` 头,用 api-fetch 一次拿全量 100+ TLD 价格)。
+
+浏览器形态配置(`api-fetch`):
+
+```ts
+browser: {
+  extract: "api-fetch",
+  waitForTimeoutMs: 25_000,
+  apiFetch: {
+    url: "https://.../api/domain/tlds-pricing",
+    method: "POST",
+    headers: { "content-type": "application/json", authorization: "Bearer www.hostinger.com", /* ... */ },
+    body: { tlds: [".com", ".io", ".ai", /* ... */], currency_code: "USD" },
+  },
+},
+parse: async (raw) => rows, // raw 为接口响应 body(string),自行解析
+```
 
 ### 表格型注册商一键降级
 
@@ -157,8 +174,8 @@ HTML 解析拿不到价格时,工厂自动追加一个指向同一价格页的 p
 独立 Node 服务,任意可运行 Playwright 的主机部署(`npm install && npx playwright install --with-deps chromium && npm start`):
 
 ```
-POST /render  { url, extract?, waitFor?, waitForTimeoutMs?, scrollToBottom?, locale?, headers?, script?, captureXhrFilter? }
-→ { ok, finalUrl, title, extracted[] | html | xhrResponses[], error?, durationMs }
+POST /render  { url, extract?, waitFor?, waitForTimeoutMs?, scrollToBottom?, locale?, headers?, script?, captureXhrFilter?, apiFetch? }
+→ { ok, finalUrl, title, extracted[] | html | xhrResponses[] + cookies[] | api { status, body } | error?, durationMs }
 GET  /health  { ok, chromiumAvailable, activeTasks, concurrency }
 ```
 

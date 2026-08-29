@@ -51,8 +51,8 @@ const REAL_UA =
 
 interface RenderRequest {
   url: string
-  /** 返回形态：extract-json（默认）| html | xhr-json */
-  extract?: "extract-json" | "html" | "xhr-json"
+  /** 返回形态：extract-json（默认）| html | xhr-json | api-fetch */
+  extract?: "extract-json" | "html" | "xhr-json" | "api-fetch"
   /** 等待页面出现该 CSS 选择器后再提取 */
   waitFor?: string | null
   /** 等待选择器的超时毫秒（默认 30_000） */
@@ -67,6 +67,13 @@ interface RenderRequest {
   script?: string | null
   /** xhr-json 形态的 URL 子串过滤（命中任一即捕获） */
   captureXhrFilter?: string[]
+  /** api-fetch 形态：用页面会话（同一 context，cookie 自动携带）重放的价格接口 */
+  apiFetch?: {
+    url: string
+    method?: "GET" | "POST" | "PUT" | "PATCH"
+    headers?: Record<string, string>
+    body?: Record<string, unknown>
+  }
 }
 
 interface RenderResponse {
@@ -79,8 +86,19 @@ interface RenderResponse {
   extracted?: Array<Record<string, unknown>>
   /** html 形态的完整渲染后页面 */
   html?: string
-  /** xhr-json 形态捕获的 XHR/fetch JSON 响应（[{ url, status, body }]） */
-  xhrResponses?: Array<{ url: string; status: number; body: string }>
+  /** xhr-json 形态捕获的 XHR/fetch 响应（请求侧完整可复刻：method/URL/请求头/请求体/状态/响应体） */
+  xhrResponses?: Array<{
+    method: string
+    url: string
+    reqHeaders: Record<string, string>
+    postBody?: string
+    status: number
+    body: string
+  }>
+  /** xhr-json 形态附带渲染后的会话 cookies（供 API 直采复刻认证头） */
+  cookies?: string[]
+  /** api-fetch 形态：重放接口的响应（{ status, body }） */
+  api?: { status: number; body: string }
   error?: string
 }
 
@@ -140,7 +158,14 @@ async function render(input: RenderRequest): Promise<RenderResponse> {
 
   // 提前挂载 XHR/fetch 响应捕获（须在 goto 之前，否则页面加载期发出的请求会漏掉）
   const xhrFilter = input.captureXhrFilter ?? []
-  const xhrHit: Array<{ url: string; status: number; body: string }> = []
+  const xhrHit: Array<{
+    method: string
+    url: string
+    reqHeaders: Record<string, string>
+    postBody?: string
+    status: number
+    body: string
+  }> = []
   const onResponse = async (res: import("playwright").Response) => {
     try {
       const req = res.request()
@@ -150,7 +175,8 @@ async function render(input: RenderRequest): Promise<RenderResponse> {
       if (!match) return
       let body = await res.text()
       if (body.length > XHR_BODY_CAP) body = body.slice(0, XHR_BODY_CAP)
-      xhrHit.push({ url: u, status: res.status(), body })
+      const postBody = req.postData() ?? undefined
+      xhrHit.push({ method: req.method(), url: u, reqHeaders: req.headers(), postBody, status: res.status(), body })
     } catch {
       // 读取响应体失败（如已销毁）直接忽略
     }
@@ -189,8 +215,33 @@ async function render(input: RenderRequest): Promise<RenderResponse> {
     const finalUrl = page.url()
     const title = await page.title().catch(() => "")
 
-    // xhr-json：返回已捕获的 XHR/fetch JSON 响应（供 JS 驱动站的自定义 parse 使用）
+    // api-fetch：在页面上下文内重放价格接口（同源 fetch，自动携带会话 cookie）
+    if (input.extract === "api-fetch") {
+      const af = input.apiFetch
+      if (!af?.url) throw new Error("api-fetch 形态需要配置 apiFetch.url")
+      const apiRes = (await page.evaluate(
+        async ({ method, url, headers, body }: { method: string; url: string; headers: Record<string, string>; body?: Record<string, unknown> }) => {
+          const r = await fetch(url, { method, headers, body: body !== undefined ? JSON.stringify(body) : undefined })
+          const t = await r.text()
+          return { status: r.status, body: t }
+        },
+        { method: af.method ?? "GET", url: af.url, headers: af.headers ?? {}, body: af.body },
+      )) as { status: number; body: string }
+      if (apiRes.body.length > XHR_BODY_CAP) apiRes.body = apiRes.body.slice(0, XHR_BODY_CAP)
+      return {
+        ok: true,
+        url: input.url,
+        finalUrl,
+        title,
+        durationMs: Date.now() - started,
+        api: apiRes,
+      }
+    }
+
+    // xhr-json：返回已捕获的 XHR/fetch 响应（供 JS 驱动站的自定义 parse 使用）
     if (input.extract === "xhr-json") {
+      // 附带渲染后的会话 cookie（API 直采时复刻到请求头）
+      const cookies = (await context.cookies().catch(() => [])).map((c: { name: string; value: string }) => `${c.name}=${c.value}`)
       return {
         ok: true,
         url: input.url,
@@ -198,6 +249,7 @@ async function render(input: RenderRequest): Promise<RenderResponse> {
         title,
         durationMs: Date.now() - started,
         xhrResponses: xhrHit.slice(0, XHR_RESP_CAP),
+        cookies,
       }
     }
 
