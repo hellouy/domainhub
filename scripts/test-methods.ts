@@ -5,6 +5,8 @@
  * 2. extract-json    : 浏览器 DOM 提取（本地测试页 index.html + 真实站 dynadot）
  * 3. xhr-json        : 本地测试页 xhr.html 捕获 /price.json（含 cookies 返回）
  * 4. api-fetch       : 本地测试页会话内重放 /price.json + 真实站 hostinger
+ * 5. 反爬可迁移      : 受控反爬站（cookie+鉴权头校验，仿 hostinger 模式）——
+ *    xhr-json 定位接口 + api-fetch 打通（scripts/protected-test-server.ts, 需手动起）
  *
  * 运行：npx tsx scripts/test-methods.ts   （需 BROWSER_SERVICE_URL=http://127.0.0.1:8840）
  */
@@ -97,6 +99,54 @@ async function main() {
         },
         parse: async (raw: string) => {
           const rows = JSON.parse(raw).example.tlds as Array<{ tld: string; register: number; renew: number; transfer: number }>
+          return rows.map((r) => ({ tld: r.tld, registerPrice: r.register, renewPrice: r.renew, transferPrice: r.transfer }))
+        },
+      },
+    ],
+    1,
+  )
+
+  // 5a. 反爬可迁移：xhr-json 定位受控反爬接口（含请求模板/cookies）
+  await run(
+    "xhr-json",
+    "protected-xhr",
+    [
+      {
+        type: "playwright" as const,
+        url: "http://127.0.0.1:8898/protected.html",
+        browser: { extract: "xhr-json" as const, captureXhrFilter: ["protected-price"], waitForTimeoutMs: 10_000, scrollToBottom: false },
+        parse: async (raw: string) => {
+          const list = JSON.parse(raw) as Array<{ status: number; body: string }>
+          const hit = list.find((r) => r.status === 200)
+          if (!hit) throw new Error("受控反爬接口未被成功捕获")
+          const rows = JSON.parse(hit.body).protected.tlds as Array<{ tld: string; register: number; renew: number; transfer: number }>
+          return rows.map((r) => ({ tld: r.tld, registerPrice: r.register, renewPrice: r.renew, transferPrice: r.transfer }))
+        },
+      },
+    ],
+    1,
+  )
+
+  // 5b. 反爬可迁移：api-fetch 会话内打通受控反爬接口
+  await run(
+    "api-fetch",
+    "protected-api",
+    [
+      {
+        type: "playwright" as const,
+        url: "http://127.0.0.1:8898/protected.html",
+        browser: {
+          extract: "api-fetch" as const,
+          waitForTimeoutMs: 10_000,
+          scrollToBottom: false,
+          apiFetch: {
+            url: "http://127.0.0.1:8898/protected-price.json",
+            method: "GET",
+            headers: { authorization: "Bearer protected-test", accept: "application/json" },
+          },
+        },
+        parse: async (raw: string) => {
+          const rows = JSON.parse(raw).protected.tlds as Array<{ tld: string; register: number; renew: number; transfer: number }>
           return rows.map((r) => ({ tld: r.tld, registerPrice: r.register, renewPrice: r.renew, transferPrice: r.transfer }))
         },
       },
