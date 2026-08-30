@@ -2,6 +2,16 @@ import { and, asc, count, desc, eq, max, min, sql, type SQL } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { crawlJobs, prices, registrars, tlds } from "@/lib/db/schema"
 import { getUsdRates } from "@/lib/fx"
+import {
+  seedActiveRegistrars,
+  seedPricesForRegistrar,
+  seedPricesForTld,
+  seedRegistrarBySlug,
+  seedStats,
+  seedTldByName,
+  seedTldLastUpdated,
+  seedTldsWithMinPrice,
+} from "@/lib/db/seed-fallbacks"
 
 /**
  * 前台查询统一容错包装:数据库不可用时回退到默认值,避免整站 500。
@@ -36,9 +46,9 @@ export async function getStats(): Promise<StatsRow> {
           lastUpdated: sql<string | null>`(SELECT max(${prices.updatedAt}) FROM ${prices})`,
         })
         .from(sql`(SELECT 1) AS one`)
-      return row ?? { registrarCount: 0, tldCount: 0, priceCount: 0, lastUpdated: null }
+      return row ?? seedStats()
     },
-    { registrarCount: 0, tldCount: 0, priceCount: 0, lastUpdated: null },
+    seedStats(),
   )
 }
 
@@ -95,7 +105,7 @@ export async function getTldsWithMinPrice(onlyPopular = false) {
         .orderBy(desc(tlds.popularity), desc(count(prices.id)), asc(tlds.tld))
       return rows
     },
-    [],
+    seedTldsWithMinPrice(onlyPopular),
   )
 }
 
@@ -123,7 +133,7 @@ export async function getActiveRegistrars() {
         .orderBy(asc(registrars.name))
       return rows
     },
-    [],
+    seedActiveRegistrars(),
   )
 }
 
@@ -135,7 +145,7 @@ export async function getTldByName(tld: string) {
       const [row] = await db.select().from(tlds).where(eq(tlds.tld, tld.toLowerCase())).limit(1)
       return row ?? null
     },
-    null,
+    seedTldByName(tld),
   )
 }
 
@@ -164,7 +174,7 @@ export async function getPricesForTld(tldId: number) {
         .orderBy(sql`${prices.registerPrice} ASC NULLS LAST`)
       return rows
     },
-    [],
+    seedPricesForTld(tldId),
   )
 }
 
@@ -176,7 +186,7 @@ export async function getRegistrarBySlug(slug: string) {
       const [row] = await db.select().from(registrars).where(eq(registrars.slug, slug)).limit(1)
       return row ?? null
     },
-    null,
+    seedRegistrarBySlug(slug),
   )
 }
 
@@ -203,7 +213,7 @@ export async function getPricesForRegistrar(registrarId: number) {
         .orderBy(asc(tlds.tld))
       return rows
     },
-    [],
+    seedPricesForRegistrar(registrarId),
   )
 }
 
@@ -218,7 +228,7 @@ export async function getTldLastUpdated(tldId: number) {
         .where(eq(prices.tldId, tldId))
       return row?.lastUpdated ?? null
     },
-    null,
+    seedTldLastUpdated(tldId),
   )
 }
 

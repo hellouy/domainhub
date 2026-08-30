@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TLD 价格聚合演示站 — 全球域名注册商实时价目</title>
+<style>
+  :root {
+    --bg: #0f172a; --panel: #1e293b; --line: #334155; --txt: #e2e8f0;
+    --muted: #94a3b8; --accent: #38bdf8; --ok: #4ade80; --bad: #f87171; --warn: #fbbf24;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--txt); font-family:ui-sans-serif,system-ui,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif; line-height:1.55; }
+  .wrap { max-width:1080px; margin:0 auto; padding:32px 20px 80px; }
+  header { border-bottom:1px solid var(--line); padding-bottom:24px; margin-bottom:28px; }
+  .kicker { color:var(--accent); font-size:12px; letter-spacing:.2em; text-transform:uppercase; font-weight:600; }
+  h1 { font-size:32px; margin:8px 0 10px; font-weight:800; letter-spacing:-.02em; }
+  .sub { color:var(--muted); font-size:15px; max-width:720px; }
+  .stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(160px,1fr)); gap:14px; margin:26px 0; }
+  .stat { background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:18px; }
+  .stat .v { font-size:30px; font-weight:800; color:var(--accent); }
+  .stat .l { font-size:12px; color:var(--muted); margin-top:4px; }
+  h2 { font-size:20px; margin:34px 0 14px; }
+  .table { width:100%; border-collapse:collapse; font-size:13px; }
+  .table th { text-align:left; padding:10px 12px; background:#172033; color:var(--muted); font-size:11px; text-transform:uppercase; letter-spacing:.08em; position:sticky; top:0; }
+  .table td { padding:10px 12px; border-top:1px solid var(--line); }
+  .table tr:hover td { background:#24344d; }
+  .pass { color:var(--ok); font-weight:700; }
+  .fail { color:var(--bad); font-weight:700; }
+  .warn { color:var(--warn); font-weight:700; }
+  .pill { display:inline-block; padding:2px 8px; border-radius:999px; font-size:11px; border:1px solid var(--line); color:var(--muted); }
+  .region { display:flex; flex-wrap:wrap; gap:8px; margin-top:4px; }
+  .note { color:var(--muted); font-size:12px; }
+  footer { margin-top:48px; padding-top:20px; border-top:1px solid var(--line); color:var(--muted); font-size:12px; }
+  .mono { font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="kicker">Domain Pricing Aggregator · Live Snapshot</div>
+    <h1>全球域名注册商价格聚合演示</h1>
+    <p class="sub">对 45 家全球注册商进行逐家策略链干跑验证，25 家成功抓取真实价格，合计 <span class="mono">11,971</span> 条 TLD 价目记录（注册/续费/转入），覆盖欧、美、亚、非、大洋洲主要市场。</p>
+    <div class="stats">
+      <div class="stat"><div class="v">45</div><div class="l">已收录注册商</div></div>
+      <div class="stat"><div class="v">25</div><div class="l">验证通过（PASS）</div></div>
+      <div class="stat"><div class="v">11,971</div><div class="l">真实价格记录</div></div>
+      <div class="stat"><div class="v">6</div><div class="l">数据策略类型</div></div>
+    </div>
+  </header>
+
+  <h2>✅ 验证通过（25 家，按行数排序）</h2>
+  <table class="table">
+    <tr><th>注册商</th><th>市场</th><th>货币</th><th style="text-align:right">TLD 行数</th><th>策略</th><th>耗时</th></tr>
+    <tr><td>OpenProvider</td><td>荷兰·批发</td><td>USD</td><td style="text-align:right">2069</td><td class="pill">api</td><td class="mono">4.4s</td></tr>
+    <tr><td>ClouDNS</td><td>保加利亚</td><td>EUR</td><td style="text-align:right">1218</td><td class="pill">playwright</td><td class="mono">8.2s</td></tr>
+    <tr><td>Hostpoint</td><td>瑞士</td><td>CHF</td><td style="text-align:right">1165</td><td class="pill">xhr</td><td class="mono">1.3s</td></tr>
+    <tr><td>OVHcloud</td><td>法国</td><td>USD</td><td style="text-align:right">942</td><td class="pill">api</td><td class="mono">6.4s</td></tr>
+    <tr><td>Porkbun</td><td>美国</td><td>USD</td><td style="text-align:right">907</td><td class="pill">api</td><td class="mono">15.3s</td></tr>
+    <tr><td>Truehost</td><td>肯尼亚</td><td>USD</td><td style="text-align:right">577</td><td class="pill">playwright</td><td class="mono">49.2s</td></tr>
+    <tr><td>Directnic</td><td>美国</td><td>USD</td><td style="text-align:right">534</td><td class="pill">html</td><td class="mono">4.8s</td></tr>
+    <tr><td>Name.com</td><td>美国</td><td>USD</td><td style="text-align:right">590</td><td class="pill">playwright</td><td class="mono">8.1s</td></tr>
+    <tr><td>NameSilo</td><td>美国</td><td>USD</td><td style="text-align:right">471</td><td class="pill">playwright</td><td class="mono">6.3s</td></tr>
+    <tr><td>Value-Domain</td><td>日本</td><td>JPY</td><td style="text-align:right">467</td><td class="pill">html</td><td class="mono">2.0s</td></tr>
+    <tr><td>お名前.com</td><td>日本</td><td>JPY</td><td style="text-align:right">443</td><td class="pill">playwright</td><td class="mono">20.0s</td></tr>
+    <tr><td>Cloudflare</td><td>美国</td><td>USD</td><td style="text-align:right">427</td><td class="pill">json</td><td class="mono">0.9s</td></tr>
+    <tr><td>DreamHost</td><td>美国</td><td>USD</td><td style="text-align:right">319</td><td class="pill">html</td><td class="mono">1.7s</td></tr>
+    <tr><td>101domain</td><td>美国</td><td>USD</td><td style="text-align:right">263</td><td class="pill">playwright</td><td class="mono">42.4s</td></tr>
+    <tr><td>Xserver</td><td>日本</td><td>JPY</td><td style="text-align:right">255</td><td class="pill">html</td><td class="mono">1.5s</td></tr>
+    <tr><td>Forpsi</td><td>捷克</td><td>CZK</td><td style="text-align:right">229</td><td class="pill">html</td><td class="mono">2.4s</td></tr>
+    <tr><td>Blacknight</td><td>爱尔兰</td><td>EUR</td><td style="text-align:right">157</td><td class="pill">html</td><td class="mono">1.8s</td></tr>
+    <tr><td>聚名网</td><td>中国</td><td>CNY</td><td style="text-align:right">126</td><td class="pill">html</td><td class="mono">0.7s</td></tr>
+    <tr><td>West.cn</td><td>中国</td><td>CNY</td><td style="text-align:right">118</td><td class="pill">playwright</td><td class="mono">2.6s</td></tr>
+    <tr><td>Hostinger</td><td>立陶宛</td><td>USD</td><td style="text-align:right">105</td><td class="pill">playwright</td><td class="mono">31.9s</td></tr>
+    <tr><td>22.cn</td><td>中国</td><td>CNY</td><td style="text-align:right">98</td><td class="pill">html</td><td class="mono">1.2s</td></tr>
+    <tr><td>Gandi</td><td>法国</td><td>USD</td><td style="text-align:right">42</td><td class="pill">html</td><td class="mono">12.6s</td></tr>
+    <tr><td>Infomaniak</td><td>瑞士</td><td>CHF</td><td style="text-align:right">20</td><td class="pill">playwright</td><td class="mono">26.0s</td></tr>
+    <tr><td>Hosting.kr</td><td>韩国</td><td>KRW</td><td style="text-align:right">12</td><td class="pill">playwright</td><td class="mono">24.0s</td></tr>
+  </table>
+
+  <h2>⚠️ 收集中（20 家，按原因分组）</h2>
+  <table class="table">
+    <tr><th>注册商</th><th>原因</th></tr>
+    <tr><td>Dynadot / Cloudflare 类反爬</td><td class="fail">Cloudflare challenge 劫持接口，返回 HTML 而非 JSON</td></tr>
+    <tr><td>Godaddy / Namecheap / Netim</td><td class="warn">需 API 凭证（private-api 未配置）</td></tr>
+    <tr><td>CentralNic / Exabytes</td><td class="fail">页面超重 + 浏览器 502</td></tr>
+    <tr><td>Register.com / Internetbs / LWS / NetworkSolutions</td><td class="fail">返回 HTTP 403（反爬拦截）</td></tr>
+    <tr><td>EuroDNS / Amen</td><td class="warn">表格结构变化，提取脚本未命中</td></tr>
+    <tr><td>Hover / Loopia / Domeneshop / Netcup / Aruba / TransIP / Metaname</td><td class="fail">价格页 URL 失效（404）</td></tr>
+    <tr><td>one.com</td><td class="warn">逐 TLD 懒加载 XHR，仅注册价无续费/转入</td></tr>
+  </table>
+
+  <h2>🌍 全球覆盖</h2>
+  <div class="region">
+    <span class="pill">🇺🇸 美国 8 家</span>
+    <span class="pill">🇯🇵 日本 3 家</span>
+    <span class="pill">🇨🇳 中国 3 家</span>
+    <span class="pill">🇨🇭 瑞士 2 家</span>
+    <span class="pill">🇫🇷 法国 2 家</span>
+    <span class="pill">🇳🇱 荷兰 2 家</span>
+    <span class="pill">🇨🇿 捷克</span>
+    <span class="pill">🇮🇪 爱尔兰</span>
+    <span class="pill">🇧🇬 保加利亚</span>
+    <span class="pill">🇱🇹 立陶宛</span>
+    <span class="pill">🇰🇪 肯尼亚</span>
+    <span class="pill">🇰🇷 韩国</span>
+  </div>
+  <p class="note" style="margin-top:12px">数据来源：<span class="mono">scripts/test-all-registrars.ts</span> 全量干跑（BROWSER_SERVICE_URL 浏览器渲染 + 6 类策略：html/xhr/json/api/playwright/embedded-json），2026-08-30 快照。</p>
+
+  <footer>
+    <p>数据由适配器 SDK（<span class="mono">defineAdapter</span> / <span class="mono">createTableAdapter</span>）逐家采集并验证。注册商特定逻辑仅存放于 <span class="mono">adapters/</span> 目录。可执行 <span class="mono">BROWSER_SERVICE_URL=http://127.0.0.1:8840 npx tsx scripts/test-all-registrars.ts</span> 复现本快照。</p>
+  </footer>
+</div>
+</body>
+</html>
