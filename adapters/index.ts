@@ -47,6 +47,7 @@ loopiaAdapter,
   muumuuDomainAdapter,
 } from "./table-registrars"
 import { hostingerAdapter } from "./hostinger"
+import { cloudnsAdapter } from "./cloudns"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -80,6 +81,7 @@ export const allAdapters = [
   valueDomainAdapter,
   muumuuDomainAdapter,
   hostingerAdapter,
+  cloudnsAdapter,
 ]
 
 for (const adapter of allAdapters) {
