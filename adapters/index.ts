@@ -49,6 +49,7 @@ loopiaAdapter,
 import { hostingerAdapter } from "./hostinger"
 import { cloudnsAdapter } from "./cloudns"
 import { domain101Adapter } from "./101domain"
+import { cn22Adapter } from "./22cn"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -84,6 +85,7 @@ export const allAdapters = [
   hostingerAdapter,
   cloudnsAdapter,
   domain101Adapter,
+  cn22Adapter,
 ]
 
 for (const adapter of allAdapters) {

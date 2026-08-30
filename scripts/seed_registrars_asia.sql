@@ -19,5 +19,6 @@ VALUES
   ('muumuu-domain', 'ムームードメイン', 'https://muumuu-domain.com', '日本注册商（GMO 系）。SSR 价格表，覆盖约 417 个 TLD（JPY）。', true),
   ('hostinger', 'Hostinger', 'https://www.hostinger.com', '全球注册商（立陶宛）。SPA，价格经定价接口（需鉴权头+cookie），api-fetch 会话内直采全量约 105 个 TLD 真实续费/转入价（USD）。', true),
   ('cloudns', 'ClouDNS', 'https://www.cloudns.net', '保加利亚注册商。JS 渲染全量价格表 1200+ 行，浏览器提取注册/续费/转入价（EUR）。', true),
-  ('101domain', '101domain', 'https://www.101domain.com', '北美注册商。div 网格价格页（Cloudflare，浏览器提取），26 主流 TLD 完整价 + 237 新 gTLD 注册价（USD）。', true)
+  ('101domain', '101domain', 'https://www.101domain.com', '北美注册商。div 网格价格页（Cloudflare，浏览器提取），26 主流 TLD 完整价 + 237 新 gTLD 注册价（USD）。', true),
+  ('22cn', '22.cn（贰贰互联）', 'https://www.22.cn', '中国注册商。SSR 价格表 `/domain/price/`，98 个主流+中国 TLD 注册/续费/转入/赎回价（CNY）。', true)
 ON CONFLICT (slug) DO NOTHING;
