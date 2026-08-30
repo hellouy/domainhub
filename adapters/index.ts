@@ -50,6 +50,7 @@ import { hostingerAdapter } from "./hostinger"
 import { cloudnsAdapter } from "./cloudns"
 import { domain101Adapter } from "./101domain"
 import { cn22Adapter } from "./22cn"
+import { westcnAdapter } from "./westcn"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -86,6 +87,7 @@ export const allAdapters = [
   cloudnsAdapter,
   domain101Adapter,
   cn22Adapter,
+  westcnAdapter,
 ]
 
 for (const adapter of allAdapters) {
