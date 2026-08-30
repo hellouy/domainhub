@@ -64,17 +64,19 @@ export const dynadotAdapter = defineAdapter({
   rateLimit: { concurrency: 1, rpm: 6, retries: 3, timeoutMs: 90_000 },
   strategies: [
     {
-      type: "xhr",
-      url: XHR_URL,
-      async fetch(ctx) {
-        const res = await ctx.fetch(XHR_URL, {
+      type: "playwright",
+      url: PRICING_PAGE,
+      browser: {
+        extract: "api-fetch",
+        waitForTimeoutMs: 20_000,
+        apiFetch: {
+          url: XHR_URL,
+          method: "GET",
           headers: {
-            Accept: "application/json",
-            Referer: PRICING_PAGE,
+            accept: "application/json",
+            referer: PRICING_PAGE,
           },
-        })
-        if (!res.ok) throw new Error(`Dynadot XHR 端点返回 HTTP ${res.status}`)
-        return res.text()
+        },
       },
       async parse(raw): Promise<RawPrice[]> {
         const data = JSON.parse(raw) as DynadotResponse

@@ -35,9 +35,9 @@ export const domain101Adapter = defineAdapter({
         for (const u of [PRICING_URL, GTLD_URL]) {
           let extracted: unknown[] | null = null
           let lastErr = ""
-          // 101domain 对连续浏览器请求限流（Cloudflare 间歇 502），加重试间隔
-          for (let attempt = 0; attempt < 3 && extracted === null; attempt++) {
-            if (attempt > 0) await sleep(2_500)
+          // 101domain 对连续浏览器请求限流（Cloudflare 间歇 502/空页），加大重试间隔
+          for (let attempt = 0; attempt < 4 && extracted === null; attempt++) {
+            if (attempt > 0) await sleep(8_000)
             const res = await ctx.fetch(`${base}/render`, {
               method: "POST",
               headers: { "Content-Type": "application/json", Accept: "application/json" },

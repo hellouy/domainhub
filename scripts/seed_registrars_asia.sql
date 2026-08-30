@@ -23,5 +23,15 @@ VALUES
   ('22cn', '22.cn（贰贰互联）', 'https://www.22.cn', '中国注册商。SSR 价格表 `/domain/price/`，98 个主流+中国 TLD 注册/续费/转入/赎回价（CNY）。', true),
   ('westcn', 'West.cn（西部数码）', 'https://www.west.cn', '中国注册商。JS 渲染全量价表 `/web/price/domainpricelist`，118 个 TLD 续费/转入价（CNY）；注册价为混合促销文案，清洗后弃用。', true),
   ('openprovider', 'OpenProvider', 'https://www.openprovider.com', '荷兰批发注册商。内部端点 `/api/pricing-data?currency=USD` 直采，2069 个 TLD 注册/续费/转入/赎回价（USD）。', true),
-  ('centralnic', 'CentralNic Reseller', 'https://www.centralnicreseller.com', 'CentralNic 批发官网（HEXONET 并入）。Grid.js 渲染 30 热门 TLD 批发价（USD）；页面超重，浏览器提取间歇可用。', true)
+  ('centralnic', 'CentralNic Reseller', 'https://www.centralnicreseller.com', 'CentralNic 批发官网（HEXONET 并入）。Grid.js 渲染 30 热门 TLD 批发价（USD）；页面超重，浏览器提取间歇可用。', true),
+('directnic', 'Directnic', 'https://www.directnic.com', '美国注册商。SSR 价格表 `/pricing`，534 个 TLD 注册/续费/转入价（USD）。', true),
+('dreamhost', 'DreamHost', 'https://www.dreamhost.com', '美国注册商。SSR 价格表 `/domains/pricing/`，319 个 TLD 注册/续费/转入价（USD）。', true),
+('forpsi', 'Forpsi', 'https://www.forpsi.com', '捷克注册商。SSR 价格表 `/domain/`，229 个 TLD 注册/续费价（CZK，EUR 促销价弃用）。', true),
+('juming', '聚名网 Juming', 'https://www.juming.com', '中国注册商。SSR 价格表 `/price.htm`，126 个 TLD 注册/续费/转入价（CNY）。', true),
+('blacknight', 'Blacknight', 'https://www.blacknight.com', '爱尔兰注册商。SSR 价格表 `/domain-extensions/`，157 个 TLD 注册价（EUR）。', true),
+('onamae', 'お名前.com', 'https://www.onamae.com', '日本注册商（GMO）。JS 渲染价格表，浏览器提取 443 个 TLD 注册/续费/转入价（JPY）。', true),
+('infomaniak', 'Infomaniak', 'https://www.infomaniak.com', '瑞士注册商。JS 渲染价格表，浏览器提取 20 热门 TLD 价格（CHF）。', true),
+('namesilo', 'NameSilo', 'https://www.namesilo.com', '美国注册商。JS 渲染价格表 `/pricing`，浏览器提取 471 个 TLD 注册/续费/转入价（USD，促销注册价清空）。', true),
+  ('truehost', 'Truehost', 'https://truehost.cloud', '肯尼亚注册商。JS 渲染价格表 `/domains`，浏览器提取 577 个 TLD 注册/续费/转入价（USD）。', true),
+('hostingkr', 'Hosting.kr', 'https://www.hosting.kr', '韩国注册商。JS 渲染价格表 `/domain`，浏览器提取 12 个 TLD 注册/续费/转入价（KRW）。', true)
 ON CONFLICT (slug) DO NOTHING;

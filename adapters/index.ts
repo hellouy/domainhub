@@ -20,7 +20,6 @@ import { gandiAdapter } from "./gandi"
 import { godaddyAdapter } from "./godaddy"
 import { namecheapAdapter } from "./namecheap"
 import { namecomAdapter } from "./namecom"
-import { namesiloAdapter } from "./namesilo"
 import { netimAdapter } from "./netim"
 import { onecomAdapter } from "./onecom"
 import { porkbunAdapter } from "./porkbun"
@@ -33,8 +32,8 @@ import {
   eurodnsAdapter,
   hoverAdapter,
   infomaniakAdapter,
-  internetbsAdapter,
-loopiaAdapter,
+internetbsAdapter,
+  loopiaAdapter,
   lwsAdapter,
   metanameAdapter,
   netcupAdapter,
@@ -44,6 +43,16 @@ loopiaAdapter,
   xserverAdapter,
   valueDomainAdapter,
   muumuuDomainAdapter,
+  directnicAdapter,
+  dreamhostAdapter,
+  forpsiAdapter,
+  jumingAdapter,
+  blacknightAdapter,
+  namesiloAdapter,
+  exabytesAdapter,
+  networksolutionsAdapter,
+  truehostAdapter,
+  hostingkrAdapter,
 } from "./table-registrars"
 import { hostingerAdapter } from "./hostinger"
 import { cloudnsAdapter } from "./cloudns"
@@ -90,6 +99,16 @@ export const allAdapters = [
   westcnAdapter,
   openproviderAdapter,
   centralnicAdapter,
+  directnicAdapter,
+  dreamhostAdapter,
+  forpsiAdapter,
+  jumingAdapter,
+  blacknightAdapter,
+  namesiloAdapter,
+  exabytesAdapter,
+  networksolutionsAdapter,
+  truehostAdapter,
+  hostingkrAdapter,
 ]
 
 for (const adapter of allAdapters) {
