@@ -143,15 +143,6 @@ export const transipAdapter = createTableAdapter({
   columnOrder: ["register", "renew", "transfer"],
 })
 
-export const openproviderAdapter = createTableAdapter({
-  slug: "openprovider",
-  name: "Openprovider",
-  website: "https://www.openprovider.com",
-  currency: "EUR",
-  urls: ["https://www.openprovider.com/domain-price-list"],
-  columnOrder: ["register", "renew", "transfer"],
-})
-
 export const xserverAdapter = createTableAdapter({
   slug: "xserver",
   name: "Xserver",

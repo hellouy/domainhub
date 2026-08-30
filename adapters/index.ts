@@ -39,7 +39,6 @@ loopiaAdapter,
   metanameAdapter,
   netcupAdapter,
   onamaeAdapter,
-  openproviderAdapter,
   registercomAdapter,
   transipAdapter,
   xserverAdapter,
@@ -51,6 +50,7 @@ import { cloudnsAdapter } from "./cloudns"
 import { domain101Adapter } from "./101domain"
 import { cn22Adapter } from "./22cn"
 import { westcnAdapter } from "./westcn"
+import { openproviderAdapter } from "./openprovider"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -79,7 +79,6 @@ export const allAdapters = [
   amenAdapter,
   arubaAdapter,
   transipAdapter,
-  openproviderAdapter,
   xserverAdapter,
   valueDomainAdapter,
   muumuuDomainAdapter,
@@ -88,6 +87,7 @@ export const allAdapters = [
   domain101Adapter,
   cn22Adapter,
   westcnAdapter,
+  openproviderAdapter,
 ]
 
 for (const adapter of allAdapters) {

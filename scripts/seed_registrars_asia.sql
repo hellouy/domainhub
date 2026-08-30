@@ -21,5 +21,6 @@ VALUES
   ('cloudns', 'ClouDNS', 'https://www.cloudns.net', '保加利亚注册商。JS 渲染全量价格表 1200+ 行，浏览器提取注册/续费/转入价（EUR）。', true),
   ('101domain', '101domain', 'https://www.101domain.com', '北美注册商。div 网格价格页（Cloudflare，浏览器提取），26 主流 TLD 完整价 + 237 新 gTLD 注册价（USD）。', true),
   ('22cn', '22.cn（贰贰互联）', 'https://www.22.cn', '中国注册商。SSR 价格表 `/domain/price/`，98 个主流+中国 TLD 注册/续费/转入/赎回价（CNY）。', true),
-  ('westcn', 'West.cn（西部数码）', 'https://www.west.cn', '中国注册商。JS 渲染全量价表 `/web/price/domainpricelist`，118 个 TLD 续费/转入价（CNY）；注册价为混合促销文案，清洗后弃用。', true)
+  ('westcn', 'West.cn（西部数码）', 'https://www.west.cn', '中国注册商。JS 渲染全量价表 `/web/price/domainpricelist`，118 个 TLD 续费/转入价（CNY）；注册价为混合促销文案，清洗后弃用。', true),
+  ('openprovider', 'OpenProvider', 'https://www.openprovider.com', '荷兰批发注册商。内部端点 `/api/pricing-data?currency=USD` 直采，2069 个 TLD 注册/续费/转入/赎回价（USD）。', true)
 ON CONFLICT (slug) DO NOTHING;
