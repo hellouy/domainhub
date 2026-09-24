@@ -1,19 +1,25 @@
 import { db } from "@/lib/db"
-import { registrars } from "@/lib/db/schema"
-import { asc } from "drizzle-orm"
+import { adapterRules, registrars } from "@/lib/db/schema"
+import { asc, eq } from "drizzle-orm"
 import { Store, CheckCircle2, DollarSign, Activity } from "lucide-react"
 import { getRegistrarHealthRows } from "@/lib/db/admin-queries"
 import { RegistrarAdminTable } from "@/components/admin/registrar-admin-table"
+import { AddRegistrarDialog } from "@/components/admin/add-registrar-dialog"
 import { PageHeader, StatCard } from "@/components/admin/ui"
 
 export default async function AdminRegistrarsPage() {
-  const [rows, healthRows] = await Promise.all([
+  const [rows, healthRows, activeRuleRows] = await Promise.all([
     db.select().from(registrars).orderBy(asc(registrars.name)),
     getRegistrarHealthRows(),
+    db
+      .select({ registrarId: adapterRules.registrarId })
+      .from(adapterRules)
+      .where(eq(adapterRules.status, "active")),
   ])
 
   // 用 slug 关联覆盖/价格数据
   const healthBySlug = new Map(healthRows.map((h) => [h.slug, h]))
+  const activeRuleIds = new Set(activeRuleRows.map((r) => r.registrarId))
 
   const tableRows = rows.map((r) => {
     const h = healthBySlug.get(r.slug)
@@ -31,6 +37,8 @@ export default async function AdminRegistrarsPage() {
       coverage: h?.coverage ?? 0,
       lastPriceAt: h?.lastPriceAt ?? null,
       lastJobStatus: h?.lastJobStatus ?? null,
+      crawlUrls: (r.crawlUrls as string[] | null) ?? [],
+      hasActiveRule: activeRuleIds.has(r.id),
     }
   })
 
@@ -40,10 +48,13 @@ export default async function AdminRegistrarsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <PageHeader
-        title="注册商管理"
-        description="启用/禁用注册商、编辑信息、手动触发价格采集，并查看适配器健康状态。"
-      />
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <PageHeader
+          title="注册商管理"
+          description="启用/禁用注册商、编辑信息、配置采集地址、AI 生成解析规则并试采集，查看适配器健康状态。"
+        />
+        <AddRegistrarDialog />
+      </div>
 
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <StatCard icon={Store} label="注册商总数" value={rows.length} />

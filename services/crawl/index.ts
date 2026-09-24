@@ -36,6 +36,7 @@ import {
   syncAdapterToDb,
 } from "@/packages/registry"
 import { createPriceSink } from "@/packages/storage"
+import { buildDynamicAdapter } from "./dynamic-adapter"
 // 引入适配器包以触发自注册(唯一允许 import 适配器的位置)
 import "@/adapters"
 
@@ -83,7 +84,18 @@ export async function runCrawlWithSdk(
     }
   }
 
-  const adapter = getRegisteredAdapter(registrar.slug)
+  // 优先用已注册的 TS 适配器；找不到时，若存在 active 动态规则则按规则临时构建
+  let adapter = getRegisteredAdapter(registrar.slug)
+  let dynamicRuleUsed = false
+  if (!adapter) {
+    const { getActiveRule } = await import("@/packages/ai-repair")
+    const rule = await getActiveRule(registrarId)
+    if (rule) {
+      adapter = buildDynamicAdapter(registrar, rule)
+      dynamicRuleUsed = true
+    }
+  }
+  // 既无 TS 适配器也无动态规则 → 交回旧路径处理
   if (!adapter) return null
 
   const startedAt = new Date()
@@ -121,6 +133,9 @@ export async function runCrawlWithSdk(
   let retries = 0
 
   await log("info", `采集开始: 适配器 v${adapter.version}, SDK v${adapter.sdkVersion}, 策略优先级 [${adapter.strategyPriority.join(" → ")}]`)
+  if (dynamicRuleUsed) {
+    await log("info", "使用 DB 动态规则驱动(无 TS 适配器文件),规则来自 adapter_rules(active)")
+  }
 
   const result = await adapter.run(ctx, sink)
   result.metrics.retries += retries

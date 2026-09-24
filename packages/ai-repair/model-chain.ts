@@ -47,9 +47,16 @@ const CHANNELS: Record<string, { envKey: string; baseURL: string; label: string 
   },
 }
 
-/** 默认链: Gateway 优先(如可用),然后按免费额度/能力排直连渠道 */
+/**
+ * 默认链: 优先使用在 Vercel/v0 上「零配置」即可用的 AI Gateway 模型
+ * (Google / OpenAI / Anthropic 由平台代理计费,部署后无需额外 API Key),
+ * 再回退到需要各自 Key 的直连渠道。
+ */
 const DEFAULT_CHAIN = [
   "gateway:google/gemini-3-flash",
+  "gateway:google/gemini-2.5-flash",
+  "gateway:openai/gpt-4.1-mini",
+  "gateway:anthropic/claude-haiku-4.5",
   "gateway:zai/glm-4.6",
   "google:gemini-2.5-flash",
   "zhipu:glm-4-flash",

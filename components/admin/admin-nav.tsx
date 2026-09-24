@@ -6,6 +6,8 @@ import { usePathname } from "next/navigation"
 import {
   LayoutDashboard,
   Store,
+  Compass,
+  FileCode2,
   Radio,
   DollarSign,
   Globe,
@@ -22,6 +24,8 @@ import { cn } from "@/lib/utils"
 const NAV_ITEMS = [
   { href: "/admin", label: "概览", icon: LayoutDashboard, exact: true },
   { href: "/admin/registrars", label: "注册商", icon: Store },
+  { href: "/admin/discovery", label: "注册商发现", icon: Compass },
+  { href: "/admin/adapter-rules", label: "适配器规则", icon: FileCode2 },
   { href: "/admin/crawls", label: "采集任务", icon: Radio },
   { href: "/admin/prices", label: "价格数据", icon: DollarSign },
   { href: "/admin/tlds", label: "后缀管理", icon: Globe },
