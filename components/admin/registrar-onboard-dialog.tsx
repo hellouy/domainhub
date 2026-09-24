@@ -25,8 +25,12 @@ type ScanSignal = { strategy: string; detected: boolean; strength: number; detai
 
 const strategyLabel: Record<string, string> = {
   api: "官方 API",
+  "private-api": "私有 API",
+  json: "JSON 数据源",
   xhr: "XHR 接口",
   graphql: "GraphQL",
+  hydration: "Next 水合数据",
+  "nuxt-payload": "Nuxt 数据",
   "embedded-json": "内嵌 JSON",
   html: "HTML 表格",
   playwright: "浏览器渲染",
