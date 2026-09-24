@@ -37,6 +37,64 @@ async function defaultFetch(def: StrategyDefinition, ctx: AdapterContext): Promi
   return res.text()
 }
 
+/** 浏览器渲染服务地址（独立部署的 Playwright worker）；未配置时 playwright 策略直接降级 */
+const BROWSER_SERVICE_URL = process.env.BROWSER_SERVICE_URL ?? ""
+
+/**
+ * playwright 策略的浏览器 fetch：
+ * 把渲染任务转发给浏览器服务（BROWSER_SERVICE_URL），服务端用 Playwright 打开页面、
+ * 等待渲染完成并注入提取脚本，返回提取结果 JSON（extract-json）或完整 HTML（html）。
+ *
+ * extract-json 返回项字段已按 RawPrice 约定规范化：
+ *   { tld, registerPrice, renewPrice, transferPrice, currency?, sourceUrl? }
+ * 因此该形态下可以省略自定义 parse，直接走 defaultParse。
+ */
+async function browserStrategyFetch(def: StrategyDefinition, ctx: AdapterContext): Promise<string> {
+  if (!BROWSER_SERVICE_URL) {
+    throw new Error("playwright 策略需要配置环境变量 BROWSER_SERVICE_URL（浏览器渲染服务地址）")
+  }
+  const opts = def.browser ?? {}
+  const payload = {
+    url: def.url,
+    extract: opts.extract ?? "extract-json",
+    waitFor: opts.waitFor ?? null,
+    waitForTimeoutMs: opts.waitForTimeoutMs ?? 30_000,
+    scrollToBottom: opts.scrollToBottom ?? true,
+    locale: opts.locale ?? null,
+    headers: opts.headers ?? {},
+    script: opts.script ?? null,
+    captureXhrFilter: opts.captureXhrFilter ?? [],
+    apiFetch: opts.apiFetch ?? null,
+  }
+  const res = await ctx.fetch(`${BROWSER_SERVICE_URL}/render`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    body: JSON.stringify(payload),
+  })
+  if (!res.ok) throw new Error(`浏览器服务返回 HTTP ${res.status}`)
+  const data = (await res.json()) as {
+    ok?: boolean
+    extracted?: unknown[]
+    html?: string
+    xhrResponses?: unknown[]
+    api?: { status: number; body: string }
+    error?: string
+  }
+  if (!data.ok) throw new Error(data.error ?? "浏览器服务报告渲染失败")
+  if (opts.extract === "html") {
+    if (typeof data.html !== "string") throw new Error("浏览器服务未返回 html")
+    return data.html
+  }
+  if (opts.extract === "xhr-json") {
+    return JSON.stringify(data.xhrResponses ?? [])
+  }
+  if (opts.extract === "api-fetch") {
+    if (typeof data.api?.body !== "string") throw new Error("浏览器服务未返回 api 响应体")
+    return data.api.body
+  }
+  return JSON.stringify(data.extracted ?? [])
+}
+
 /** 默认 parse：Parser 平台自动识别格式，要求数据已是 RawPrice 形状 */
 function defaultParse(raw: string): RawPrice[] {
   const { format, data } = autoParse(raw)
@@ -72,7 +130,11 @@ export async function executeStrategies(
       await ctx.log("info", `尝试策略 [${def.type}]${def.url ? `：${def.url}` : ""}`)
 
       const fetchStarted = Date.now()
-      const raw = def.fetch ? await def.fetch(ctx) : await defaultFetch(def, ctx)
+      const raw = def.fetch
+        ? await def.fetch(ctx)
+        : def.type === "playwright"
+          ? await browserStrategyFetch(def, ctx)
+          : await defaultFetch(def, ctx)
       const downloadMs = Date.now() - fetchStarted
 
       const parseStarted = Date.now()

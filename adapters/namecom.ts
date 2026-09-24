@@ -78,6 +78,37 @@ export const namecomAdapter = defineAdapter({
   rateLimit: { concurrency: 1, rpm: 10, retries: 2, timeoutMs: 60_000 },
   strategies: [
     {
+      type: "playwright",
+      url: PAGE_URL,
+      browser: {
+        extract: "extract-json",
+        waitForTimeoutMs: 15_000,
+      },
+      parse(raw): RawPrice[] {
+        const rows = JSON.parse(raw) as Array<{
+          tld?: string
+          registerPrice?: number | null
+          renewPrice?: number | null
+          transferPrice?: number | null
+        }>
+        const prices: RawPrice[] = []
+        for (const r of rows) {
+          const tld = typeof r.tld === "string" ? r.tld.replace(/^\./, "").toLowerCase() : null
+          if (!tld) continue
+          prices.push({
+            tld,
+            registerPrice: r.registerPrice ?? null,
+            renewPrice: r.renewPrice ?? null,
+            transferPrice: r.transferPrice ?? null,
+            currency: "USD",
+            sourceUrl: PAGE_URL,
+          })
+        }
+        if (prices.length === 0) throw new Error("Name.com 浏览器提取未找到价格条目")
+        return prices
+      },
+    },
+    {
       type: "xhr",
       url: AJAX_URL,
       async fetch(ctx) {

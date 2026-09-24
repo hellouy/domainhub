@@ -20,7 +20,6 @@ import { gandiAdapter } from "./gandi"
 import { godaddyAdapter } from "./godaddy"
 import { namecheapAdapter } from "./namecheap"
 import { namecomAdapter } from "./namecom"
-import { namesiloAdapter } from "./namesilo"
 import { netimAdapter } from "./netim"
 import { onecomAdapter } from "./onecom"
 import { porkbunAdapter } from "./porkbun"
@@ -33,16 +32,35 @@ import {
   eurodnsAdapter,
   hoverAdapter,
   infomaniakAdapter,
-  internetbsAdapter,
+internetbsAdapter,
   loopiaAdapter,
   lwsAdapter,
   metanameAdapter,
   netcupAdapter,
   onamaeAdapter,
-  openproviderAdapter,
   registercomAdapter,
   transipAdapter,
+  xserverAdapter,
+  valueDomainAdapter,
+  muumuuDomainAdapter,
+  directnicAdapter,
+  dreamhostAdapter,
+  forpsiAdapter,
+  jumingAdapter,
+  blacknightAdapter,
+  namesiloAdapter,
+  exabytesAdapter,
+  networksolutionsAdapter,
+  truehostAdapter,
+  hostingkrAdapter,
 } from "./table-registrars"
+import { hostingerAdapter } from "./hostinger"
+import { cloudnsAdapter } from "./cloudns"
+import { domain101Adapter } from "./101domain"
+import { cn22Adapter } from "./22cn"
+import { westcnAdapter } from "./westcn"
+import { openproviderAdapter } from "./openprovider"
+import { centralnicAdapter } from "./centralnic"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -71,7 +89,26 @@ export const allAdapters = [
   amenAdapter,
   arubaAdapter,
   transipAdapter,
+  xserverAdapter,
+  valueDomainAdapter,
+  muumuuDomainAdapter,
+  hostingerAdapter,
+  cloudnsAdapter,
+  domain101Adapter,
+  cn22Adapter,
+  westcnAdapter,
   openproviderAdapter,
+  centralnicAdapter,
+  directnicAdapter,
+  dreamhostAdapter,
+  forpsiAdapter,
+  jumingAdapter,
+  blacknightAdapter,
+  namesiloAdapter,
+  exabytesAdapter,
+  networksolutionsAdapter,
+  truehostAdapter,
+  hostingkrAdapter,
 ]
 
 for (const adapter of allAdapters) {

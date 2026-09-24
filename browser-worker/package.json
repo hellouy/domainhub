@@ -1,0 +1,22 @@
+{
+  "name": "browser-worker",
+  "version": "1.0.0",
+  "private": true,
+  "description": "远程浏览器渲染/内容提取服务 —— 供主站 Adapter SDK playwright 策略调用（Playwright + 内置提取器）",
+  "type": "module",
+  "scripts": {
+    "start": "node --experimental-strip-types src/server.ts",
+    "dev": "node --experimental-strip-types --watch src/server.ts",
+    "install-browser": "playwright install chromium"
+  },
+  "dependencies": {
+    "express": "^4.21.2",
+    "playwright": "^1.49.0"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/node": "^24.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.3"
+  }
+}

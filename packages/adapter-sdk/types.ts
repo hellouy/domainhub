@@ -292,6 +292,51 @@ export interface AdapterResult {
 // ============================================================
 
 /**
+ * playwright（远程浏览器渲染）策略的附加选项。
+ * 采集时由 SDK 将请求转发到按 BROWSER_SERVICE_URL 配置的浏览器服务
+ * （独立部署的 Playwright worker），服务端渲染后返回 HTML 或
+ * 注入默认提取脚本得到的价格 JSON，SDK 再走原有 parse → validate → save。
+ */
+export interface BrowserStrategyOptions {
+  /**
+   * 返回形态：
+   * - "extract-json"（默认）：服务端注入内置提取脚本（scripts/browser-capture/extract.js），
+   *   返回 [{ tld, registerPrice, renewPrice, transferPrice }]，SDK 默认 parse 直接消费。
+   * - "html"：返回渲染后的完整 HTML，配合自定义 parse（如复用 table-adapter 解析）。
+   * - "xhr-json"：捕获页面发出的 XHR/fetch 的 JSON 响应（按 captureXhrFilter 过滤），
+   *   返回 [{ url, status, body }]，配合自定义 parse 解析 JS 驱动站点（SPA/XHR 定价接口）。
+   * - "api-fetch"：用页面会话（同一浏览器 context，cookie 自动携带）重放 apiFetch 指定的
+   *   价格接口（GET/POST），返回接口响应体；适合“页面建立会话 + API 直采”的站点。
+   */
+  extract?: "extract-json" | "html" | "xhr-json" | "api-fetch"
+  /**
+   * api-fetch 形态的重放目标（method/headers/body 按页面真实请求复刻）。
+   * 示例见 adapters/hostinger.ts（POST tlds-pricing 定价接口）。
+   */
+  apiFetch?: {
+    url: string
+    method?: "GET" | "POST" | "PUT" | "PATCH"
+    headers?: Record<string, string>
+    /** 对象会被序列化为 JSON 请求体 */
+    body?: Record<string, unknown>
+  }
+  /** xhr-json 形态的 URL 子串过滤（命中任一即捕获）；缺省捕获 JSON 定价类接口 */
+  captureXhrFilter?: string[]
+  /** 等待页面出现该 CSS 选择器后再提取（如 ".price-table tr"），默认 null */
+  waitFor?: string
+  /** 等待超时毫秒，默认 30_000 */
+  waitForTimeoutMs?: number
+  /** 提取前滚动到底部触发动态加载，默认 true */
+  scrollToBottom?: boolean
+  /** 模拟地区（影响 GeoIP 定价），如 "de"/"en-US"，默认 null */
+  locale?: string
+  /** 初始导航附加请求头（部分站点校验 Referer 等） */
+  headers?: Record<string, string>
+  /** 自定义提取脚本（默认服务端内置 extract.js） */
+  script?: string
+}
+
+/**
  * 单个数据源策略的实现。
  * fetch 拿原始数据，parse 转成 RawPrice[]。
  * parse 省略时由 Parser 平台自动选择解析器。
@@ -300,10 +345,12 @@ export interface StrategyDefinition {
   type: StrategyType
   /** 数据源 URL（供发现元数据与默认 fetch 使用） */
   url?: string
-  /** 自定义抓取；省略时用 ctx.fetch(url) */
+  /** custom fetch；省略时用 ctx.fetch(url)。type=playwright 时默认走浏览器服务 */
   fetch?: (ctx: AdapterContext) => Promise<string>
   /** 自定义解析；省略时用 Parser 平台 autoParser */
   parse?: (raw: string, ctx: AdapterContext) => Promise<RawPrice[]> | RawPrice[]
+  /** playwright 策略的浏览器渲染选项（仅 type=playwright 时生效） */
+  browser?: BrowserStrategyOptions
 }
 
 /** defineAdapter() 的配置对象 —— 新增注册商只需要写这一个对象 */

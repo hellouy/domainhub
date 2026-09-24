@@ -26,6 +26,7 @@ export const onamaeAdapter = createTableAdapter({
   currency: "JPY",
   urls: ["https://www.onamae.com/service/d-price/"],
   columnOrder: ["register", "renew", "transfer"],
+  browser: { waitFor: ".js-price-table-view", waitForTimeoutMs: 25_000 },
 })
 
 export const internetbsAdapter = createTableAdapter({
@@ -71,6 +72,7 @@ export const infomaniakAdapter = createTableAdapter({
   currency: "CHF",
   urls: ["https://www.infomaniak.com/en/domains/prices"],
   columnOrder: ["register", "renew", "transfer"],
+  browser: { waitFor: "table", waitForTimeoutMs: 30_000 },
 })
 
 export const loopiaAdapter = createTableAdapter({
@@ -143,11 +145,142 @@ export const transipAdapter = createTableAdapter({
   columnOrder: ["register", "renew", "transfer"],
 })
 
-export const openproviderAdapter = createTableAdapter({
-  slug: "openprovider",
-  name: "Openprovider",
-  website: "https://www.openprovider.com",
-  currency: "EUR",
-  urls: ["https://www.openprovider.com/domain-price-list"],
+export const xserverAdapter = createTableAdapter({
+  slug: "xserver",
+  name: "Xserver",
+  website: "https://www.xserver.ne.jp",
+  currency: "JPY",
+  urls: ["https://www.xserver.ne.jp/domain/"],
   columnOrder: ["register", "renew", "transfer"],
+  owner: "Data Team",
+  capabilities: { registration: true, renewal: true, transfer: true, supportedCurrencies: ["JPY"] },
 })
+
+export const valueDomainAdapter = createTableAdapter({
+  slug: "value-domain",
+  name: "Value Domain",
+  website: "https://www.value-domain.com",
+  currency: "JPY",
+  urls: ["https://www.value-domain.com/domain/price/"],
+  columnOrder: ["register", "renew", "transfer"],
+  owner: "Data Team",
+})
+
+export const muumuuDomainAdapter = createTableAdapter({
+  slug: "muumuu-domain",
+  name: "\u30e0\u30fc\u30e0\u30fc\u30c9\u30e1\u30a4\u30f3",
+  website: "https://muumuu-domain.com",
+  currency: "JPY",
+  urls: ["https://muumuu-domain.com/domain/price/"],
+  columnOrder: ["register", "renew", "transfer"],
+  owner: "Data Team",
+})
+
+export const directnicAdapter = createTableAdapter({
+  slug: "directnic",
+  name: "Directnic",
+  website: "https://www.directnic.com",
+  currency: "USD",
+  urls: ["https://www.directnic.com/pricing"],
+  columnOrder: ["register", "renew", "transfer"],
+  owner: "Data Team",
+})
+
+export const dreamhostAdapter = createTableAdapter({
+  slug: "dreamhost",
+  name: "DreamHost",
+  website: "https://www.dreamhost.com",
+  currency: "USD",
+  urls: ["https://www.dreamhost.com/domains/pricing/"],
+  columnOrder: ["register", "renew", "transfer"],
+  owner: "Data Team",
+})
+
+export const forpsiAdapter = createTableAdapter({
+  slug: "forpsi",
+  name: "Forpsi",
+  website: "https://www.forpsi.com",
+  currency: "CZK",
+  numberFormat: "eu",
+  urls: ["https://www.forpsi.com/domain/"],
+  columnOrder: ["register", "renew"],
+  owner: "Data Team",
+})
+
+export const jumingAdapter = createTableAdapter({
+  slug: "juming",
+  name: "\u805a\u540d\u7f51 Juming",
+  website: "https://www.juming.com",
+  currency: "CNY",
+  urls: ["https://www.juming.com/price.htm"],
+  columnOrder: ["register", "renew", "transfer"],
+  owner: "Data Team",
+})
+
+export const blacknightAdapter = createTableAdapter({
+  slug: "blacknight",
+  name: "Blacknight",
+  website: "https://www.blacknight.com",
+  currency: "EUR",
+  numberFormat: "eu",
+  urls: ["https://www.blacknight.com/domain-extensions/"],
+  columnOrder: ["register", "skip", "skip", "skip", "skip"],
+  owner: "Data Team",
+})
+
+export const namesiloAdapter = createTableAdapter({
+  slug: "namesilo",
+  name: "NameSilo",
+  website: "https://www.namesilo.com",
+  currency: "USD",
+  urls: ["https://www.namesilo.com/pricing"],
+  columnOrder: ["register", "renew", "transfer"],
+  owner: "Data Team",
+  browser: { waitFor: "table", waitForTimeoutMs: 30_000 },
+})
+
+export const truehostAdapter = createTableAdapter({
+  slug: "truehost",
+  name: "Truehost",
+  website: "https://truehost.cloud",
+  currency: "USD",
+  urls: ["https://truehost.cloud/domains"],
+  columnOrder: ["register", "renew", "transfer"],
+  owner: "Data Team",
+  browser: { waitFor: "table", waitForTimeoutMs: 20_000 },
+})
+
+export const hostingkrAdapter = createTableAdapter({
+  slug: "hostingkr",
+  name: "Hosting.kr",
+  website: "https://www.hosting.kr",
+  currency: "KRW",
+  urls: ["https://www.hosting.kr/domain"],
+  columnOrder: ["register", "renew", "transfer"],
+  owner: "Data Team",
+  browser: { waitFor: "table", waitForTimeoutMs: 20_000 },
+})
+
+export const exabytesAdapter = createTableAdapter({
+  slug: "exabytes",
+  name: "Exabytes",
+  website: "https://www.exabytes.my",
+  currency: "MYR",
+  urls: ["https://www.exabytes.my/domain"],
+  columnOrder: ["register"],
+  owner: "Data Team",
+  browser: { waitFor: "table", waitForTimeoutMs: 20_000 },
+})
+
+export const networksolutionsAdapter = createTableAdapter({
+  slug: "networksolutions",
+  name: "Network Solutions",
+  website: "https://www.networksolutions.com",
+  currency: "USD",
+  urls: ["https://www.networksolutions.com/domains/"],
+  columnOrder: ["register", "renew"],
+  owner: "Data Team",
+  browser: { waitFor: "table", waitForTimeoutMs: 30_000 },
+})
+
+

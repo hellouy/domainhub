@@ -36,7 +36,8 @@
     let tldIdx = -1
     for (let i = 0; i < Math.min(cells.length, 3); i++) {
       const c = cells[i].split('\n')[0].trim().toLowerCase()
-      const m = c.match(tldRe)
+      // TLD 单元格可能带后端备注或空白(如 ".com（eNom）"), 提取前导 tld 即可
+      const m = c.match(/^\.?([a-z0-9-]{2,20}(?:\.[a-z0-9-]{2,15}){0,2})(?:\s|$)/)
       if (m && (c.startsWith('.') || i === 0) && !/^\d+$/.test(m[1])) {
         tld = m[1].toLowerCase()
         tldIdx = i
