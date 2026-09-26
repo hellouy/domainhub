@@ -50,6 +50,16 @@ Entries discovered by the Agent during task execution should follow this format:
   - SDK 侧干跑适配器用 tsx 即可（无 page.evaluate），只有 browser-worker 进程才必须 node strip-types；node strip-types 不识别 `@/` 别名的脚本需用相对路径 import
 
 [Project Knowledge Summary]
+- Date: 2026-09-25
+- Context: Discovered by Agent while fixing Vercel build ERR_PNPM_LOCKFILE_CONFIG_MISMATCH
+- Category: Build Methods
+- Instructions:
+  - Vercel 用 pnpm@10.x 构建本仓库（package.json 已钉 packageManager: pnpm@10.34.5）；改动 package.json 的 pnpm.overrides 后必须 `pnpm install --no-frozen-lockfile` 重新生成 lockfile 并提交，否则冻结安装报 ERR_PNPM_LOCKFILE_CONFIG_MISMATCH
+  - 本地 corepack 的 pnpm 损坏（MODULE_NOT_FOUND），修复方式：`corepack disable && npm i -g pnpm@10`
+  - pnpm-workspace.yaml 的 allowBuilds 取值为布尔（esbuild: true / msw: false / sharp: true），不能留占位符字符串
+  - 本地验证部署前先跑 `pnpm install --frozen-lockfile`（模拟 Vercel）再 `pnpm run build`
+
+[Project Knowledge Summary]
 - Date: 2026-08-29
 - Context: Discovered by Agent while 探测大洋洲注册商
 - Category: Troubleshooting & Debugging

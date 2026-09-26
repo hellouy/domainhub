@@ -74,6 +74,121 @@ CREATE TABLE IF NOT EXISTS crawl_logs (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+-- ---- Sprint 5 平台化新增列（可空，向后兼容；对既有库幂等补列）----
+ALTER TABLE registrars ADD COLUMN IF NOT EXISTS health jsonb;
+ALTER TABLE registrars ADD COLUMN IF NOT EXISTS owner text;
+ALTER TABLE registrars ADD COLUMN IF NOT EXISTS adapter_version text;
+ALTER TABLE registrars ADD COLUMN IF NOT EXISTS priority integer;
+ALTER TABLE tlds ADD COLUMN IF NOT EXISTS is_valid boolean NOT NULL DEFAULT true;
+ALTER TABLE tlds ADD COLUMN IF NOT EXISTS popularity integer NOT NULL DEFAULT 0;
+ALTER TABLE crawl_jobs ADD COLUMN IF NOT EXISTS strategy text;
+ALTER TABLE crawl_jobs ADD COLUMN IF NOT EXISTS metrics jsonb;
+
+-- ---- Sprint 5 平台化新表（与 lib/db/schema.ts 对齐）----
+CREATE TABLE IF NOT EXISTS exchange_rates (
+  id serial PRIMARY KEY,
+  base text NOT NULL DEFAULT 'USD',
+  rates jsonb NOT NULL,
+  fetched_at timestamptz NOT NULL DEFAULT now(),
+  next_update_at timestamptz
+);
+
+CREATE TABLE IF NOT EXISTS registrar_credentials (
+  id serial PRIMARY KEY,
+  registrar_id integer NOT NULL,
+  type text NOT NULL,
+  label text NOT NULL DEFAULT '',
+  encrypted_payload text NOT NULL,
+  is_active boolean NOT NULL DEFAULT true,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS registrar_capabilities (
+  id serial PRIMARY KEY,
+  registrar_id integer NOT NULL UNIQUE,
+  capabilities jsonb NOT NULL DEFAULT '{}',
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS discovery_metadata (
+  id serial PRIMARY KEY,
+  registrar_id integer NOT NULL UNIQUE,
+  pricing_url text,
+  api_endpoint text,
+  xhr_endpoint text,
+  graphql_endpoint text,
+  detected_strategy text,
+  auth_required boolean NOT NULL DEFAULT false,
+  js_required boolean NOT NULL DEFAULT false,
+  content_type text,
+  last_verified timestamptz,
+  fingerprint text,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS crawl_queue (
+  id serial PRIMARY KEY,
+  registrar_id integer NOT NULL,
+  status text NOT NULL DEFAULT 'pending',
+  priority integer NOT NULL DEFAULT 100,
+  attempts integer NOT NULL DEFAULT 0,
+  max_attempts integer NOT NULL DEFAULT 3,
+  scheduled_at timestamptz NOT NULL DEFAULT now(),
+  started_at timestamptz,
+  finished_at timestamptz,
+  last_error text,
+  job_id integer,
+  trigger text NOT NULL DEFAULT 'manual',
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS adapter_rules (
+  id serial PRIMARY KEY,
+  registrar_id integer NOT NULL,
+  config jsonb NOT NULL,
+  status text NOT NULL DEFAULT 'candidate',
+  model_used text NOT NULL DEFAULT 'manual',
+  verification jsonb,
+  trigger text NOT NULL DEFAULT 'manual',
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS site_settings (
+  id integer PRIMARY KEY DEFAULT 1,
+  brand_text_main text NOT NULL DEFAULT 'TLD',
+  brand_text_accent text NOT NULL DEFAULT 'bi',
+  brand_suffix text NOT NULL DEFAULT '.com',
+  logo_url text,
+  favicon_url text,
+  title_zh text NOT NULL DEFAULT '',
+  title_en text NOT NULL DEFAULT '',
+  description_zh text NOT NULL DEFAULT '',
+  description_en text NOT NULL DEFAULT '',
+  footer_disclaimer_zh text NOT NULL DEFAULT '',
+  footer_disclaimer_en text NOT NULL DEFAULT '',
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS crawl_backfill (
+  id serial PRIMARY KEY,
+  registrar_id integer NOT NULL UNIQUE,
+  status text NOT NULL DEFAULT 'idle',
+  cursor integer NOT NULL DEFAULT 0,
+  batch_size integer NOT NULL DEFAULT 50,
+  total integer NOT NULL DEFAULT 0,
+  batches_done integer NOT NULL DEFAULT 0,
+  prices_updated integer NOT NULL DEFAULT 0,
+  last_batch_at timestamptz,
+  started_at timestamptz,
+  updated_at timestamptz NOT NULL DEFAULT now(),
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE UNIQUE INDEX IF NOT EXISTS uq_registrar_capabilities_registrar ON registrar_capabilities (registrar_id);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_discovery_metadata_registrar ON discovery_metadata (registrar_id);
+CREATE UNIQUE INDEX IF NOT EXISTS uq_prices_registrar_tld ON prices (registrar_id, tld_id);
+
 CREATE INDEX IF NOT EXISTS idx_prices_tld ON prices (tld_id);
 CREATE INDEX IF NOT EXISTS idx_prices_registrar ON prices (registrar_id);
 CREATE INDEX IF NOT EXISTS idx_price_history_pair ON price_history (registrar_id, tld_id, recorded_at);

@@ -35,11 +35,17 @@ next dev (端口 3000) = 演示站（原程序本体，非静态快照）
 - 全部用 `background_terminal_create` 启动，不能用 `&`。
 - worker 并发 **= 2**，并发 > 2 会 502/超时。
 
-### 2.2 数据库连接
+### 2.2 数据库连接（2026-09-26 起：Supabase）
 
-- 连接串位于 `/workspace/.env.local`（`DATABASE_URL=...`，受 gitignore 保护，不入库）。
-- 当前指向共享 Neon（`POSTGRES_URL` 池化连接串）；Neon 免费层**计算时长配额已耗尽**（连接被拒 `quota exceeded`），数据库可达但拒绝连接，数据未丢失。
-- **换库**：改 `.env.local` 的 `DATABASE_URL` 指向 Supabase/本地 PG/恢复后的 Neon 即可，watcher 与演示站零改动。
+- 现用数据库：**Supabase** 项目 `tiwxkcoqxxrmwlovaixs`（region `ap-northeast-1`），库 `postgres`。
+- 应用专用角色 `tldbi_app`（由管理 API SQL 创建并授权；密码存于 `/workspace/.env.local` 与 Vercel 生产环境变量，不入库）。
+- 连接串：
+  - 本地 `/workspace/.env.local` → 池化端点 `aws-0-ap-northeast-1.pooler.supabase.com:6543`，带 `sslmode=no-verify`（开发沙箱出口存在 TLS 中间证书链，`require` 会握手失败；仅本地如此）
+  - Vercel Production `DATABASE_URL` → 同池化端点，带 `sslmode=require`
+- Vercel 项目里仍保留旧的 Neon 集成变量（`POSTGRES_URL`、`DATABASE_URL_UNPOOLED`、`tldbi_*` 等），应用只读 `DATABASE_URL`，故已失效但无害；Neon 免费层配额耗尽，已被 Supabase 取代。
+- 表结构由 `scripts/setup-db.ts` 建（已与 `lib/db/schema.ts` 全量对齐：含 Sprint 5 新表/新列），数据由 `npx tsx scripts/auto-sync-prices.ts` 幂等灌入。
+- **全量灌库提速**：watcher 逐行 upsert 在池化链路下仅约 1-7 行/秒且长连接易被断开；1 万+ 条建议改批量多值 INSERT（每批 400 条，`ON CONFLICT (registrar_id,tld_id) DO UPDATE`，语义与 watcher 一致）。
+- **换库**：改 `.env.local` 与 Vercel `DATABASE_URL` 即可，代码零改动。
 
 ## 3. 采集明细导出
 
@@ -83,7 +89,7 @@ cd /workspace && npx tsx scripts/auto-sync-prices.ts
 
 | 项 | 状态 | 备注 |
 |---|---|---|
-| Neon 计算配额耗尽 | 阻塞（数据未丢） | 恢复/升级后 watcher 自动灌库，演示站自动切真实数据 |
+| Neon 计算配额耗尽 | 已解决（换库） | 2026-09-26 起改用 Supabase（见 §2.2），24 家 / 11,708 条已灌入 |
 | dynadot | 反爬 | Cloudflare challenge 劫持接口返回 HTML 非 JSON，暂停 |
 | godaddy / namecheap / netim | 需凭证 | private-api 需 API 凭证，待配置后启用 |
 | 101domain | 间歇 | Cloudflare 间歇 challenge，本轮未收录（先前 PASS 263 条）；重跑 export 可补 |
@@ -92,9 +98,9 @@ cd /workspace && npx tsx scripts/auto-sync-prices.ts
 
 ## 7. 下次迭代入口
 
-1. 复核 `data/sync-meta.json` 与 term 日志 —— 确认 Neon 恢复后自动灌库成功、演示站展示真实数据。
-2. 补齐漏采：重跑 `scripts/export-prices.ts`（101domain 等间歇站会自动补录），或为 dynadot 迭代 api-fetch/浏览器策略。
-3. 视配额情况换库：改 `.env.local` 的 `DATABASE_URL` 指向 Supabase/本地 PG 后验证管线。
+1. 复核线上/演示站数据源：Supabase 已灌 24 家（DB 模式下 priceCount=11708、jobCount=1），无 DB 时自动回落 seed 快照（priceCount=11755）。
+2. 补齐漏采：重跑 `scripts/export-prices.ts`（101domain 等间歇站会自动补录），或为 dynadot 迭代 api-fetch/浏览器策略；重采后跑 `scripts/generate-seed-data.ts` 刷新兜底快照。
+3. 需要再换库时：改 `.env.local` 与 Vercel `DATABASE_URL`（见 §2.2）。
 4. 扩展候选注册商时沿用「SSR 全量价格表站点优先」判断（xserver/value-domain/muumuu 型最稳定）。
 
 ## 8. 关键文件索引
