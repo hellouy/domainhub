@@ -55,6 +55,7 @@ cd /workspace && BROWSER_SERVICE_URL=http://127.0.0.1:8840 npx tsx scripts/expor
                       "prices": [ { "tld": "com", "currency": "USD", "registerPrice": 9.77, "renewPrice": 9.77, "transferPrice": 9.77 } ] } } }
   ```
 - 同名日期文件每次运行覆盖写。
+- **兜底快照刷新**：`npx tsx scripts/generate-seed-data.ts` 把最新导出转成 `lib/crawler/seed-prices.ts`（24 家 / ~1.17 万条内嵌模块），重建后无 DB 环境（Vercel 预览/演示站）即展示全量采集数据；`lib/crawler/seed-data.ts` 将其与 5 家品牌占位注册商（namecheap/godaddy/dynadot/spaceship/aliyun）合并，快照优先。
 
 ### 最近一次导出（2026-08-30）
 

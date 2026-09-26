@@ -1,4 +1,4 @@
-import { SEED_PRICES, SEED_SOURCE_URLS } from "../seed-data"
+import { SEED_PRICES, SEED_REGISTRAR_META, SEED_SOURCE_URLS } from "../seed-data"
 import type { CrawledPrice, RegistrarAdapter } from "../types"
 
 /**
@@ -31,7 +31,7 @@ export function createSeedAdapter(slug: string, name: string): RegistrarAdapter 
           registerPrice: jitter(reg),
           renewPrice: jitter(renew),
           transferPrice: jitter(transfer),
-          currency: "USD",
+          currency: SEED_REGISTRAR_META[slug]?.currency ?? "USD",
           sourceUrl: SEED_SOURCE_URLS[slug],
         })
       }

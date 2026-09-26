@@ -27,9 +27,10 @@ export const DISPLAY_CURRENCIES = ["USD", "EUR", "GBP", "CNY", "JPY", "HKD", "SG
 export type DisplayCurrency = (typeof DISPLAY_CURRENCIES)[number]
 
 /** 内置兜底汇率(API 与 DB 均不可用时的最后防线) */
-const FALLBACK_RATES: UsdRates = {
+export const FALLBACK_RATES: UsdRates = {
   USD: 1, EUR: 0.88, GBP: 0.76, CNY: 6.78, JPY: 161.9, HKD: 7.8,
   SGD: 1.3, CAD: 1.37, AUD: 1.5, CHF: 0.89, SEK: 10.5, NOK: 10.7, NZD: 1.64,
+  CZK: 21.6, KRW: 1385,
 }
 
 type FetchResult = { rates: UsdRates; nextUpdate: Date | null; source: string }

@@ -1,7 +1,7 @@
 // 种子脚本：将 lib/crawler/seed-data.ts 中的价格写入数据库，
 // 并生成少量历史价格与示例采集任务/日志。
 import { Pool } from "pg"
-import { SEED_PRICES, SEED_SOURCE_URLS } from "../lib/crawler/seed-data"
+import { SEED_PRICES, SEED_REGISTRAR_META, SEED_SOURCE_URLS } from "../lib/crawler/seed-data"
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL })
 
@@ -21,25 +21,26 @@ async function main() {
       if (!tldId) continue
       await pool.query(
         `INSERT INTO prices (registrar_id, tld_id, register_price, renew_price, transfer_price, currency, source_url, updated_at)
-         VALUES ($1, $2, $3, $4, $5, 'USD', $6, now())
+         VALUES ($1, $2, $3, $4, $5, $6, $7, now())
          ON CONFLICT (registrar_id, tld_id) DO UPDATE SET
            register_price = EXCLUDED.register_price,
            renew_price = EXCLUDED.renew_price,
            transfer_price = EXCLUDED.transfer_price,
            source_url = EXCLUDED.source_url,
            updated_at = now()`,
-        [registrarId, tldId, reg, renew, transfer, sourceUrl],
+        [registrarId, tldId, reg, renew, transfer, SEED_REGISTRAR_META[slug]?.currency ?? "USD", sourceUrl],
       )
       // 历史价格：30 天前记录一条（略高 3%），为价格趋势打基础
       await pool.query(
         `INSERT INTO price_history (registrar_id, tld_id, register_price, renew_price, transfer_price, currency, recorded_at)
-         VALUES ($1, $2, $3, $4, $5, 'USD', now() - interval '30 days')`,
+         VALUES ($1, $2, $3, $4, $5, $6, now() - interval '30 days')`,
         [
           registrarId,
           tldId,
           reg == null ? null : Math.round(reg * 1.03 * 100) / 100,
           renew == null ? null : Math.round(renew * 1.03 * 100) / 100,
           transfer,
+          SEED_REGISTRAR_META[slug]?.currency ?? "USD",
         ],
       )
       count++

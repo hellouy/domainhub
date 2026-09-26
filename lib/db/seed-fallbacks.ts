@@ -9,7 +9,8 @@
  * 所有权: Data Team
  */
 
-import { SEED_PRICES, SEED_SOURCE_URLS } from "@/lib/crawler/seed-data"
+import { SEED_COLLECTED_AT, SEED_PRICES, SEED_REGISTRAR_META, SEED_SOURCE_URLS } from "@/lib/crawler/seed-data"
+import { FALLBACK_RATES, toUsd } from "@/lib/fx"
 import type { StatsRow } from "@/lib/db/queries"
 
 type PriceTuple = [number | null, number | null, number | null]
@@ -29,14 +30,18 @@ const POPULAR = new Set(["com", "net", "org", "io", "ai", "co", "me", "dev", "ap
 export const POPULAR_TLDS = [...POPULAR]
 
 // —— 确定性 seed 域（固定排序后分配 id，保证各函数一致）——
+// 非 USD 注册商按内置兜底汇率折算 USD 后参与「该后缀最低注册价」比较
 const tldList = new Set<string>()
 const tldCountByTld = new Map<string, number>()
 const minByTld = new Map<string, number>()
-for (const tlds of Object.values(SEED_PRICES)) {
+for (const [slug, tlds] of Object.entries(SEED_PRICES)) {
+  const currency = SEED_REGISTRAR_META[slug]?.currency ?? "USD"
   for (const [tld, [reg]] of Object.entries(tlds)) {
-    const v = Math.max(reg ?? 1, 1)
-    if (minByTld.has(tld)) minByTld.set(tld, Math.min(minByTld.get(tld)!, v))
-    else minByTld.set(tld, v)
+    if (reg !== null) {
+      const usdValue = toUsd(Math.max(reg, 1), currency, FALLBACK_RATES)
+      if (minByTld.has(tld)) minByTld.set(tld, Math.min(minByTld.get(tld)!, usdValue))
+      else minByTld.set(tld, usdValue)
+    }
     tldCountByTld.set(tld, (tldCountByTld.get(tld) ?? 0) + 1)
     tldList.add(tld)
   }
@@ -50,7 +55,22 @@ const slugToId = new Map<string, number>()
 registrarSlugs.forEach((s, i) => slugToId.set(s, i + 1))
 
 function metaFor(slug: string) {
-  return REGISTRAR_META[slug] ?? { name: slug, website: `https://${slug}.com`, description: "" }
+  const m = SEED_REGISTRAR_META[slug]
+  const curated = REGISTRAR_META[slug]
+  const description =
+    curated?.description ??
+    (m
+      ? `${m.currency} 原币种报价，采集 ${Object.keys(SEED_PRICES[slug] ?? {}).length} 个后缀（策略: ${m.strategy ?? "n/a"}）。`
+      : "")
+  return {
+    name: curated?.name ?? m?.name ?? slug,
+    website: curated?.website ?? m?.website ?? `https://${slug}.com`,
+    description,
+  }
+}
+
+function currencyFor(slug: string) {
+  return SEED_REGISTRAR_META[slug]?.currency ?? "USD"
 }
 
 function nowIso() {
@@ -141,7 +161,7 @@ export function seedStats(): StatsRow {
     registrarCount: registrarSlugs.length,
     tldCount: sortedTlds.length,
     priceCount,
-    lastUpdated: nowIso(),
+    lastUpdated: SEED_COLLECTED_AT,
   }
 }
 
@@ -237,7 +257,7 @@ export function seedPricesForTld(tldId: number): PriceForTldRow[] {
       registerPrice: usd(prices[0]),
       renewPrice: usd(prices[1]),
       transferPrice: usd(prices[2]),
-      currency: "USD",
+      currency: currencyFor(slug),
       sourceUrl: SEED_SOURCE_URLS[slug] ?? meta.website,
       updatedAt: nowDate(),
       registrarId: slugToId.get(slug)!,
@@ -261,7 +281,7 @@ export function seedPricesForRegistrar(registrarId: number): PriceForRegistrarRo
       registerPrice: usd(prices[0]),
       renewPrice: usd(prices[1]),
       transferPrice: usd(prices[2]),
-      currency: "USD",
+      currency: currencyFor(target),
       updatedAt: nowDate(),
       tldId: tldToId.get(tld)!,
       tld,
