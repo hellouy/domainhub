@@ -50,6 +50,24 @@ Entries discovered by the Agent during task execution should follow this format:
   - SDK 侧干跑适配器用 tsx 即可（无 page.evaluate），只有 browser-worker 进程才必须 node strip-types；node strip-types 不识别 `@/` 别名的脚本需用相对路径 import
 
 [Project Knowledge Summary]
+- Date: 2026-09-26
+- Context: Discovered by Agent while 将线上数据源从 Neon 切换到 Supabase
+- Category: Troubleshooting & Debugging
+- Instructions:
+  - 本仓库 `pg` 为 v8.22+，其 `sslmode=require` 语义等同 `verify-full`；连接 Supabase Supavisor 池化端点（`*.pooler.supabase.com`，自签证书链）必须用 `?uselibpqcompat=true&sslmode=require`，否则报 `SELF_SIGNED_CERT_IN_CHAIN`
+  - 页面查询层（`lib/db/queries.ts` 的 safeQuery / 服务层 withFallback）会静默兜底回 seed 数据，DB 故障时页面仍返回 200，因此判断"线上是否真连库"要看 `/api/v1/statistics` 的 `tldCount/priceCount/jobCount` 与 `lastUpdated` 是否来自数据库
+  - 甄别兜底数据：seed 有 29 家 / 2608 后缀 / 11755 条，DB 为 29 家 / 2610 后缀 / 11708 条
+
+[Project Knowledge Summary]
+- Date: 2026-09-26
+- Context: Discovered by Agent while 用 Vercel CLI 发布生产
+- Category: Operations & Deployment
+- Instructions:
+  - 修改 Vercel 环境变量**不会**触发自动重新部署，必须再执行一次 `npx vercel@latest --prod --token <TOKEN>` 才生效
+  - 用 CLI 发布需要项目已 link（`vercel link`）；link 会把 `.env*` 与 `.vercel` 写入 `.gitignore`，并把开发环境变量拉到 `/workspace/.env.local`
+  - 生产域名 `www.tldbi.com` 绑定的项目为 `domainhub`，账号 `8839029-5124`；`vercel ls --prod` 首条即当前生产部署，运行日志用 `vercel logs <deployment-url> --token <TOKEN>`
+
+[Project Knowledge Summary]
 - Date: 2026-09-25
 - Context: Discovered by Agent while fixing Vercel build ERR_PNPM_LOCKFILE_CONFIG_MISMATCH
 - Category: Build Methods

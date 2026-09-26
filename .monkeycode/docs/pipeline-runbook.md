@@ -39,9 +39,10 @@ next dev (端口 3000) = 演示站（原程序本体，非静态快照）
 
 - 现用数据库：**Supabase** 项目 `tiwxkcoqxxrmwlovaixs`（region `ap-northeast-1`），库 `postgres`。
 - 应用专用角色 `tldbi_app`（由管理 API SQL 创建并授权；密码存于 `/workspace/.env.local` 与 Vercel 生产环境变量，不入库）。
-- 连接串：
-  - 本地 `/workspace/.env.local` → 池化端点 `aws-0-ap-northeast-1.pooler.supabase.com:6543`，带 `sslmode=no-verify`（开发沙箱出口存在 TLS 中间证书链，`require` 会握手失败；仅本地如此）
-  - Vercel Production `DATABASE_URL` → 同池化端点，带 `sslmode=require`
+- 连接串（本地与 Vercel 同一形式，仅密钥来源不同）：
+  - 池化端点 `aws-0-ap-northeast-1.pooler.supabase.com:6543`，参数 **`uselibpqcompat=true&sslmode=require`**
+  - 本地取自 `/workspace/.env.local`（受 gitignore 保护）；Vercel 取自 Production 环境变量 `DATABASE_URL`
+  - 必须带 `uselibpqcompat=true`：`pg` v8.22 起把 `sslmode=require` 当 `verify-full` 处理，而 Supavisor 池化端点用自签证书链，会报 `SELF_SIGNED_CERT_IN_CHAIN` 并被 safeQuery 静默兜底回 seed 数据（页面仍 200，只是不是真数据）
 - Vercel 项目里仍保留旧的 Neon 集成变量（`POSTGRES_URL`、`DATABASE_URL_UNPOOLED`、`tldbi_*` 等），应用只读 `DATABASE_URL`，故已失效但无害；Neon 免费层配额耗尽，已被 Supabase 取代。
 - 表结构由 `scripts/setup-db.ts` 建（已与 `lib/db/schema.ts` 全量对齐：含 Sprint 5 新表/新列），数据由 `npx tsx scripts/auto-sync-prices.ts` 幂等灌入。
 - **全量灌库提速**：watcher 逐行 upsert 在池化链路下仅约 1-7 行/秒且长连接易被断开；1 万+ 条建议改批量多值 INSERT（每批 400 条，`ON CONFLICT (registrar_id,tld_id) DO UPDATE`，语义与 watcher 一致）。
