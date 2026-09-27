@@ -61,6 +61,7 @@ import { cn22Adapter } from "./22cn"
 import { westcnAdapter } from "./westcn"
 import { openproviderAdapter } from "./openprovider"
 import { centralnicAdapter } from "./centralnic"
+import { krystalAdapter } from "./krystal"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -99,6 +100,7 @@ export const allAdapters = [
   westcnAdapter,
   openproviderAdapter,
   centralnicAdapter,
+  krystalAdapter,
   directnicAdapter,
   dreamhostAdapter,
   forpsiAdapter,
