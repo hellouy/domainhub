@@ -64,6 +64,46 @@ export const dynadotAdapter = defineAdapter({
   rateLimit: { concurrency: 1, rpm: 6, retries: 3, timeoutMs: 90_000 },
   strategies: [
     {
+      // 首选：直接以 xhr 策略命中站点内部定价端点（plain fetch，无需浏览器）
+      type: "xhr",
+      url: XHR_URL,
+      async fetch(ctx) {
+        const res = await ctx.fetch(XHR_URL, {
+          headers: {
+            accept: "application/json",
+            referer: PRICING_PAGE,
+          },
+        })
+        if (!res.ok) throw new Error(`Dynadot XHR 返回 HTTP ${res.status}`)
+        return res.text()
+      },
+      async parse(raw): Promise<RawPrice[]> {
+        const data = JSON.parse(raw) as DynadotResponse
+        const entries = data.data?.current_tlds
+        if (!Array.isArray(entries) || entries.length === 0) {
+          throw new Error("Dynadot XHR 返回中未找到 current_tlds 列表(接口结构可能已变化)")
+        }
+        const prices: RawPrice[] = []
+        for (const entry of entries) {
+          if (!entry.name) continue
+          const isPromo =
+            typeof entry.original_reg_price === "string" && entry.original_reg_price !== "-1"
+          prices.push({
+            tld: entry.name,
+            registerPrice: entry.reg_price ?? null,
+            renewPrice: entry.renew_price ?? null,
+            transferPrice: entry.tr_price ?? null,
+            restorePrice: entry.restore ?? null,
+            currency: "USD",
+            promotion: isPromo,
+            sourceUrl: PRICING_PAGE,
+          })
+        }
+        return prices
+      },
+    },
+    {
+      // 兜底：XHR 被反爬拦截时用浏览器会话渲染 + api-fetch 重放
       type: "playwright",
       url: PRICING_PAGE,
       browser: {
