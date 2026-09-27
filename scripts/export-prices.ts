@@ -13,8 +13,30 @@ import "@/adapters"
 import { listRegisteredAdapters } from "@/packages/registry"
 import { executeStrategies } from "@/packages/adapter-sdk"
 import { parsePriceString } from "@/packages/parser"
-import { writeFileSync, mkdirSync } from "node:fs"
+import { writeFileSync, mkdirSync, readFileSync, existsSync } from "node:fs"
 import { join, dirname } from "node:path"
+
+/** 用上次导出(或 seed)已覆盖的后缀作为 knownTlds 全集，供"按 knownTlds 取价"型适配器(如 hostinger)扩展覆盖 */
+function loadKnownTlds(): Set<string> {
+  const out = new Set<string>()
+  const candidates = ["data/prices-20260927.json", "data/prices-20260926.json", "data/prices-20260830.json"]
+  for (const file of candidates) {
+    const abs = join(process.cwd(), file)
+    if (!existsSync(abs)) continue
+    try {
+      const data = JSON.parse(readFileSync(abs, "utf8"))
+      for (const r of Object.values(data.registrars ?? {})) {
+        for (const p of (r as { prices?: { tld?: string }[] }).prices ?? []) {
+          if (p.tld) out.add(p.tld.trim().toLowerCase())
+        }
+      }
+      break
+    } catch {
+      /* 跳过损坏/缺失文件 */
+    }
+  }
+  return out
+}
 
 interface OutPrice {
   tld: string
@@ -74,7 +96,8 @@ function hostFor(slug: string, def: { currency?: string; strategies?: { url?: st
 
 async function main() {
   const all = listRegisteredAdapters()
-  console.log(`共 ${all.length} 家已注册适配器，开始逐家采集导出…`)
+  const knownTlds = loadKnownTlds()
+  console.log(`共 ${all.length} 家已注册适配器，开始逐家采集导出…(knownTlds=${knownTlds.size})`)
 
   const out: Record<string, OutRegistrar> = {}
   const collectedAt = new Date().toISOString()
@@ -89,7 +112,7 @@ async function main() {
       },
       fetch: (url: string, init?: RequestInit) => fetch(url, init),
       getCredential: async () => null,
-      knownTlds: new Set<string>(),
+      knownTlds,
       addRetry: () => {},
     } as never
 

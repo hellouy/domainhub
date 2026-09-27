@@ -1,12 +1,12 @@
 {
-  "collectedAt": "2026-09-27T04:30:26.562Z",
+  "collectedAt": "2026-09-27T04:52:12.885Z",
   "registrars": {
     "cloudflare": {
       "name": "Cloudflare",
       "website": "https://www.cloudflare.com/products/registrar/",
       "currency": "USD",
       "strategy": "json",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "academy",
@@ -3025,7 +3025,7 @@
       "website": "https://porkbun.com/products/domains",
       "currency": "USD",
       "strategy": "api",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "1",
@@ -9397,7 +9397,7 @@
       "website": "https://www.dynadot.com/domain/tlds",
       "currency": "USD",
       "strategy": "xhr",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "com",
@@ -15139,7 +15139,7 @@
       "website": "https://www.ovhcloud.com/en/domains/",
       "currency": "EUR",
       "strategy": "api",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "family",
@@ -21798,7 +21798,7 @@
       "website": "https://www.gandi.net/en/domain",
       "currency": "USD",
       "strategy": "html",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "abogado",
@@ -22101,7 +22101,7 @@
       "website": "https://www.name.com/domains",
       "currency": "USD",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "io",
@@ -26240,7 +26240,7 @@
       "website": "https://www.namesilo.com/",
       "currency": "USD",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "com",
@@ -29546,7 +29546,7 @@
       "website": "https://www.onamae.com/domain/charge/",
       "currency": "JPY",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "com",
@@ -32656,7 +32656,7 @@
       "website": "https://www.infomaniak.com/en/domains",
       "currency": "CHF",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "com",
@@ -32805,7 +32805,7 @@
       "website": "https://www.hostpoint.ch/en/domains/domain-prices",
       "currency": "CHF",
       "strategy": "xhr",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "at",
@@ -40969,7 +40969,7 @@
       "website": "https://www.xserver.ne.jp/domain_price.php",
       "currency": "JPY",
       "strategy": "html",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "com",
@@ -42903,7 +42903,7 @@
       "website": "https://www.value-domain.com/domain/price/",
       "currency": "JPY",
       "strategy": "html",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "com",
@@ -46174,7 +46174,7 @@
       "website": "https://muumuu-domain.com/domain/price/",
       "currency": "JPY",
       "strategy": "html",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "com",
@@ -49108,743 +49108,3165 @@
       "name": "Hostinger",
       "website": "https://www.hostinger.com/domain-names/",
       "currency": "USD",
-      "strategy": "playwright",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "strategy": "xhr",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "com",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 19.99,
           "renewPrice": 19.99,
           "transferPrice": 9.99
         },
         {
           "tld": "net",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 17.99,
           "renewPrice": 17.99,
           "transferPrice": 14.99
         },
         {
           "tld": "org",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 17.99,
           "renewPrice": 17.99,
           "transferPrice": 12.99
         },
         {
           "tld": "info",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 31.99,
           "renewPrice": 31.99,
           "transferPrice": 23.99
         },
         {
           "tld": "biz",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 23.99,
           "renewPrice": 23.99,
           "transferPrice": 18.99
         },
         {
           "tld": "io",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 74.99,
           "renewPrice": 74.99,
           "transferPrice": 54.99
         },
         {
           "tld": "ai",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 109.99,
           "renewPrice": 109.99,
           "transferPrice": 179.99
         },
         {
           "tld": "co",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 34.99,
           "renewPrice": 34.99,
           "transferPrice": 23.99
         },
         {
           "tld": "app",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 19.99,
           "renewPrice": 19.99,
           "transferPrice": 21.99
         },
         {
           "tld": "dev",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 18.99,
           "renewPrice": 18.99,
           "transferPrice": 20.99
         },
         {
           "tld": "tech",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 63.99,
           "renewPrice": 63.99,
           "transferPrice": 53.99
         },
         {
           "tld": "site",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 38.99,
           "renewPrice": 38.99,
           "transferPrice": 32.99
         },
         {
           "tld": "online",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 35.99,
           "renewPrice": 35.99,
           "transferPrice": 30.99
         },
         {
           "tld": "store",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 54.99,
           "renewPrice": 54.99,
           "transferPrice": 46.99
         },
         {
           "tld": "shop",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 39.99,
           "renewPrice": 39.99,
           "transferPrice": 34.99
         },
         {
           "tld": "space",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 32.99,
           "renewPrice": 32.99,
           "transferPrice": 27.99
         },
         {
           "tld": "pro",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 31.99,
           "renewPrice": 31.99,
           "transferPrice": 23.99
         },
         {
           "tld": "live",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 37.99,
           "renewPrice": 37.99,
           "transferPrice": 27.99
         },
         {
           "tld": "news",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 37.99,
           "renewPrice": 37.99,
           "transferPrice": 27.99
         },
         {
           "tld": "media",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 52.99,
           "renewPrice": 52.99,
           "transferPrice": 38.99
         },
         {
           "tld": "digital",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 47.99,
           "renewPrice": 47.99,
           "transferPrice": 35.99
         },
         {
           "tld": "design",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 57.99,
           "renewPrice": 57.99,
           "transferPrice": 56.99
         },
         {
           "tld": "studio",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 46.99,
           "renewPrice": 46.99,
           "transferPrice": 34.99
         },
         {
           "tld": "agency",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 35.99,
           "renewPrice": 35.99,
           "transferPrice": 26.99
         },
         {
           "tld": "group",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 29.99,
           "renewPrice": 29.99,
           "transferPrice": 21.99
         },
         {
           "tld": "network",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 40.99,
           "renewPrice": 40.99,
           "transferPrice": 29.99
         },
         {
           "tld": "company",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 23.99,
           "renewPrice": 23.99,
           "transferPrice": 17.99
         },
         {
           "tld": "services",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 44.99,
           "renewPrice": 44.99,
           "transferPrice": 32.99
         },
         {
           "tld": "solutions",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 35.99,
           "renewPrice": 35.99,
           "transferPrice": 26.99
         },
         {
           "tld": "systems",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 40.99,
           "renewPrice": 40.99,
           "transferPrice": 29.99
         },
         {
           "tld": "plus",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 62.99,
           "renewPrice": 62.99,
           "transferPrice": 46.99
         },
         {
           "tld": "fun",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 38.99,
           "renewPrice": 38.99,
           "transferPrice": 32.99
         },
         {
           "tld": "icu",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 15.99,
           "renewPrice": 15.99,
           "transferPrice": 13.99
         },
         {
           "tld": "link",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 12.99,
           "renewPrice": 12.99,
           "transferPrice": 10.5
         },
         {
           "tld": "website",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 25.99,
           "renewPrice": 25.99,
           "transferPrice": 22.99
         },
         {
           "tld": "press",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 80.99,
           "renewPrice": 80.99,
           "transferPrice": 68.99
         },
         {
           "tld": "monster",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 19.99,
           "renewPrice": 19.99,
           "transferPrice": 14.99
         },
         {
           "tld": "email",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 35.99,
           "renewPrice": 35.99,
           "transferPrice": 26.99
         },
         {
           "tld": "marketing",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 47.99,
           "renewPrice": 47.99,
           "transferPrice": 35.99
         },
         {
           "tld": "technology",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 32.99,
           "renewPrice": 32.99,
           "transferPrice": 24.99
         },
         {
           "tld": "management",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 29.99,
           "renewPrice": 29.99,
           "transferPrice": 21.99
         },
         {
           "tld": "consulting",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 62.99,
           "renewPrice": 62.99,
           "transferPrice": 46.99
         },
         {
           "tld": "international",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 35.99,
           "renewPrice": 35.99,
           "transferPrice": 26.99
         },
         {
           "tld": "photography",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 41.99,
           "renewPrice": 41.99,
           "transferPrice": 30.99
         },
         {
           "tld": "software",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 47.99,
           "renewPrice": 47.99,
           "transferPrice": 35.99
         },
         {
           "tld": "world",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 47.99,
           "renewPrice": 47.99,
           "transferPrice": 35.99
         },
         {
           "tld": "today",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 32.99,
           "renewPrice": 32.99,
           "transferPrice": 24.99
         },
         {
           "tld": "club",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 19.99,
           "renewPrice": 19.99,
           "transferPrice": 13.99
         },
         {
           "tld": "top",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 6.99,
           "renewPrice": 6.99,
           "transferPrice": 4.99
         },
         {
           "tld": "vip",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 24.99,
           "renewPrice": 24.99,
           "transferPrice": 16.99
         },
         {
           "tld": "xyz",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 19.99,
           "renewPrice": 19.99,
           "transferPrice": 14.99
         },
         {
           "tld": "one",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 28.99,
           "renewPrice": 28.99,
           "transferPrice": 20.99
         },
         {
           "tld": "cloud",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 25.99,
           "renewPrice": 25.99,
           "transferPrice": 21.99
         },
         {
           "tld": "host",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 102.99,
           "renewPrice": 102.99,
           "transferPrice": 86.99
         },
         {
           "tld": "guru",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 49.99,
           "renewPrice": 49.99,
           "transferPrice": 36.99
         },
         {
           "tld": "expert",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 71.99,
           "renewPrice": 71.99,
           "transferPrice": 52.99
         },
         {
           "tld": "life",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 41.99,
           "renewPrice": 41.99,
           "transferPrice": 30.99
         },
         {
           "tld": "blog",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 29.99,
           "renewPrice": 29.99,
           "transferPrice": 25.99
         },
         {
           "tld": "social",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 47.99,
           "renewPrice": 47.99,
           "transferPrice": 35.99
         },
         {
           "tld": "academy",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 53.99,
           "renewPrice": 53.99,
           "transferPrice": 39.99
         },
         {
           "tld": "energy",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 134.99,
           "renewPrice": 134.99,
           "transferPrice": 98.99
         },
         {
           "tld": "finance",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 74.99,
           "renewPrice": 74.99,
           "transferPrice": 54.99
         },
         {
           "tld": "investments",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 149.99,
           "renewPrice": 149.99,
           "transferPrice": 109.99
         },
         {
           "tld": "ventures",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 68.99,
           "renewPrice": 68.99,
           "transferPrice": 50.99
         },
         {
           "tld": "events",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 52.99,
           "renewPrice": 52.99,
           "transferPrice": 38.99
         },
         {
           "tld": "gallery",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 32.99,
           "renewPrice": 32.99,
           "transferPrice": 24.99
         },
         {
           "tld": "lifestyle",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 47.99,
           "renewPrice": 47.99,
           "transferPrice": 39.99
         },
         {
           "tld": "training",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 47.99,
           "renewPrice": 47.99,
           "transferPrice": 35.99
         },
         {
           "tld": "team",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 41.99,
           "renewPrice": 41.99,
           "transferPrice": 30.99
         },
         {
           "tld": "works",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 44.99,
           "renewPrice": 44.99,
           "transferPrice": 32.99
         },
         {
           "tld": "zone",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 44.99,
           "renewPrice": 44.99,
           "transferPrice": 32.99
         },
         {
           "tld": "center",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 37.99,
           "renewPrice": 37.99,
           "transferPrice": 27.99
         },
         {
           "tld": "directory",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 31.99,
           "renewPrice": 31.99,
           "transferPrice": 23.99
         },
         {
           "tld": "domains",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 49.99,
           "renewPrice": 49.99,
           "transferPrice": 36.99
         },
         {
           "tld": "guide",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 47.99,
           "renewPrice": 47.99,
           "transferPrice": 35.99
         },
         {
           "tld": "institute",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 31.99,
           "renewPrice": 31.99,
           "transferPrice": 23.99
         },
         {
           "tld": "rentals",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 50.99,
           "renewPrice": 50.99,
           "transferPrice": 37.99
         },
         {
           "tld": "sale",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 44.99,
           "renewPrice": 44.99,
           "transferPrice": 32.99
         },
         {
           "tld": "show",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 50.99,
           "renewPrice": 50.99,
           "transferPrice": 37.99
         },
         {
           "tld": "supplies",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 28.99,
           "renewPrice": 28.99,
           "transferPrice": 20.99
         },
         {
           "tld": "support",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 31.99,
           "renewPrice": 31.99,
           "transferPrice": 23.99
         },
         {
           "tld": "tips",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 35.99,
           "renewPrice": 35.99,
           "transferPrice": 26.99
         },
         {
           "tld": "video",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 41.99,
           "renewPrice": 41.99,
           "transferPrice": 30.99
         },
         {
           "tld": "wine",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 68.99,
           "renewPrice": 68.99,
           "transferPrice": 50.99
         },
         {
           "tld": "asia",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 12.99,
           "renewPrice": 12.99,
           "transferPrice": 12.99
         },
         {
           "tld": "cc",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 10.99,
           "renewPrice": 10.99,
           "transferPrice": 10.99
         },
         {
           "tld": "me",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 19.99,
           "renewPrice": 19.99,
           "transferPrice": 15.99
         },
         {
           "tld": "tv",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 34.99,
           "renewPrice": 34.99,
           "transferPrice": 31.99
         },
         {
           "tld": "com.au",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 13.99,
           "renewPrice": 13.99,
           "transferPrice": 0.99
         },
         {
           "tld": "de",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 13.99,
           "renewPrice": 13.99,
           "transferPrice": 4.99
         },
         {
           "tld": "es",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 11.99,
           "renewPrice": 11.99,
           "transferPrice": 0.99
         },
         {
           "tld": "fr",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 12.99,
           "renewPrice": 12.99,
           "transferPrice": 7.99
         },
         {
           "tld": "it",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 16.99,
           "renewPrice": 16.99,
           "transferPrice": 4.99
         },
         {
           "tld": "nl",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 9.99,
           "renewPrice": 9.99,
           "transferPrice": 0.99
         },
         {
           "tld": "pl",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 21.99,
           "renewPrice": 21.99,
           "transferPrice": 0.99
         },
         {
           "tld": "pt",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 18.99,
           "renewPrice": 18.99,
           "transferPrice": 0.99
         },
         {
           "tld": "co.uk",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 11.99,
           "renewPrice": 11.99,
           "transferPrice": 0.99
         },
         {
           "tld": "com.mx",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 29.99,
           "renewPrice": 29.99,
           "transferPrice": 22.99
         },
         {
           "tld": "com.br",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 11.99,
           "renewPrice": 11.99,
           "transferPrice": 0.99
         },
         {
           "tld": "com.tr",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 12.99,
           "renewPrice": 12.99,
           "transferPrice": 5.99
         },
         {
           "tld": "in",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 9.99,
           "renewPrice": 9.99,
           "transferPrice": 6.99
         },
         {
           "tld": "jp",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 39.99,
           "renewPrice": 39.99,
           "transferPrice": 0.99
         },
         {
           "tld": "my",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 35.99,
           "renewPrice": 35.99,
           "transferPrice": 25.99
         },
         {
           "tld": "id",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 15.99,
           "renewPrice": 15.99,
           "transferPrice": 12.99
         },
         {
           "tld": "ph",
           "currency": "USD",
-          "registerPrice": null,
+          "registerPrice": 89.99,
           "renewPrice": 89.99,
           "transferPrice": 89.99
+        },
+        {
+          "tld": "accountants",
+          "currency": "USD",
+          "registerPrice": 134.99,
+          "renewPrice": 134.99,
+          "transferPrice": 98.99
+        },
+        {
+          "tld": "actor",
+          "currency": "USD",
+          "registerPrice": 50.99,
+          "renewPrice": 50.99,
+          "transferPrice": 37.99
+        },
+        {
+          "tld": "associates",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "audio",
+          "currency": "USD",
+          "registerPrice": 149.99,
+          "renewPrice": 149.99,
+          "transferPrice": 109.99
+        },
+        {
+          "tld": "bargains",
+          "currency": "USD",
+          "registerPrice": 34.99,
+          "renewPrice": 34.99,
+          "transferPrice": 25.99
+        },
+        {
+          "tld": "bike",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "black",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "blue",
+          "currency": "USD",
+          "registerPrice": 28.99,
+          "renewPrice": 28.99,
+          "transferPrice": 20.99
+        },
+        {
+          "tld": "boutique",
+          "currency": "USD",
+          "registerPrice": 37.99,
+          "renewPrice": 37.99,
+          "transferPrice": 27.99
+        },
+        {
+          "tld": "builders",
+          "currency": "USD",
+          "registerPrice": 40.99,
+          "renewPrice": 40.99,
+          "transferPrice": 29.99
+        },
+        {
+          "tld": "cab",
+          "currency": "USD",
+          "registerPrice": 37.99,
+          "renewPrice": 37.99,
+          "transferPrice": 27.99
+        },
+        {
+          "tld": "camera",
+          "currency": "USD",
+          "registerPrice": 67.99,
+          "renewPrice": 67.99,
+          "transferPrice": 49.99
+        },
+        {
+          "tld": "camp",
+          "currency": "USD",
+          "registerPrice": 71.99,
+          "renewPrice": 71.99,
+          "transferPrice": 52.99
+        },
+        {
+          "tld": "capital",
+          "currency": "USD",
+          "registerPrice": 82.99,
+          "renewPrice": 82.99,
+          "transferPrice": 60.99
+        },
+        {
+          "tld": "cards",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "care",
+          "currency": "USD",
+          "registerPrice": 50.99,
+          "renewPrice": 50.99,
+          "transferPrice": 37.99
+        },
+        {
+          "tld": "careers",
+          "currency": "USD",
+          "registerPrice": 82.99,
+          "renewPrice": 82.99,
+          "transferPrice": 60.99
+        },
+        {
+          "tld": "cash",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "catering",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "ceo",
+          "currency": "USD",
+          "registerPrice": 139.99,
+          "renewPrice": 139.99,
+          "transferPrice": 109.99
+        },
+        {
+          "tld": "cheap",
+          "currency": "USD",
+          "registerPrice": 41.99,
+          "renewPrice": 41.99,
+          "transferPrice": 30.99
+        },
+        {
+          "tld": "christmas",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "church",
+          "currency": "USD",
+          "registerPrice": 67.99,
+          "renewPrice": 67.99,
+          "transferPrice": 49.99
+        },
+        {
+          "tld": "claims",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "cleaning",
+          "currency": "USD",
+          "registerPrice": 86.99,
+          "renewPrice": 86.99,
+          "transferPrice": 63.99
+        },
+        {
+          "tld": "clinic",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "clothing",
+          "currency": "USD",
+          "registerPrice": 37.99,
+          "renewPrice": 37.99,
+          "transferPrice": 27.99
+        },
+        {
+          "tld": "codes",
+          "currency": "USD",
+          "registerPrice": 82.99,
+          "renewPrice": 82.99,
+          "transferPrice": 60.99
+        },
+        {
+          "tld": "coffee",
+          "currency": "USD",
+          "registerPrice": 49.99,
+          "renewPrice": 49.99,
+          "transferPrice": 36.99
+        },
+        {
+          "tld": "college",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "community",
+          "currency": "USD",
+          "registerPrice": 52.99,
+          "renewPrice": 52.99,
+          "transferPrice": 38.99
+        },
+        {
+          "tld": "computer",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "construction",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "contractors",
+          "currency": "USD",
+          "registerPrice": 40.99,
+          "renewPrice": 40.99,
+          "transferPrice": 29.99
+        },
+        {
+          "tld": "cool",
+          "currency": "USD",
+          "registerPrice": 52.99,
+          "renewPrice": 52.99,
+          "transferPrice": 38.99
+        },
+        {
+          "tld": "credit",
+          "currency": "USD",
+          "registerPrice": 119.99,
+          "renewPrice": 119.99,
+          "transferPrice": 87.99
+        },
+        {
+          "tld": "creditcard",
+          "currency": "USD",
+          "registerPrice": 187.99,
+          "renewPrice": 187.99,
+          "transferPrice": 137.99
+        },
+        {
+          "tld": "cruises",
+          "currency": "USD",
+          "registerPrice": 64.99,
+          "renewPrice": 64.99,
+          "transferPrice": 47.99
+        },
+        {
+          "tld": "dance",
+          "currency": "USD",
+          "registerPrice": 31.99,
+          "renewPrice": 31.99,
+          "transferPrice": 23.99
+        },
+        {
+          "tld": "dating",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "democrat",
+          "currency": "USD",
+          "registerPrice": 37.99,
+          "renewPrice": 37.99,
+          "transferPrice": 27.99
+        },
+        {
+          "tld": "dental",
+          "currency": "USD",
+          "registerPrice": 89.99,
+          "renewPrice": 89.99,
+          "transferPrice": 65.99
+        },
+        {
+          "tld": "diamonds",
+          "currency": "USD",
+          "registerPrice": 62.99,
+          "renewPrice": 62.99,
+          "transferPrice": 46.99
+        },
+        {
+          "tld": "discount",
+          "currency": "USD",
+          "registerPrice": 34.99,
+          "renewPrice": 34.99,
+          "transferPrice": 25.99
+        },
+        {
+          "tld": "education",
+          "currency": "USD",
+          "registerPrice": 40.99,
+          "renewPrice": 40.99,
+          "transferPrice": 29.99
+        },
+        {
+          "tld": "enterprises",
+          "currency": "USD",
+          "registerPrice": 40.99,
+          "renewPrice": 40.99,
+          "transferPrice": 29.99
+        },
+        {
+          "tld": "equipment",
+          "currency": "USD",
+          "registerPrice": 32.99,
+          "renewPrice": 32.99,
+          "transferPrice": 24.99
+        },
+        {
+          "tld": "estate",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "exchange",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "exposed",
+          "currency": "USD",
+          "registerPrice": 25.99,
+          "renewPrice": 25.99,
+          "transferPrice": 18.99
+        },
+        {
+          "tld": "fail",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "farm",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "financial",
+          "currency": "USD",
+          "registerPrice": 67.99,
+          "renewPrice": 67.99,
+          "transferPrice": 49.99
+        },
+        {
+          "tld": "fish",
+          "currency": "USD",
+          "registerPrice": 50.99,
+          "renewPrice": 50.99,
+          "transferPrice": 37.99
+        },
+        {
+          "tld": "fitness",
+          "currency": "USD",
+          "registerPrice": 47.99,
+          "renewPrice": 47.99,
+          "transferPrice": 35.99
+        },
+        {
+          "tld": "flights",
+          "currency": "USD",
+          "registerPrice": 67.99,
+          "renewPrice": 67.99,
+          "transferPrice": 49.99
+        },
+        {
+          "tld": "florist",
+          "currency": "USD",
+          "registerPrice": 37.99,
+          "renewPrice": 37.99,
+          "transferPrice": 27.99
+        },
+        {
+          "tld": "fm",
+          "currency": "USD",
+          "registerPrice": 89.99,
+          "renewPrice": 89.99,
+          "transferPrice": 80.99
+        },
+        {
+          "tld": "foo",
+          "currency": "USD",
+          "registerPrice": 16.98,
+          "renewPrice": 16.98,
+          "transferPrice": 18.99
+        },
+        {
+          "tld": "foundation",
+          "currency": "USD",
+          "registerPrice": 32.99,
+          "renewPrice": 32.99,
+          "transferPrice": 23.99
+        },
+        {
+          "tld": "fund",
+          "currency": "USD",
+          "registerPrice": 82.99,
+          "renewPrice": 82.99,
+          "transferPrice": 60.99
+        },
+        {
+          "tld": "furniture",
+          "currency": "USD",
+          "registerPrice": 119.99,
+          "renewPrice": 119.99,
+          "transferPrice": 87.99
+        },
+        {
+          "tld": "futbol",
+          "currency": "USD",
+          "registerPrice": 19.99,
+          "renewPrice": 19.99,
+          "transferPrice": 14.99
+        },
+        {
+          "tld": "glass",
+          "currency": "USD",
+          "registerPrice": 83.99,
+          "renewPrice": 83.99,
+          "transferPrice": 61.99
+        },
+        {
+          "tld": "graphics",
+          "currency": "USD",
+          "registerPrice": 24.99,
+          "renewPrice": 24.99,
+          "transferPrice": 19.99
+        },
+        {
+          "tld": "gratis",
+          "currency": "USD",
+          "registerPrice": 26.99,
+          "renewPrice": 26.99,
+          "transferPrice": 19.99
+        },
+        {
+          "tld": "gripe",
+          "currency": "USD",
+          "registerPrice": 7.99,
+          "renewPrice": 7.99,
+          "transferPrice": 5.99
+        },
+        {
+          "tld": "guitars",
+          "currency": "USD",
+          "registerPrice": 149.99,
+          "renewPrice": 149.99,
+          "transferPrice": 109.99
+        },
+        {
+          "tld": "haus",
+          "currency": "USD",
+          "registerPrice": 38.99,
+          "renewPrice": 38.99,
+          "transferPrice": 28.99
+        },
+        {
+          "tld": "holdings",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "holiday",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "house",
+          "currency": "USD",
+          "registerPrice": 50.99,
+          "renewPrice": 50.99,
+          "transferPrice": 37.99
+        },
+        {
+          "tld": "immobilien",
+          "currency": "USD",
+          "registerPrice": 43.99,
+          "renewPrice": 43.99,
+          "transferPrice": 31.99
+        },
+        {
+          "tld": "industries",
+          "currency": "USD",
+          "registerPrice": 52.99,
+          "renewPrice": 52.99,
+          "transferPrice": 38.99
+        },
+        {
+          "tld": "insure",
+          "currency": "USD",
+          "registerPrice": 83.99,
+          "renewPrice": 83.99,
+          "transferPrice": 61.99
+        },
+        {
+          "tld": "kaufen",
+          "currency": "USD",
+          "registerPrice": 34.99,
+          "renewPrice": 34.99,
+          "transferPrice": 25.99
+        },
+        {
+          "tld": "kim",
+          "currency": "USD",
+          "registerPrice": 26.99,
+          "renewPrice": 26.99,
+          "transferPrice": 19.99
+        },
+        {
+          "tld": "land",
+          "currency": "USD",
+          "registerPrice": 47.99,
+          "renewPrice": 47.99,
+          "transferPrice": 35.99
+        },
+        {
+          "tld": "lease",
+          "currency": "USD",
+          "registerPrice": 64.99,
+          "renewPrice": 64.99,
+          "transferPrice": 47.99
+        },
+        {
+          "tld": "lighting",
+          "currency": "USD",
+          "registerPrice": 26.99,
+          "renewPrice": 26.99,
+          "transferPrice": 19.99
+        },
+        {
+          "tld": "limited",
+          "currency": "USD",
+          "registerPrice": 41.99,
+          "renewPrice": 41.99,
+          "transferPrice": 30.99
+        },
+        {
+          "tld": "limo",
+          "currency": "USD",
+          "registerPrice": 62.99,
+          "renewPrice": 62.99,
+          "transferPrice": 46.99
+        },
+        {
+          "tld": "mobi",
+          "currency": "USD",
+          "registerPrice": 59.99,
+          "renewPrice": 59.99,
+          "transferPrice": 43.99
+        },
+        {
+          "tld": "moda",
+          "currency": "USD",
+          "registerPrice": 47.99,
+          "renewPrice": 47.99,
+          "transferPrice": 35.99
+        },
+        {
+          "tld": "ninja",
+          "currency": "USD",
+          "registerPrice": 35.99,
+          "renewPrice": 35.99,
+          "transferPrice": 26.99
+        },
+        {
+          "tld": "partners",
+          "currency": "USD",
+          "registerPrice": 82.99,
+          "renewPrice": 82.99,
+          "transferPrice": 60.99
+        },
+        {
+          "tld": "parts",
+          "currency": "USD",
+          "registerPrice": 47.99,
+          "renewPrice": 47.99,
+          "transferPrice": 35.99
+        },
+        {
+          "tld": "photos",
+          "currency": "USD",
+          "registerPrice": 34.99,
+          "renewPrice": 34.99,
+          "transferPrice": 25.99
+        },
+        {
+          "tld": "pics",
+          "currency": "USD",
+          "registerPrice": 37.99,
+          "renewPrice": 37.99,
+          "transferPrice": 27.99
+        },
+        {
+          "tld": "pictures",
+          "currency": "USD",
+          "registerPrice": 17.99,
+          "renewPrice": 17.99,
+          "transferPrice": 13.99
+        },
+        {
+          "tld": "plumbing",
+          "currency": "USD",
+          "registerPrice": 83.99,
+          "renewPrice": 83.99,
+          "transferPrice": 61.99
+        },
+        {
+          "tld": "productions",
+          "currency": "USD",
+          "registerPrice": 46.99,
+          "renewPrice": 46.99,
+          "transferPrice": 34.99
+        },
+        {
+          "tld": "properties",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "pub",
+          "currency": "USD",
+          "registerPrice": 46.99,
+          "renewPrice": 46.99,
+          "transferPrice": 34.99
+        },
+        {
+          "tld": "recipes",
+          "currency": "USD",
+          "registerPrice": 89.99,
+          "renewPrice": 89.99,
+          "transferPrice": 65.99
+        },
+        {
+          "tld": "red",
+          "currency": "USD",
+          "registerPrice": 26.99,
+          "renewPrice": 26.99,
+          "transferPrice": 19.99
+        },
+        {
+          "tld": "reisen",
+          "currency": "USD",
+          "registerPrice": 23.99,
+          "renewPrice": 23.99,
+          "transferPrice": 17.99
+        },
+        {
+          "tld": "repair",
+          "currency": "USD",
+          "registerPrice": 41.99,
+          "renewPrice": 41.99,
+          "transferPrice": 30.99
+        },
+        {
+          "tld": "report",
+          "currency": "USD",
+          "registerPrice": 28.99,
+          "renewPrice": 28.99,
+          "transferPrice": 20.99
+        },
+        {
+          "tld": "rest",
+          "currency": "USD",
+          "registerPrice": 32.99,
+          "renewPrice": 32.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "reviews",
+          "currency": "USD",
+          "registerPrice": 71.99,
+          "renewPrice": 71.99,
+          "transferPrice": 52.99
+        },
+        {
+          "tld": "rocks",
+          "currency": "USD",
+          "registerPrice": 25.99,
+          "renewPrice": 25.99,
+          "transferPrice": 18.99
+        },
+        {
+          "tld": "schule",
+          "currency": "USD",
+          "registerPrice": 32.99,
+          "renewPrice": 32.99,
+          "transferPrice": 24.99
+        },
+        {
+          "tld": "shoes",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "singles",
+          "currency": "USD",
+          "registerPrice": 38.99,
+          "renewPrice": 38.99,
+          "transferPrice": 28.99
+        },
+        {
+          "tld": "solar",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "soy",
+          "currency": "USD",
+          "registerPrice": 37.99,
+          "renewPrice": 37.99,
+          "transferPrice": 39.99
+        },
+        {
+          "tld": "supply",
+          "currency": "USD",
+          "registerPrice": 29.99,
+          "renewPrice": 29.99,
+          "transferPrice": 21.99
+        },
+        {
+          "tld": "surgery",
+          "currency": "USD",
+          "registerPrice": 62.99,
+          "renewPrice": 62.99,
+          "transferPrice": 46.99
+        },
+        {
+          "tld": "tax",
+          "currency": "USD",
+          "registerPrice": 77.99,
+          "renewPrice": 77.99,
+          "transferPrice": 57.99
+        },
+        {
+          "tld": "tienda",
+          "currency": "USD",
+          "registerPrice": 68.99,
+          "renewPrice": 68.99,
+          "transferPrice": 50.99
+        },
+        {
+          "tld": "tools",
+          "currency": "USD",
+          "registerPrice": 41.99,
+          "renewPrice": 41.99,
+          "transferPrice": 30.99
+        },
+        {
+          "tld": "town",
+          "currency": "USD",
+          "registerPrice": 41.99,
+          "renewPrice": 41.99,
+          "transferPrice": 30.99
+        },
+        {
+          "tld": "toys",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "uk",
+          "currency": "USD",
+          "registerPrice": 10.99,
+          "renewPrice": 10.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "university",
+          "currency": "USD",
+          "registerPrice": 71.99,
+          "renewPrice": 71.99,
+          "transferPrice": 52.99
+        },
+        {
+          "tld": "us",
+          "currency": "USD",
+          "registerPrice": 8.99,
+          "renewPrice": 8.99,
+          "transferPrice": 8.99
+        },
+        {
+          "tld": "vacations",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "viajes",
+          "currency": "USD",
+          "registerPrice": 47.99,
+          "renewPrice": 47.99,
+          "transferPrice": 38.99
+        },
+        {
+          "tld": "villas",
+          "currency": "USD",
+          "registerPrice": 68.99,
+          "renewPrice": 68.99,
+          "transferPrice": 50.99
+        },
+        {
+          "tld": "vision",
+          "currency": "USD",
+          "registerPrice": 52.99,
+          "renewPrice": 52.99,
+          "transferPrice": 38.99
+        },
+        {
+          "tld": "voyage",
+          "currency": "USD",
+          "registerPrice": 67.99,
+          "renewPrice": 67.99,
+          "transferPrice": 49.99
+        },
+        {
+          "tld": "watch",
+          "currency": "USD",
+          "registerPrice": 50.99,
+          "renewPrice": 50.99,
+          "transferPrice": 37.99
+        },
+        {
+          "tld": "wiki",
+          "currency": "USD",
+          "registerPrice": 33.99,
+          "renewPrice": 33.99,
+          "transferPrice": 35.99
+        },
+        {
+          "tld": "wtf",
+          "currency": "USD",
+          "registerPrice": 41.99,
+          "renewPrice": 41.99,
+          "transferPrice": 30.99
+        },
+        {
+          "tld": "condos",
+          "currency": "USD",
+          "registerPrice": 67.99,
+          "renewPrice": 67.99,
+          "transferPrice": 49.99
+        },
+        {
+          "tld": "ink",
+          "currency": "USD",
+          "registerPrice": 34.99,
+          "renewPrice": 34.99,
+          "transferPrice": 25.99
+        },
+        {
+          "tld": "maison",
+          "currency": "USD",
+          "registerPrice": 65.99,
+          "renewPrice": 65.99,
+          "transferPrice": 48.99
+        },
+        {
+          "tld": "attorney",
+          "currency": "USD",
+          "registerPrice": 71.99,
+          "renewPrice": 71.99,
+          "transferPrice": 52.99
+        },
+        {
+          "tld": "degree",
+          "currency": "USD",
+          "registerPrice": 59.99,
+          "renewPrice": 59.99,
+          "transferPrice": 43.99
+        },
+        {
+          "tld": "dentist",
+          "currency": "USD",
+          "registerPrice": 67.99,
+          "renewPrice": 67.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "lawyer",
+          "currency": "USD",
+          "registerPrice": 71.99,
+          "renewPrice": 71.99,
+          "transferPrice": 52.99
+        },
+        {
+          "tld": "market",
+          "currency": "USD",
+          "registerPrice": 50.99,
+          "renewPrice": 50.99,
+          "transferPrice": 37.99
+        },
+        {
+          "tld": "mortgage",
+          "currency": "USD",
+          "registerPrice": 71.99,
+          "renewPrice": 71.99,
+          "transferPrice": 52.99
+        },
+        {
+          "tld": "vet",
+          "currency": "USD",
+          "registerPrice": 47.99,
+          "renewPrice": 47.99,
+          "transferPrice": 35.99
+        },
+        {
+          "tld": "engineer",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "rehab",
+          "currency": "USD",
+          "registerPrice": 41.99,
+          "renewPrice": 41.99,
+          "transferPrice": 30.99
+        },
+        {
+          "tld": "republican",
+          "currency": "USD",
+          "registerPrice": 37.99,
+          "renewPrice": 37.99,
+          "transferPrice": 27.99
+        },
+        {
+          "tld": "green",
+          "currency": "USD",
+          "registerPrice": 92.99,
+          "renewPrice": 92.99,
+          "transferPrice": 68.99
+        },
+        {
+          "tld": "direct",
+          "currency": "USD",
+          "registerPrice": 47.99,
+          "renewPrice": 47.99,
+          "transferPrice": 35.99
+        },
+        {
+          "tld": "place",
+          "currency": "USD",
+          "registerPrice": 25.99,
+          "renewPrice": 25.99,
+          "transferPrice": 18.99
+        },
+        {
+          "tld": "lgbt",
+          "currency": "USD",
+          "registerPrice": 92.99,
+          "renewPrice": 92.99,
+          "transferPrice": 68.99
+        },
+        {
+          "tld": "auction",
+          "currency": "USD",
+          "registerPrice": 41.99,
+          "renewPrice": 41.99,
+          "transferPrice": 30.99
+        },
+        {
+          "tld": "city",
+          "currency": "USD",
+          "registerPrice": 32.99,
+          "renewPrice": 32.99,
+          "transferPrice": 24.99
+        },
+        {
+          "tld": "deals",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "healthcare",
+          "currency": "USD",
+          "registerPrice": 101.99,
+          "renewPrice": 101.99,
+          "transferPrice": 74.99
+        },
+        {
+          "tld": "gifts",
+          "currency": "USD",
+          "registerPrice": 41.99,
+          "renewPrice": 41.99,
+          "transferPrice": 30.99
+        },
+        {
+          "tld": "restaurant",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "sarl",
+          "currency": "USD",
+          "registerPrice": 7.99,
+          "renewPrice": 7.99,
+          "transferPrice": 5.99
+        },
+        {
+          "tld": "diet",
+          "currency": "USD",
+          "registerPrice": 149.99,
+          "renewPrice": 149.99,
+          "transferPrice": 109.99
+        },
+        {
+          "tld": "hosting",
+          "currency": "USD",
+          "registerPrice": 449.99,
+          "renewPrice": 449.99,
+          "transferPrice": 349.99
+        },
+        {
+          "tld": "how",
+          "currency": "USD",
+          "registerPrice": 39.99,
+          "renewPrice": 39.99,
+          "transferPrice": 43.99
+        },
+        {
+          "tld": "business",
+          "currency": "USD",
+          "registerPrice": 22.99,
+          "renewPrice": 22.99,
+          "transferPrice": 16.99
+        },
+        {
+          "tld": "immo",
+          "currency": "USD",
+          "registerPrice": 40.99,
+          "renewPrice": 40.99,
+          "transferPrice": 29.99
+        },
+        {
+          "tld": "boo",
+          "currency": "USD",
+          "registerPrice": 15.99,
+          "renewPrice": 15.99,
+          "transferPrice": 17.99
+        },
+        {
+          "tld": "dad",
+          "currency": "USD",
+          "registerPrice": 15.99,
+          "renewPrice": 15.99,
+          "transferPrice": 17.99
+        },
+        {
+          "tld": "day",
+          "currency": "USD",
+          "registerPrice": 15.99,
+          "renewPrice": 15.99,
+          "transferPrice": 17.99
+        },
+        {
+          "tld": "esq",
+          "currency": "USD",
+          "registerPrice": 28.99,
+          "renewPrice": 28.99,
+          "transferPrice": 29.99
+        },
+        {
+          "tld": "mov",
+          "currency": "USD",
+          "registerPrice": 14.99,
+          "renewPrice": 14.99,
+          "transferPrice": 16.99
+        },
+        {
+          "tld": "new",
+          "currency": "USD",
+          "registerPrice": 599.99,
+          "renewPrice": 599.99,
+          "transferPrice": 649.99
+        },
+        {
+          "tld": "rsvp",
+          "currency": "USD",
+          "registerPrice": 15.99,
+          "renewPrice": 15.99,
+          "transferPrice": 17.99
+        },
+        {
+          "tld": "nexus",
+          "currency": "USD",
+          "registerPrice": 14.99,
+          "renewPrice": 14.99,
+          "transferPrice": 16.99
+        },
+        {
+          "tld": "prof",
+          "currency": "USD",
+          "registerPrice": 28.99,
+          "renewPrice": 28.99,
+          "transferPrice": 29.99
+        },
+        {
+          "tld": "work",
+          "currency": "USD",
+          "registerPrice": 19.99,
+          "renewPrice": 19.99,
+          "transferPrice": 12.99
+        },
+        {
+          "tld": "forsale",
+          "currency": "USD",
+          "registerPrice": 41.99,
+          "renewPrice": 41.99,
+          "transferPrice": 30.99
+        },
+        {
+          "tld": "band",
+          "currency": "USD",
+          "registerPrice": 35.99,
+          "renewPrice": 35.99,
+          "transferPrice": 26.99
+        },
+        {
+          "tld": "rip",
+          "currency": "USD",
+          "registerPrice": 26.99,
+          "renewPrice": 26.99,
+          "transferPrice": 19.99
+        },
+        {
+          "tld": "delivery",
+          "currency": "USD",
+          "registerPrice": 71.99,
+          "renewPrice": 71.99,
+          "transferPrice": 52.99
+        },
+        {
+          "tld": "coach",
+          "currency": "USD",
+          "registerPrice": 89.99,
+          "renewPrice": 89.99,
+          "transferPrice": 65.99
+        },
+        {
+          "tld": "legal",
+          "currency": "USD",
+          "registerPrice": 82.99,
+          "renewPrice": 82.99,
+          "transferPrice": 60.99
+        },
+        {
+          "tld": "memorial",
+          "currency": "USD",
+          "registerPrice": 59.99,
+          "renewPrice": 59.99,
+          "transferPrice": 43.99
+        },
+        {
+          "tld": "money",
+          "currency": "USD",
+          "registerPrice": 40.99,
+          "renewPrice": 40.99,
+          "transferPrice": 29.99
+        },
+        {
+          "tld": "irish",
+          "currency": "USD",
+          "registerPrice": 25.99,
+          "renewPrice": 25.99,
+          "transferPrice": 18.99
+        },
+        {
+          "tld": "fashion",
+          "currency": "USD",
+          "registerPrice": 36.39,
+          "renewPrice": 36.39,
+          "transferPrice": 25.99
+        },
+        {
+          "tld": "garden",
+          "currency": "USD",
+          "registerPrice": 36.39,
+          "renewPrice": 36.39,
+          "transferPrice": 25.99
+        },
+        {
+          "tld": "tires",
+          "currency": "USD",
+          "registerPrice": 104.99,
+          "renewPrice": 104.99,
+          "transferPrice": 76.99
+        },
+        {
+          "tld": "flowers",
+          "currency": "USD",
+          "registerPrice": 149.99,
+          "renewPrice": 149.99,
+          "transferPrice": 109.99
+        },
+        {
+          "tld": "fit",
+          "currency": "USD",
+          "registerPrice": 34.99,
+          "renewPrice": 34.99,
+          "transferPrice": 25.99
+        },
+        {
+          "tld": "bingo",
+          "currency": "USD",
+          "registerPrice": 61.99,
+          "renewPrice": 61.99,
+          "transferPrice": 45.99
+        },
+        {
+          "tld": "chat",
+          "currency": "USD",
+          "registerPrice": 52.99,
+          "renewPrice": 52.99,
+          "transferPrice": 38.99
+        },
+        {
+          "tld": "style",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "tennis",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "jetzt",
+          "currency": "USD",
+          "registerPrice": 26.99,
+          "renewPrice": 26.99,
+          "transferPrice": 19.99
+        },
+        {
+          "tld": "apartments",
+          "currency": "USD",
+          "registerPrice": 65.99,
+          "renewPrice": 65.99,
+          "transferPrice": 48.99
+        },
+        {
+          "tld": "casino",
+          "currency": "USD",
+          "registerPrice": 187.99,
+          "renewPrice": 187.99,
+          "transferPrice": 137.99
+        },
+        {
+          "tld": "football",
+          "currency": "USD",
+          "registerPrice": 29.99,
+          "renewPrice": 29.99,
+          "transferPrice": 21.99
+        },
+        {
+          "tld": "school",
+          "currency": "USD",
+          "registerPrice": 41.99,
+          "renewPrice": 41.99,
+          "transferPrice": 30.99
+        },
+        {
+          "tld": "page",
+          "currency": "USD",
+          "registerPrice": 15.99,
+          "renewPrice": 15.99,
+          "transferPrice": 17.99
+        },
+        {
+          "tld": "gold",
+          "currency": "USD",
+          "registerPrice": 119.99,
+          "renewPrice": 119.99,
+          "transferPrice": 87.99
+        },
+        {
+          "tld": "golf",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "tours",
+          "currency": "USD",
+          "registerPrice": 71.99,
+          "renewPrice": 71.99,
+          "transferPrice": 52.99
+        },
+        {
+          "tld": "love",
+          "currency": "USD",
+          "registerPrice": 29.99,
+          "renewPrice": 29.99,
+          "transferPrice": 29.99
+        },
+        {
+          "tld": "cafe",
+          "currency": "USD",
+          "registerPrice": 59.99,
+          "renewPrice": 59.99,
+          "transferPrice": 43.99
+        },
+        {
+          "tld": "express",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "jewelry",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "dog",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "rent",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "theater",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "lol",
+          "currency": "USD",
+          "registerPrice": 39.99,
+          "renewPrice": 39.99,
+          "transferPrice": 27.99
+        },
+        {
+          "tld": "hockey",
+          "currency": "USD",
+          "registerPrice": 68.99,
+          "renewPrice": 68.99,
+          "transferPrice": 50.99
+        },
+        {
+          "tld": "run",
+          "currency": "USD",
+          "registerPrice": 31.99,
+          "renewPrice": 31.99,
+          "transferPrice": 23.99
+        },
+        {
+          "tld": "taxi",
+          "currency": "USD",
+          "registerPrice": 71.99,
+          "renewPrice": 71.99,
+          "transferPrice": 52.99
+        },
+        {
+          "tld": "coupons",
+          "currency": "USD",
+          "registerPrice": 62.99,
+          "renewPrice": 62.99,
+          "transferPrice": 46.99
+        },
+        {
+          "tld": "soccer",
+          "currency": "USD",
+          "registerPrice": 29.99,
+          "renewPrice": 29.99,
+          "transferPrice": 21.99
+        },
+        {
+          "tld": "fyi",
+          "currency": "USD",
+          "registerPrice": 19.99,
+          "renewPrice": 19.99,
+          "transferPrice": 6.99
+        },
+        {
+          "tld": "mba",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "game",
+          "currency": "USD",
+          "registerPrice": 449.99,
+          "renewPrice": 449.99,
+          "transferPrice": 349.99
+        },
+        {
+          "tld": "bet",
+          "currency": "USD",
+          "registerPrice": 29.99,
+          "renewPrice": 29.99,
+          "transferPrice": 21.99
+        },
+        {
+          "tld": "pet",
+          "currency": "USD",
+          "registerPrice": 29.99,
+          "renewPrice": 29.99,
+          "transferPrice": 21.99
+        },
+        {
+          "tld": "baby",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "family",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "games",
+          "currency": "USD",
+          "registerPrice": 38.99,
+          "renewPrice": 38.99,
+          "transferPrice": 28.99
+        },
+        {
+          "tld": "gmbh",
+          "currency": "USD",
+          "registerPrice": 52.99,
+          "renewPrice": 52.99,
+          "transferPrice": 38.99
+        },
+        {
+          "tld": "health",
+          "currency": "USD",
+          "registerPrice": 84.99,
+          "renewPrice": 84.99,
+          "transferPrice": 60.99
+        },
+        {
+          "tld": "ltd",
+          "currency": "USD",
+          "registerPrice": 35.99,
+          "renewPrice": 35.99,
+          "transferPrice": 26.99
+        },
+        {
+          "tld": "mom",
+          "currency": "USD",
+          "registerPrice": 37.99,
+          "renewPrice": 37.99,
+          "transferPrice": 27.99
+        },
+        {
+          "tld": "promo",
+          "currency": "USD",
+          "registerPrice": 28.99,
+          "renewPrice": 28.99,
+          "transferPrice": 20.99
+        },
+        {
+          "tld": "protection",
+          "currency": "USD",
+          "registerPrice": 2999.99,
+          "renewPrice": 2999.99,
+          "transferPrice": 2199.99
+        },
+        {
+          "tld": "salon",
+          "currency": "USD",
+          "registerPrice": 65.99,
+          "renewPrice": 65.99,
+          "transferPrice": 48.99
+        },
+        {
+          "tld": "security",
+          "currency": "USD",
+          "registerPrice": 2999.99,
+          "renewPrice": 2999.99,
+          "transferPrice": 2199.99
+        },
+        {
+          "tld": "shopping",
+          "currency": "USD",
+          "registerPrice": 34.99,
+          "renewPrice": 34.99,
+          "transferPrice": 25.99
+        },
+        {
+          "tld": "storage",
+          "currency": "USD",
+          "registerPrice": 749.99,
+          "renewPrice": 749.99,
+          "transferPrice": 549.99
+        },
+        {
+          "tld": "theatre",
+          "currency": "USD",
+          "registerPrice": 749.99,
+          "renewPrice": 749.99,
+          "transferPrice": 549.99
+        },
+        {
+          "tld": "vin",
+          "currency": "USD",
+          "registerPrice": 68.99,
+          "renewPrice": 68.99,
+          "transferPrice": 50.99
+        },
+        {
+          "tld": "doctor",
+          "currency": "USD",
+          "registerPrice": 134.99,
+          "renewPrice": 134.99,
+          "transferPrice": 98.99
+        },
+        {
+          "tld": "hospital",
+          "currency": "USD",
+          "registerPrice": 59.99,
+          "renewPrice": 59.99,
+          "transferPrice": 48.99
+        },
+        {
+          "tld": "phd",
+          "currency": "USD",
+          "registerPrice": 28.99,
+          "renewPrice": 28.99,
+          "transferPrice": 29.99
+        },
+        {
+          "tld": "com.co",
+          "currency": "USD",
+          "registerPrice": 27.99,
+          "renewPrice": 27.99,
+          "transferPrice": 11.99
+        },
+        {
+          "tld": "me.uk",
+          "currency": "USD",
+          "registerPrice": 10.99,
+          "renewPrice": 10.99,
+          "transferPrice": 10.99
+        },
+        {
+          "tld": "org.uk",
+          "currency": "USD",
+          "registerPrice": 10.99,
+          "renewPrice": 10.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "ac",
+          "currency": "USD",
+          "registerPrice": 58.99,
+          "renewPrice": 58.99,
+          "transferPrice": 58.99
+        },
+        {
+          "tld": "airforce",
+          "currency": "USD",
+          "registerPrice": 119.99,
+          "renewPrice": 119.99,
+          "transferPrice": 87.99
+        },
+        {
+          "tld": "army",
+          "currency": "USD",
+          "registerPrice": 44.99,
+          "renewPrice": 44.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "feedback",
+          "currency": "USD",
+          "registerPrice": 384.99,
+          "renewPrice": 384.99,
+          "transferPrice": 384.99
+        },
+        {
+          "tld": "global",
+          "currency": "USD",
+          "registerPrice": 112.99,
+          "renewPrice": 112.99,
+          "transferPrice": 82.99
+        },
+        {
+          "tld": "help",
+          "currency": "USD",
+          "registerPrice": 59.99,
+          "renewPrice": 59.99,
+          "transferPrice": 25
+        },
+        {
+          "tld": "navy",
+          "currency": "USD",
+          "registerPrice": 47.99,
+          "renewPrice": 47.99,
+          "transferPrice": 35.99
+        },
+        {
+          "tld": "sh",
+          "currency": "USD",
+          "registerPrice": 62.99,
+          "renewPrice": 62.99,
+          "transferPrice": 45.99
+        },
+        {
+          "tld": "ski",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 74.99,
+          "transferPrice": 54.99
+        },
+        {
+          "tld": "uno",
+          "currency": "USD",
+          "registerPrice": 25.99,
+          "renewPrice": 25.99,
+          "transferPrice": 21.99
+        },
+        {
+          "tld": "travel",
+          "currency": "USD",
+          "registerPrice": 172.99,
+          "renewPrice": 172.99,
+          "transferPrice": 126.99
+        },
+        {
+          "tld": "xxx",
+          "currency": "USD",
+          "registerPrice": 109.99,
+          "renewPrice": 109.99,
+          "transferPrice": 84.99
+        },
+        {
+          "tld": "ca",
+          "currency": "USD",
+          "registerPrice": 16.99,
+          "renewPrice": 16.99,
+          "transferPrice": 12.99
+        },
+        {
+          "tld": "mx",
+          "currency": "USD",
+          "registerPrice": 39.99,
+          "renewPrice": 39.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "ing",
+          "currency": "USD",
+          "registerPrice": 15.99,
+          "renewPrice": 15.99,
+          "transferPrice": 17.99
+        },
+        {
+          "tld": "meme",
+          "currency": "USD",
+          "registerPrice": 14.99,
+          "renewPrice": 14.99,
+          "transferPrice": 16.99
+        },
+        {
+          "tld": "vote",
+          "currency": "USD",
+          "registerPrice": 104.99,
+          "renewPrice": 104.99,
+          "transferPrice": 76.99
+        },
+        {
+          "tld": "llc",
+          "currency": "USD",
+          "registerPrice": 49.99,
+          "renewPrice": 49.99,
+          "transferPrice": 36.99
+        },
+        {
+          "tld": "click",
+          "currency": "USD",
+          "registerPrice": 11.99,
+          "renewPrice": 11.99,
+          "transferPrice": 10.99
+        },
+        {
+          "tld": "bio",
+          "currency": "USD",
+          "registerPrice": 83.99,
+          "renewPrice": 83.99,
+          "transferPrice": 61.99
+        },
+        {
+          "tld": "poker",
+          "currency": "USD",
+          "registerPrice": 77.99,
+          "renewPrice": 77.99,
+          "transferPrice": 57.99
+        },
+        {
+          "tld": "food",
+          "currency": "USD",
+          "registerPrice": 47.99,
+          "renewPrice": 47.99,
+          "transferPrice": 39.99
+        },
+        {
+          "tld": "living",
+          "currency": "USD",
+          "registerPrice": 47.99,
+          "renewPrice": 47.99,
+          "transferPrice": 39.99
+        },
+        {
+          "tld": "diy",
+          "currency": "USD",
+          "registerPrice": 49.99,
+          "renewPrice": 49.99,
+          "transferPrice": 39.99
+        },
+        {
+          "tld": "ws",
+          "currency": "USD",
+          "registerPrice": 39.99,
+          "renewPrice": 39.99,
+          "transferPrice": 29.99
+        },
+        {
+          "tld": "gg",
+          "currency": "USD",
+          "registerPrice": 89.99,
+          "renewPrice": 89.99,
+          "transferPrice": 149
+        },
+        {
+          "tld": "eu",
+          "currency": "USD",
+          "registerPrice": 7.99,
+          "renewPrice": 7.99,
+          "transferPrice": 6.99
+        },
+        {
+          "tld": "co.in",
+          "currency": "USD",
+          "registerPrice": 9.99,
+          "renewPrice": 9.99,
+          "transferPrice": 5.99
+        },
+        {
+          "tld": "net.in",
+          "currency": "USD",
+          "registerPrice": 9.99,
+          "renewPrice": 9.99,
+          "transferPrice": 5.99
+        },
+        {
+          "tld": "org.in",
+          "currency": "USD",
+          "registerPrice": 9.99,
+          "renewPrice": 9.99,
+          "transferPrice": 5.99
+        },
+        {
+          "tld": "ind.in",
+          "currency": "USD",
+          "registerPrice": 9.99,
+          "renewPrice": 9.99,
+          "transferPrice": 5.99
+        },
+        {
+          "tld": "channel",
+          "currency": "USD",
+          "registerPrice": 15.99,
+          "renewPrice": 15.99,
+          "transferPrice": 17.99
+        },
+        {
+          "tld": "zip",
+          "currency": "USD",
+          "registerPrice": 14.99,
+          "renewPrice": 14.99,
+          "transferPrice": 16.99
+        },
+        {
+          "tld": "pw",
+          "currency": "USD",
+          "registerPrice": 22.99,
+          "renewPrice": 22.99,
+          "transferPrice": 19.99
+        },
+        {
+          "tld": "in.net",
+          "currency": "USD",
+          "registerPrice": 7.99,
+          "renewPrice": 7.99,
+          "transferPrice": 7.99
+        },
+        {
+          "tld": "lat",
+          "currency": "USD",
+          "registerPrice": 39.99,
+          "renewPrice": 39.99,
+          "transferPrice": 27.99
+        },
+        {
+          "tld": "sbs",
+          "currency": "USD",
+          "registerPrice": 15.99,
+          "renewPrice": 15.99,
+          "transferPrice": 9
+        },
+        {
+          "tld": "cfd",
+          "currency": "USD",
+          "registerPrice": 15.99,
+          "renewPrice": 15.99,
+          "transferPrice": 9
+        },
+        {
+          "tld": "autos",
+          "currency": "USD",
+          "registerPrice": 19.99,
+          "renewPrice": 19.99,
+          "transferPrice": 14.99
+        },
+        {
+          "tld": "homes",
+          "currency": "USD",
+          "registerPrice": 19.99,
+          "renewPrice": 19.99,
+          "transferPrice": 14.99
+        },
+        {
+          "tld": "motorcycles",
+          "currency": "USD",
+          "registerPrice": 19.99,
+          "renewPrice": 19.99,
+          "transferPrice": 14.99
+        },
+        {
+          "tld": "boats",
+          "currency": "USD",
+          "registerPrice": 19.99,
+          "renewPrice": 19.99,
+          "transferPrice": 14.99
+        },
+        {
+          "tld": "yachts",
+          "currency": "USD",
+          "registerPrice": 19.99,
+          "renewPrice": 19.99,
+          "transferPrice": 14.99
+        },
+        {
+          "tld": "beauty",
+          "currency": "USD",
+          "registerPrice": 19.99,
+          "renewPrice": 19.99,
+          "transferPrice": 14.99
+        },
+        {
+          "tld": "skin",
+          "currency": "USD",
+          "registerPrice": 19.99,
+          "renewPrice": 19.99,
+          "transferPrice": 14.99
+        },
+        {
+          "tld": "hair",
+          "currency": "USD",
+          "registerPrice": 19.99,
+          "renewPrice": 19.99,
+          "transferPrice": 14.99
+        },
+        {
+          "tld": "makeup",
+          "currency": "USD",
+          "registerPrice": 19.99,
+          "renewPrice": 19.99,
+          "transferPrice": 14.99
+        },
+        {
+          "tld": "quest",
+          "currency": "USD",
+          "registerPrice": 19.99,
+          "renewPrice": 19.99,
+          "transferPrice": 14.99
+        },
+        {
+          "tld": "bond",
+          "currency": "USD",
+          "registerPrice": 13.99,
+          "renewPrice": 13.99,
+          "transferPrice": 9
+        },
+        {
+          "tld": "cars",
+          "currency": "USD",
+          "registerPrice": 2999.99,
+          "renewPrice": 2999.99,
+          "transferPrice": 2199.99
+        },
+        {
+          "tld": "car",
+          "currency": "USD",
+          "registerPrice": 2999.99,
+          "renewPrice": 2999.99,
+          "transferPrice": 2199.99
+        },
+        {
+          "tld": "auto",
+          "currency": "USD",
+          "registerPrice": 2999.99,
+          "renewPrice": 2999.99,
+          "transferPrice": 2199.99
+        },
+        {
+          "tld": "cyou",
+          "currency": "USD",
+          "registerPrice": 15.99,
+          "renewPrice": 15.99,
+          "transferPrice": 13.99
+        },
+        {
+          "tld": "tickets",
+          "currency": "USD",
+          "registerPrice": 524.99,
+          "renewPrice": 524.99,
+          "transferPrice": 399.99
+        },
+        {
+          "tld": "art",
+          "currency": "USD",
+          "registerPrice": 25.99,
+          "renewPrice": 25.99,
+          "transferPrice": 22.99
+        },
+        {
+          "tld": "tattoo",
+          "currency": "USD",
+          "registerPrice": 43.39,
+          "renewPrice": 43.39,
+          "transferPrice": 30.99
+        },
+        {
+          "tld": "photo",
+          "currency": "USD",
+          "registerPrice": 36.39,
+          "renewPrice": 36.39,
+          "transferPrice": 25.99
+        },
+        {
+          "tld": "law",
+          "currency": "USD",
+          "registerPrice": 113.39,
+          "renewPrice": 113.39,
+          "transferPrice": 80.99
+        },
+        {
+          "tld": "name",
+          "currency": "USD",
+          "registerPrice": 14.99,
+          "renewPrice": 14.99,
+          "transferPrice": 11.99
+        },
+        {
+          "tld": "country",
+          "currency": "USD",
+          "registerPrice": 2399.99,
+          "renewPrice": 2399.99,
+          "transferPrice": 2199.99
+        },
+        {
+          "tld": "property",
+          "currency": "USD",
+          "registerPrice": 159.99,
+          "renewPrice": 159.99,
+          "transferPrice": 129.99
+        },
+        {
+          "tld": "ag",
+          "currency": "USD",
+          "registerPrice": 109.99,
+          "renewPrice": 109.99,
+          "transferPrice": 92.99
+        },
+        {
+          "tld": "mn",
+          "currency": "USD",
+          "registerPrice": 69.99,
+          "renewPrice": 69.99,
+          "transferPrice": null
+        },
+        {
+          "tld": "bz",
+          "currency": "USD",
+          "registerPrice": 21.99,
+          "renewPrice": 21.99,
+          "transferPrice": 21.99
+        },
+        {
+          "tld": "sc",
+          "currency": "USD",
+          "registerPrice": 119.99,
+          "renewPrice": 119.99,
+          "transferPrice": null
+        },
+        {
+          "tld": "vc",
+          "currency": "USD",
+          "registerPrice": 34.99,
+          "renewPrice": 34.99,
+          "transferPrice": 27.99
+        },
+        {
+          "tld": "shiksha",
+          "currency": "USD",
+          "registerPrice": 59.99,
+          "renewPrice": 59.99,
+          "transferPrice": 43.99
+        },
+        {
+          "tld": "archi",
+          "currency": "USD",
+          "registerPrice": 119.99,
+          "renewPrice": 119.99,
+          "transferPrice": 87.99
+        },
+        {
+          "tld": "voto",
+          "currency": "USD",
+          "registerPrice": 80.99,
+          "renewPrice": 80.99,
+          "transferPrice": 59.99
+        },
+        {
+          "tld": "ae.org",
+          "currency": "USD",
+          "registerPrice": 21.99,
+          "renewPrice": 21.99,
+          "transferPrice": 21.99
+        },
+        {
+          "tld": "cn.com",
+          "currency": "USD",
+          "registerPrice": 37.99,
+          "renewPrice": 37.99,
+          "transferPrice": null
+        },
+        {
+          "tld": "com.de",
+          "currency": "USD",
+          "registerPrice": 7.99,
+          "renewPrice": 7.99,
+          "transferPrice": 7.99
+        },
+        {
+          "tld": "com.se",
+          "currency": "USD",
+          "registerPrice": 10.99,
+          "renewPrice": 10.99,
+          "transferPrice": 10.99
+        },
+        {
+          "tld": "au",
+          "currency": "USD",
+          "registerPrice": 15.99,
+          "renewPrice": 15.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "la",
+          "currency": "USD",
+          "registerPrice": 33.99,
+          "renewPrice": 33.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "cx",
+          "currency": "USD",
+          "registerPrice": 22.99,
+          "renewPrice": 22.99,
+          "transferPrice": 18.99
+        },
+        {
+          "tld": "am",
+          "currency": "USD",
+          "registerPrice": 49.99,
+          "renewPrice": 49.99,
+          "transferPrice": 43.99
+        },
+        {
+          "tld": "to",
+          "currency": "USD",
+          "registerPrice": 69.99,
+          "renewPrice": 69.99,
+          "transferPrice": 69.99
+        },
+        {
+          "tld": "be",
+          "currency": "USD",
+          "registerPrice": 9.99,
+          "renewPrice": 9.99,
+          "transferPrice": 6.99
+        },
+        {
+          "tld": "at",
+          "currency": "USD",
+          "registerPrice": 12.99,
+          "renewPrice": 12.99,
+          "transferPrice": 11.99
+        },
+        {
+          "tld": "lt",
+          "currency": "USD",
+          "registerPrice": 11.99,
+          "renewPrice": 11.99,
+          "transferPrice": 10.99
+        },
+        {
+          "tld": "com.pl",
+          "currency": "USD",
+          "registerPrice": 15.99,
+          "renewPrice": 15.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "net.pl",
+          "currency": "USD",
+          "registerPrice": 16.99,
+          "renewPrice": 16.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "info.pl",
+          "currency": "USD",
+          "registerPrice": 15.99,
+          "renewPrice": 15.99,
+          "transferPrice": 11.99
+        },
+        {
+          "tld": "lv",
+          "currency": "USD",
+          "registerPrice": 15.99,
+          "renewPrice": 15.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "dk",
+          "currency": "USD",
+          "registerPrice": 11.99,
+          "renewPrice": 11.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "co.za",
+          "currency": "USD",
+          "registerPrice": 9.99,
+          "renewPrice": 9.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "ro",
+          "currency": "USD",
+          "registerPrice": 34.99,
+          "renewPrice": 34.99,
+          "transferPrice": 32.99
+        },
+        {
+          "tld": "ch",
+          "currency": "USD",
+          "registerPrice": 9.99,
+          "renewPrice": 9.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "li",
+          "currency": "USD",
+          "registerPrice": 9.99,
+          "renewPrice": 9.99,
+          "transferPrice": 6.99
+        },
+        {
+          "tld": "ae",
+          "currency": "USD",
+          "registerPrice": 59,
+          "renewPrice": 59,
+          "transferPrice": 49.99
+        },
+        {
+          "tld": "ng",
+          "currency": "USD",
+          "registerPrice": 32.99,
+          "renewPrice": 32.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "si",
+          "currency": "USD",
+          "registerPrice": 16.99,
+          "renewPrice": 16.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "com.ng",
+          "currency": "USD",
+          "registerPrice": 25.99,
+          "renewPrice": 25.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "re",
+          "currency": "USD",
+          "registerPrice": 8.99,
+          "renewPrice": 8.99,
+          "transferPrice": 8.99
+        },
+        {
+          "tld": "tf",
+          "currency": "USD",
+          "registerPrice": 9.99,
+          "renewPrice": 9.99,
+          "transferPrice": 9.99
+        },
+        {
+          "tld": "pm",
+          "currency": "USD",
+          "registerPrice": 9.99,
+          "renewPrice": 9.99,
+          "transferPrice": 9.99
+        },
+        {
+          "tld": "wf",
+          "currency": "USD",
+          "registerPrice": 9.99,
+          "renewPrice": 9.99,
+          "transferPrice": 9.99
+        },
+        {
+          "tld": "yt",
+          "currency": "USD",
+          "registerPrice": 9.99,
+          "renewPrice": 9.99,
+          "transferPrice": 9.99
+        },
+        {
+          "tld": "cz",
+          "currency": "USD",
+          "registerPrice": 26.99,
+          "renewPrice": 26.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "cat",
+          "currency": "USD",
+          "registerPrice": 22.99,
+          "renewPrice": 22.99,
+          "transferPrice": 22.99
+        },
+        {
+          "tld": "cl",
+          "currency": "USD",
+          "registerPrice": 15.99,
+          "renewPrice": 15.99,
+          "transferPrice": 12.99
+        },
+        {
+          "tld": "com.es",
+          "currency": "USD",
+          "registerPrice": 14.99,
+          "renewPrice": 14.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "nu",
+          "currency": "USD",
+          "registerPrice": 17.99,
+          "renewPrice": 17.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "se",
+          "currency": "USD",
+          "registerPrice": 23.99,
+          "renewPrice": 23.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "fi",
+          "currency": "USD",
+          "registerPrice": 19.99,
+          "renewPrice": 19.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "lu",
+          "currency": "USD",
+          "registerPrice": 19.99,
+          "renewPrice": 19.99,
+          "transferPrice": 18.99
+        },
+        {
+          "tld": "pe",
+          "currency": "USD",
+          "registerPrice": 129.99,
+          "renewPrice": 129.99,
+          "transferPrice": 99.99
+        },
+        {
+          "tld": "ist",
+          "currency": "USD",
+          "registerPrice": 21.99,
+          "renewPrice": 21.99,
+          "transferPrice": 21.99
+        },
+        {
+          "tld": "com.pt",
+          "currency": "USD",
+          "registerPrice": 18.99,
+          "renewPrice": 18.99,
+          "transferPrice": 18.99
+        },
+        {
+          "tld": "gr",
+          "currency": "USD",
+          "registerPrice": 15.99,
+          "renewPrice": 15.99,
+          "transferPrice": 0.99
+        },
+        {
+          "tld": "tr",
+          "currency": "USD",
+          "registerPrice": 29.99,
+          "renewPrice": 29.99,
+          "transferPrice": 5.99
+        },
+        {
+          "tld": "pk",
+          "currency": "USD",
+          "registerPrice": 55.99,
+          "renewPrice": 55.99,
+          "transferPrice": null
+        },
+        {
+          "tld": "ma",
+          "currency": "USD",
+          "registerPrice": 39.99,
+          "renewPrice": 39.99,
+          "transferPrice": 6.99
+        },
+        {
+          "tld": "biz.id",
+          "currency": "USD",
+          "registerPrice": 3.99,
+          "renewPrice": 3.99,
+          "transferPrice": 3.49
+        },
+        {
+          "tld": "my.id",
+          "currency": "USD",
+          "registerPrice": 1.69,
+          "renewPrice": 1.69,
+          "transferPrice": 4.99
         }
       ]
     },
@@ -49853,7 +52275,7 @@
       "website": "https://www.cloudns.net/domain-pricing/",
       "currency": "EUR",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "com",
@@ -58423,7 +60845,7 @@
       "website": "https://www.101domain.com/",
       "currency": "USD",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "com",
@@ -60196,7 +62618,7 @@
       "website": "https://www.22.cn/",
       "currency": "CNY",
       "strategy": "html",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "com",
@@ -60898,7 +63320,7 @@
       "website": "https://www.west.cn/",
       "currency": "CNY",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "com",
@@ -61733,7 +64155,7 @@
       "website": "https://www.openprovider.com/pricing/",
       "currency": "USD",
       "strategy": "api",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "5g.in",
@@ -76220,12 +78642,231 @@
         }
       ]
     },
+    "centralnic": {
+      "name": "CentralNic Reseller",
+      "website": "https://www.centralnicreseller.com/domain-reseller-pricing/",
+      "currency": "USD",
+      "strategy": "playwright",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
+      "prices": [
+        {
+          "tld": "asia",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "at",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "be",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "biz",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "cc",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "ch",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "cn",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "co.uk",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "com",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "de",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "dk",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "es",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "eu",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "fm",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "fr",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "info",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "it",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "jp",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "lu",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "me",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "mobi",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "name",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "net",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "nl",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "nu",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "org",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "pl",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "se",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "tv",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        },
+        {
+          "tld": "us",
+          "currency": "USD",
+          "registerPrice": null,
+          "renewPrice": null,
+          "transferPrice": null
+        }
+      ]
+    },
     "krystal": {
       "name": "Krystal",
       "website": "https://krystal.uk/domains",
       "currency": "GBP",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "ac.uk",
@@ -76374,7 +79015,7 @@
       "website": "https://www.directnic.com/",
       "currency": "USD",
       "strategy": "html",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "info",
@@ -80128,7 +82769,7 @@
       "website": "https://www.dreamhost.com/domains/",
       "currency": "USD",
       "strategy": "html",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "guru",
@@ -82370,7 +85011,7 @@
       "website": "https://www.forpsi.com/domains/",
       "currency": "CZK",
       "strategy": "html",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "blue",
@@ -83982,7 +86623,7 @@
       "website": "https://www.blacknight.com/domain-names/",
       "currency": "EUR",
       "strategy": "html",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "extension",
@@ -85090,7 +87731,7 @@
       "website": "https://truehost.co.ke/domains/",
       "currency": "USD",
       "strategy": "html",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "com",
@@ -89138,7 +91779,7 @@
       "website": "https://www.hosting.kr/domain",
       "currency": "KRW",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T04:30:26.562Z",
+      "collectedAt": "2026-09-27T04:52:12.885Z",
       "prices": [
         {
           "tld": "io",
