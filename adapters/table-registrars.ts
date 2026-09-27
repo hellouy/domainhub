@@ -266,10 +266,10 @@ export const exabytesAdapter = createTableAdapter({
   name: "Exabytes",
   website: "https://www.exabytes.my",
   currency: "MYR",
-  urls: ["https://www.exabytes.my/domain"],
+  urls: ["https://www.exabytes.my/domains/domain-name-search"],
   columnOrder: ["register"],
   owner: "Data Team",
-  browser: { waitFor: "table", waitForTimeoutMs: 20_000 },
+  browser: { waitForTimeoutMs: 30_000, scrollToBottom: true },
 })
 
 export const networksolutionsAdapter = createTableAdapter({
@@ -277,8 +277,8 @@ export const networksolutionsAdapter = createTableAdapter({
   name: "Network Solutions",
   website: "https://www.networksolutions.com",
   currency: "USD",
-  urls: ["https://www.networksolutions.com/domains/"],
-  columnOrder: ["register", "renew"],
+  urls: ["https://www.networksolutions.com/domains/domain-name-pricing"],
+  columnOrder: ["register", "renew", "transfer"],
   owner: "Data Team",
   browser: { waitFor: "table", waitForTimeoutMs: 30_000 },
 })
