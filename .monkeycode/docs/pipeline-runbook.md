@@ -34,6 +34,7 @@ next dev (端口 3000) = 演示站（原程序本体，非静态快照）
 
 - 全部用 `background_terminal_create` 启动，不能用 `&`。
 - worker 并发 **= 2**，并发 > 2 会 502/超时。
+- **浏览器 worker 首次启动前置**（沙箱/新机器必做）：`cd browser-worker && npm install`，然后 `npx playwright install chromium`，再 `npx playwright install-deps chromium`（apt 装 `libglib-2.0`/`libnss3`/`libatk` 等动态库，装完需 `ldconfig`）。全部完成后才 `npm start`，否则 playwright 策略报 `SELF_SIGNED_CONNECT` 或直接 `browserType.launch` 失败。chromium 无浏览器服务时，仅 html/api 策略可跑（采集得 15 家）；配好后 playwright 策略恢复（可到 25 家+）。
 
 ### 2.2 数据库连接（2026-09-26 起：Supabase）
 
