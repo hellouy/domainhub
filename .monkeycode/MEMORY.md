@@ -78,6 +78,15 @@ Entries discovered by the Agent during task execution should follow this format:
   - 本地验证部署前先跑 `pnpm install --frozen-lockfile`（模拟 Vercel）再 `pnpm run build`
 
 [Project Knowledge Summary]
+- Date: 2026-09-27
+- Context: Discovered by Agent while 用 Vercel REST API 直接部署生产（不依赖 CLI 登录）
+- Category: Operations & Deployment
+- Instructions:
+  - 不用 `vercel` CLI 也能部署 git 关联项目：POST `https://api.vercel.com/v13/deployments?teamId=8839029-5124&force=true`，body 传 `{"name":"domainhub","target":"production","gitSource":{"type":"github","repoId":1299004490,"org":"hellouy","ref":"main"}}`（repoId 必须用项目 metadata 里真实的 1299004490，传 0 会报 incorrect_git_source_info）；Authorization: Bearer <VCP token>
+  - 部署 id 用 `GET /v13/deployments/{id}?teamId=8839029-5124` 轮询 readyState 至 READY；target=production 会自动挂到 www.tldbi.com，验证用 `/api/v1/statistics` 核对 DB 数据未回退 seed
+  - accountId/orgId 为 `team_7fiGBsOkagtxipEvpPg349yM`，但 API 的 teamId 参数用数字 `8839029-5124` 也可行（两种均返回同一 project）
+
+[Project Knowledge Summary]
 - Date: 2026-08-29
 - Context: Discovered by Agent while 探测大洋洲注册商
 - Category: Troubleshooting & Debugging
