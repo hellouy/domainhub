@@ -60,7 +60,6 @@ import { domain101Adapter } from "./101domain"
 import { cn22Adapter } from "./22cn"
 import { westcnAdapter } from "./westcn"
 import { openproviderAdapter } from "./openprovider"
-import { centralnicAdapter } from "./centralnic"
 import { krystalAdapter } from "./krystal"
 
 export const allAdapters = [
@@ -99,7 +98,6 @@ export const allAdapters = [
   cn22Adapter,
   westcnAdapter,
   openproviderAdapter,
-  centralnicAdapter,
   krystalAdapter,
   directnicAdapter,
   dreamhostAdapter,

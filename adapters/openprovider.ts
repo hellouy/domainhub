@@ -10,18 +10,29 @@
 import { defineAdapter, type AdapterContext, type RawPrice } from "@/packages/adapter-sdk"
 
 async function parseOpenprovider(raw: string, _ctx: AdapterContext): Promise<RawPrice[]> {
-  const { data } = JSON.parse(raw) as { data?: Array<Record<string, unknown>> }
+  const { data } = JSON.parse(raw) as {
+    data?: Array<Record<string, unknown>>
+  }
   if (!Array.isArray(data)) return []
   const out: RawPrice[] = []
   for (const d of data) {
     const tld = String(d.tld ?? "").trim().toLowerCase()
     if (!tld) continue
+    // 价格结构(2026-09 起)嵌套在 nonMember(公开零售) 与 member(会员) 下；
+    // 公开比价取 nonMember，缺失时回退 member。
+    const fee = (d.nonMember as Record<string, unknown>) ?? (d.member as Record<string, unknown>)
+    if (!fee || typeof fee !== "object") continue
+    const num = (v: unknown): number | null => {
+      const n = Number(v)
+      return Number.isFinite(n) && n > 0 ? n : null
+    }
     out.push({
       tld,
-      registerPrice: Number(d.registerFee ?? null) || null,
-      renewPrice: Number(d.renewalFee ?? null) || null,
-      transferPrice: Number(d.transferFee ?? null) || null,
-      restorePrice: Number(d.restoreFee ?? null) || null,
+      registerPrice: num(fee.registerFee),
+      renewPrice: num(fee.renewalFee),
+      transferPrice: num(fee.transferFee),
+      restorePrice: num(fee.restoreFee),
+      currency: String(d.currency ?? "USD"),
     })
   }
   return out
