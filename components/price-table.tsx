@@ -35,25 +35,38 @@ function toNum(v: string | null) {
   return Number.isNaN(n) ? Number.POSITIVE_INFINITY : n
 }
 
+/** 单元格 → USD 基准比较值。非空且折算后 >= $1 才参与"最低价"竞争,排除促销占位价。 */
+function toUsdAmount(v: string | null, currency: string, rates: Record<string, number>) {
+  if (v == null) return Number.POSITIVE_INFINITY
+  const n = Number.parseFloat(v)
+  if (Number.isNaN(n)) return Number.POSITIVE_INFINITY
+  const r = rates[currency]
+  const usd = r && r > 0 ? n / r : n
+  return usd >= 1 ? usd : Number.POSITIVE_INFINITY
+}
+
 export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; showUpdated?: boolean }) {
-  const { money } = useCurrency()
+  const { money, rates } = useCurrency()
   const { t, locale } = useLocale()
   const [sortKey, setSortKey] = useState<SortKey>("registerPrice")
 
-  const sorted = useMemo(
-    () => [...rows].sort((a, b) => toNum(a[sortKey]) - toNum(b[sortKey])),
-    [rows, sortKey],
-  )
+  const sorted = useMemo(() => {
+    const normalized = rates ?? {}
+    return [...rows].sort((a, b) => toUsdAmount(a[sortKey] as string, a.currency, normalized) - toUsdAmount(b[sortKey] as string, b.currency, normalized))
+  }, [rows, sortKey, rates])
 
   const minValues = useMemo(() => {
     const keys: SortKey[] = ["registerPrice", "renewPrice", "transferPrice"]
     const mins: Partial<Record<SortKey, number>> = {}
+    const normalized = rates ?? {}
     for (const key of keys) {
-      const vals = rows.map((r) => toNum(r[key])).filter((v) => Number.isFinite(v))
+      const vals = rows.map((r) => toUsdAmount(r[key] as string, r.currency, normalized)).filter((v) =>
+        Number.isFinite(v),
+      )
       if (vals.length > 0) mins[key] = Math.min(...vals)
     }
     return mins
-  }, [rows])
+  }, [rows, rates])
 
   if (rows.length === 0) {
     return (
@@ -117,7 +130,7 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
                   </Link>
                 </td>
                 {(["registerPrice", "renewPrice", "transferPrice"] as SortKey[]).map((key) => {
-                  const isMin = row[key] != null && toNum(row[key]) === minValues[key]
+                  const isMin = toUsdAmount(row[key] as string, row.currency, rates ?? {}) === minValues[key]
                   return (
                     <td
                       key={key}

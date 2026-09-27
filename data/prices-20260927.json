@@ -1,12 +1,12 @@
 {
-  "collectedAt": "2026-09-27T05:12:50.929Z",
+  "collectedAt": "2026-09-27T13:15:16.788Z",
   "registrars": {
     "cloudflare": {
       "name": "Cloudflare",
       "website": "https://www.cloudflare.com/products/registrar/",
       "currency": "USD",
       "strategy": "json",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "academy",
@@ -3025,7 +3025,7 @@
       "website": "https://porkbun.com/products/domains",
       "currency": "USD",
       "strategy": "api",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "1",
@@ -9397,7 +9397,7 @@
       "website": "https://www.dynadot.com/domain/tlds",
       "currency": "USD",
       "strategy": "xhr",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "com",
@@ -15139,7 +15139,7 @@
       "website": "https://www.ovhcloud.com/en/domains/",
       "currency": "EUR",
       "strategy": "api",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "family",
@@ -21798,7 +21798,7 @@
       "website": "https://www.gandi.net/en/domain",
       "currency": "USD",
       "strategy": "html",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "abogado",
@@ -22101,7 +22101,7 @@
       "website": "https://www.name.com/domains",
       "currency": "USD",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "io",
@@ -26240,7 +26240,7 @@
       "website": "https://www.namesilo.com/",
       "currency": "USD",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "com",
@@ -29546,7 +29546,7 @@
       "website": "https://www.onamae.com/domain/charge/",
       "currency": "JPY",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "com",
@@ -32656,7 +32656,7 @@
       "website": "https://www.infomaniak.com/en/domains",
       "currency": "CHF",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "com",
@@ -32805,7 +32805,7 @@
       "website": "https://www.hostpoint.ch/en/domains/domain-prices",
       "currency": "CHF",
       "strategy": "xhr",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "at",
@@ -40969,7 +40969,7 @@
       "website": "https://www.xserver.ne.jp/domain_price.php",
       "currency": "JPY",
       "strategy": "html",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "com",
@@ -42903,7 +42903,7 @@
       "website": "https://www.value-domain.com/domain/price/",
       "currency": "JPY",
       "strategy": "html",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "com",
@@ -46174,7 +46174,7 @@
       "website": "https://muumuu-domain.com/domain/price/",
       "currency": "JPY",
       "strategy": "html",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "com",
@@ -49109,7 +49109,7 @@
       "website": "https://www.hostinger.com/domain-names/",
       "currency": "USD",
       "strategy": "xhr",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "com",
@@ -52275,7 +52275,7 @@
       "website": "https://www.cloudns.net/domain-pricing/",
       "currency": "EUR",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "com",
@@ -60845,7 +60845,7 @@
       "website": "https://www.101domain.com/",
       "currency": "USD",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "com",
@@ -62618,7 +62618,7 @@
       "website": "https://www.22.cn/",
       "currency": "CNY",
       "strategy": "html",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "com",
@@ -63320,7 +63320,7 @@
       "website": "https://www.west.cn/",
       "currency": "CNY",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "com",
@@ -64155,7 +64155,7 @@
       "website": "https://www.openprovider.com/pricing/",
       "currency": "USD",
       "strategy": "api",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "5g.in",
@@ -64342,8 +64342,8 @@
         {
           "tld": "ae",
           "currency": "USD",
-          "registerPrice": 82.9,
-          "renewPrice": 82.9,
+          "registerPrice": 82.91,
+          "renewPrice": 82.91,
           "transferPrice": null
         },
         {
@@ -67177,8 +67177,8 @@
         {
           "tld": "com.lk",
           "currency": "USD",
-          "registerPrice": 47.74,
-          "renewPrice": 47.74,
+          "registerPrice": 47.68,
+          "renewPrice": 47.68,
           "transferPrice": null
         },
         {
@@ -68346,8 +68346,8 @@
         {
           "tld": "edu.lk",
           "currency": "USD",
-          "registerPrice": 47.74,
-          "renewPrice": 47.74,
+          "registerPrice": 47.68,
+          "renewPrice": 47.68,
           "transferPrice": null
         },
         {
@@ -71055,8 +71055,8 @@
         {
           "tld": "lk",
           "currency": "USD",
-          "registerPrice": 54.11,
-          "renewPrice": 54.11,
+          "registerPrice": 54.04,
+          "renewPrice": 54.04,
           "transferPrice": null
         },
         {
@@ -73554,8 +73554,8 @@
         {
           "tld": "org.lk",
           "currency": "USD",
-          "registerPrice": 47.74,
-          "renewPrice": 47.74,
+          "registerPrice": 47.68,
+          "renewPrice": 47.68,
           "transferPrice": null
         },
         {
@@ -78647,7 +78647,7 @@
       "website": "https://krystal.uk/domains",
       "currency": "GBP",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "ac.uk",
@@ -78796,7 +78796,7 @@
       "website": "https://www.directnic.com/",
       "currency": "USD",
       "strategy": "html",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "info",
@@ -82550,7 +82550,7 @@
       "website": "https://www.dreamhost.com/domains/",
       "currency": "USD",
       "strategy": "html",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "guru",
@@ -84792,7 +84792,7 @@
       "website": "https://www.forpsi.com/domains/",
       "currency": "CZK",
       "strategy": "html",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "blue",
@@ -86404,7 +86404,7 @@
       "website": "https://www.blacknight.com/domain-names/",
       "currency": "EUR",
       "strategy": "html",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "extension",
@@ -87512,7 +87512,7 @@
       "website": "https://truehost.co.ke/domains/",
       "currency": "USD",
       "strategy": "html",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "com",
@@ -91560,7 +91560,7 @@
       "website": "https://www.hosting.kr/domain",
       "currency": "KRW",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T05:12:50.929Z",
+      "collectedAt": "2026-09-27T13:15:16.788Z",
       "prices": [
         {
           "tld": "io",
