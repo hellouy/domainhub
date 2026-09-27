@@ -51,13 +51,13 @@ export interface TableAdapterConfig {
    * 浏览器降级(仅当价格表由 JS 渲染、直接 fetch 拿不到时配置)。
    * 配置后工厂自动追加一个 playwright 策略：
    * HTML 解析为空时降级到远程浏览器服务(BROWSER_SERVICE_URL)渲染 +
-   * extract.js 提取。waitFor 必填：表格挂载后出现的 CSS 选择器。
+* extract.js 提取。waitFor 可选：表格挂载后出现的 CSS 选择器。
    */
   browser?: {
-    /** 表格数据挂载后出现的选择器(必填),如 "table.pricing-table tbody tr" */
-    waitFor: string
-    /** waitFor 等待超时毫秒,默认 30000 */
-    waitForTimeoutMs?: number
+    /** 表格数据挂载后出现的选择器(可选),如 "table.pricing-table tbody tr" */
+ waitFor?: string
+   /** waitFor 等待超时毫秒,默认 30000 */
+   waitForTimeoutMs?: number
     /** 提取前滚动到底触发动态加载,默认 true */
     scrollToBottom?: boolean
     /** 模拟地区 locale(影响 GeoIP 分区定价) */
@@ -259,7 +259,7 @@ export function createTableAdapter(config: TableAdapterConfig) {
                 url: config.urls[0],
                 browser: {
                   extract: "extract-json" as const,
-                  waitFor: config.browser.waitFor,
+                  ...(config.browser.waitFor ? { waitFor: config.browser.waitFor } : {}),
                   waitForTimeoutMs: config.browser.waitForTimeoutMs,
                   scrollToBottom: config.browser.scrollToBottom,
                   locale: config.browser.locale,

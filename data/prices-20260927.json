@@ -1,12 +1,12 @@
 {
-  "collectedAt": "2026-09-27T14:03:40.676Z",
+  "collectedAt": "2026-09-27T14:19:33.932Z",
   "registrars": {
     "cloudflare": {
       "name": "Cloudflare",
       "website": "https://www.cloudflare.com/products/registrar/",
       "currency": "USD",
       "strategy": "json",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "academy",
@@ -3025,7 +3025,7 @@
       "website": "https://porkbun.com/products/domains",
       "currency": "USD",
       "strategy": "api",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "1",
@@ -9397,7 +9397,7 @@
       "website": "https://www.dynadot.com/domain/tlds",
       "currency": "USD",
       "strategy": "xhr",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "com",
@@ -15139,7 +15139,7 @@
       "website": "https://www.ovhcloud.com/en/domains/",
       "currency": "EUR",
       "strategy": "api",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "family",
@@ -21798,7 +21798,7 @@
       "website": "https://www.gandi.net/en/domain",
       "currency": "USD",
       "strategy": "html",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "abogado",
@@ -22101,7 +22101,7 @@
       "website": "https://www.name.com/domains",
       "currency": "USD",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "io",
@@ -26240,7 +26240,7 @@
       "website": "https://www.namesilo.com/",
       "currency": "USD",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "com",
@@ -29546,7 +29546,7 @@
       "website": "https://www.onamae.com/domain/charge/",
       "currency": "JPY",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "com",
@@ -32656,7 +32656,7 @@
       "website": "https://www.infomaniak.com/en/domains",
       "currency": "CHF",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "com",
@@ -32805,7 +32805,7 @@
       "website": "https://www.hostpoint.ch/en/domains/domain-prices",
       "currency": "CHF",
       "strategy": "xhr",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "at",
@@ -40969,7 +40969,7 @@
       "website": "https://www.xserver.ne.jp/domain_price.php",
       "currency": "JPY",
       "strategy": "html",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "com",
@@ -42903,7 +42903,7 @@
       "website": "https://www.value-domain.com/domain/price/",
       "currency": "JPY",
       "strategy": "html",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "com",
@@ -46174,7 +46174,7 @@
       "website": "https://muumuu-domain.com/domain/price/",
       "currency": "JPY",
       "strategy": "html",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "com",
@@ -49109,7 +49109,7 @@
       "website": "https://www.hostinger.com/domain-names/",
       "currency": "USD",
       "strategy": "xhr",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "com",
@@ -52275,7 +52275,7 @@
       "website": "https://www.cloudns.net/domain-pricing/",
       "currency": "EUR",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "com",
@@ -60845,7 +60845,7 @@
       "website": "https://www.101domain.com/",
       "currency": "USD",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "com",
@@ -62618,7 +62618,7 @@
       "website": "https://www.22.cn/",
       "currency": "CNY",
       "strategy": "html",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "com",
@@ -63320,7 +63320,7 @@
       "website": "https://www.west.cn/",
       "currency": "CNY",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "com",
@@ -64155,7 +64155,7 @@
       "website": "https://www.openprovider.com/pricing/",
       "currency": "USD",
       "strategy": "api",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "5g.in",
@@ -78647,7 +78647,7 @@
       "website": "https://krystal.uk/domains",
       "currency": "GBP",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "ac.uk",
@@ -78796,7 +78796,7 @@
       "website": "https://www.directnic.com/",
       "currency": "USD",
       "strategy": "html",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "info",
@@ -82550,7 +82550,7 @@
       "website": "https://www.dreamhost.com/domains/",
       "currency": "USD",
       "strategy": "html",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "guru",
@@ -84792,7 +84792,7 @@
       "website": "https://www.forpsi.com/domains/",
       "currency": "CZK",
       "strategy": "html",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "blue",
@@ -86399,12 +86399,854 @@
         }
       ]
     },
+    "juming": {
+      "name": "聚名网 Juming",
+      "website": "https://www.juming.com/",
+      "currency": "CNY",
+      "strategy": "playwright",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
+      "prices": [
+        {
+          "tld": "net",
+          "currency": "CNY",
+          "registerPrice": 95,
+          "renewPrice": 99,
+          "transferPrice": 99
+        },
+        {
+          "tld": "cc",
+          "currency": "CNY",
+          "registerPrice": 32,
+          "renewPrice": 75,
+          "transferPrice": 75
+        },
+        {
+          "tld": "vip",
+          "currency": "CNY",
+          "registerPrice": 38,
+          "renewPrice": 48,
+          "transferPrice": 48
+        },
+        {
+          "tld": "xyz",
+          "currency": "CNY",
+          "registerPrice": 32,
+          "renewPrice": 129,
+          "transferPrice": 129
+        },
+        {
+          "tld": "club",
+          "currency": "CNY",
+          "registerPrice": 35,
+          "renewPrice": 149,
+          "transferPrice": 149
+        },
+        {
+          "tld": "online",
+          "currency": "CNY",
+          "registerPrice": 49,
+          "renewPrice": 259,
+          "transferPrice": 259
+        },
+        {
+          "tld": "site",
+          "currency": "CNY",
+          "registerPrice": 49,
+          "renewPrice": 259,
+          "transferPrice": 259
+        },
+        {
+          "tld": "store",
+          "currency": "CNY",
+          "registerPrice": 49,
+          "renewPrice": 379,
+          "transferPrice": 379
+        },
+        {
+          "tld": "tech",
+          "currency": "CNY",
+          "registerPrice": 23,
+          "renewPrice": 409,
+          "transferPrice": 409
+        },
+        {
+          "tld": "space",
+          "currency": "CNY",
+          "registerPrice": 23,
+          "renewPrice": 239,
+          "transferPrice": 239
+        },
+        {
+          "tld": "fun",
+          "currency": "CNY",
+          "registerPrice": 23,
+          "renewPrice": 279,
+          "transferPrice": 279
+        },
+        {
+          "tld": "fit",
+          "currency": "CNY",
+          "registerPrice": 25,
+          "renewPrice": 119,
+          "transferPrice": 119
+        },
+        {
+          "tld": "work",
+          "currency": "CNY",
+          "registerPrice": 25,
+          "renewPrice": 79,
+          "transferPrice": 79
+        },
+        {
+          "tld": "shop",
+          "currency": "CNY",
+          "registerPrice": 59,
+          "renewPrice": 259,
+          "transferPrice": 259
+        },
+        {
+          "tld": "cyou",
+          "currency": "CNY",
+          "registerPrice": 22,
+          "renewPrice": 139,
+          "transferPrice": 139
+        },
+        {
+          "tld": "me",
+          "currency": "CNY",
+          "registerPrice": 69,
+          "renewPrice": 149,
+          "transferPrice": 149
+        },
+        {
+          "tld": "cloud",
+          "currency": "CNY",
+          "registerPrice": 20,
+          "renewPrice": 169,
+          "transferPrice": 169
+        },
+        {
+          "tld": "ltd",
+          "currency": "CNY",
+          "registerPrice": 59,
+          "renewPrice": 179,
+          "transferPrice": 179
+        },
+        {
+          "tld": "website",
+          "currency": "CNY",
+          "registerPrice": 19,
+          "renewPrice": 199,
+          "transferPrice": 199
+        },
+        {
+          "tld": "host",
+          "currency": "CNY",
+          "registerPrice": 49,
+          "renewPrice": 619,
+          "transferPrice": 619
+        },
+        {
+          "tld": "press",
+          "currency": "CNY",
+          "registerPrice": 49,
+          "renewPrice": 509,
+          "transferPrice": 509
+        },
+        {
+          "tld": "bond",
+          "currency": "CNY",
+          "registerPrice": 39,
+          "renewPrice": 139,
+          "transferPrice": 139
+        },
+        {
+          "tld": "live",
+          "currency": "CNY",
+          "registerPrice": 59,
+          "renewPrice": 199,
+          "transferPrice": 199
+        },
+        {
+          "tld": "life",
+          "currency": "CNY",
+          "registerPrice": 59,
+          "renewPrice": 229,
+          "transferPrice": 229
+        },
+        {
+          "tld": "world",
+          "currency": "CNY",
+          "registerPrice": 59,
+          "renewPrice": 259,
+          "transferPrice": 259
+        },
+        {
+          "tld": "email",
+          "currency": "CNY",
+          "registerPrice": 69,
+          "renewPrice": 179,
+          "transferPrice": 179
+        },
+        {
+          "tld": "studio",
+          "currency": "CNY",
+          "registerPrice": 119,
+          "renewPrice": 269,
+          "transferPrice": 269
+        },
+        {
+          "tld": "group",
+          "currency": "CNY",
+          "registerPrice": 79,
+          "renewPrice": 159,
+          "transferPrice": 159
+        },
+        {
+          "tld": "tv",
+          "currency": "CNY",
+          "registerPrice": 268,
+          "renewPrice": 268,
+          "transferPrice": 268
+        },
+        {
+          "tld": "today",
+          "currency": "CNY",
+          "registerPrice": 79,
+          "renewPrice": 179,
+          "transferPrice": 179
+        },
+        {
+          "tld": "company",
+          "currency": "CNY",
+          "registerPrice": 79,
+          "renewPrice": 119,
+          "transferPrice": 119
+        },
+        {
+          "tld": "media",
+          "currency": "CNY",
+          "registerPrice": 89,
+          "renewPrice": 299,
+          "transferPrice": 299
+        },
+        {
+          "tld": "news",
+          "currency": "CNY",
+          "registerPrice": 109,
+          "renewPrice": 209,
+          "transferPrice": 209
+        },
+        {
+          "tld": "beer",
+          "currency": "CNY",
+          "registerPrice": 129,
+          "renewPrice": 129,
+          "transferPrice": 129
+        },
+        {
+          "tld": "fashion",
+          "currency": "CNY",
+          "registerPrice": 219,
+          "renewPrice": 219,
+          "transferPrice": 219
+        },
+        {
+          "tld": "yoga",
+          "currency": "CNY",
+          "registerPrice": 219,
+          "renewPrice": 219,
+          "transferPrice": 219
+        },
+        {
+          "tld": "luxe",
+          "currency": "CNY",
+          "registerPrice": 139,
+          "renewPrice": 159,
+          "transferPrice": 159
+        },
+        {
+          "tld": "love",
+          "currency": "CNY",
+          "registerPrice": 59,
+          "renewPrice": 189,
+          "transferPrice": 189
+        },
+        {
+          "tld": "mobi",
+          "currency": "CNY",
+          "registerPrice": 69,
+          "renewPrice": 319,
+          "transferPrice": 319
+        },
+        {
+          "tld": "click",
+          "currency": "CNY",
+          "registerPrice": 29,
+          "renewPrice": 99,
+          "transferPrice": 99
+        },
+        {
+          "tld": "help",
+          "currency": "CNY",
+          "registerPrice": 39,
+          "renewPrice": 219,
+          "transferPrice": 219
+        },
+        {
+          "tld": "organic",
+          "currency": "CNY",
+          "registerPrice": 119,
+          "renewPrice": 499,
+          "transferPrice": 499
+        },
+        {
+          "tld": "info",
+          "currency": "CNY",
+          "registerPrice": 59,
+          "renewPrice": 179,
+          "transferPrice": 179
+        },
+        {
+          "tld": "pet",
+          "currency": "CNY",
+          "registerPrice": 109,
+          "renewPrice": 179,
+          "transferPrice": 179
+        },
+        {
+          "tld": "wang",
+          "currency": "CNY",
+          "registerPrice": 79,
+          "renewPrice": 79,
+          "transferPrice": 79
+        },
+        {
+          "tld": "yun",
+          "currency": "CNY",
+          "registerPrice": 149,
+          "renewPrice": 169,
+          "transferPrice": 169
+        },
+        {
+          "tld": "biz",
+          "currency": "CNY",
+          "registerPrice": 69,
+          "renewPrice": 169,
+          "transferPrice": 169
+        },
+        {
+          "tld": "pink",
+          "currency": "CNY",
+          "registerPrice": 109,
+          "renewPrice": 179,
+          "transferPrice": 179
+        },
+        {
+          "tld": "law",
+          "currency": "CNY",
+          "registerPrice": 599,
+          "renewPrice": 599,
+          "transferPrice": 599
+        },
+        {
+          "tld": "pw",
+          "currency": "CNY",
+          "registerPrice": 49,
+          "renewPrice": 189,
+          "transferPrice": 189
+        },
+        {
+          "tld": "poker",
+          "currency": "CNY",
+          "registerPrice": 89,
+          "renewPrice": 399,
+          "transferPrice": 399
+        },
+        {
+          "tld": "pro",
+          "currency": "CNY",
+          "registerPrice": 59,
+          "renewPrice": 179,
+          "transferPrice": 179
+        },
+        {
+          "tld": "promo",
+          "currency": "CNY",
+          "registerPrice": 99,
+          "renewPrice": 149,
+          "transferPrice": 149
+        },
+        {
+          "tld": "uno",
+          "currency": "CNY",
+          "registerPrice": 19,
+          "renewPrice": 209,
+          "transferPrice": 209
+        },
+        {
+          "tld": "red",
+          "currency": "CNY",
+          "registerPrice": 89,
+          "renewPrice": 139,
+          "transferPrice": 139
+        },
+        {
+          "tld": "asia",
+          "currency": "CNY",
+          "registerPrice": 69,
+          "renewPrice": 109,
+          "transferPrice": 109
+        },
+        {
+          "tld": "school",
+          "currency": "CNY",
+          "registerPrice": 219,
+          "renewPrice": 239,
+          "transferPrice": 239
+        },
+        {
+          "tld": "xin",
+          "currency": "CNY",
+          "registerPrice": 39,
+          "renewPrice": 129,
+          "transferPrice": 129
+        },
+        {
+          "tld": "ski",
+          "currency": "CNY",
+          "registerPrice": 179,
+          "renewPrice": 399,
+          "transferPrice": 399
+        },
+        {
+          "tld": "link",
+          "currency": "CNY",
+          "registerPrice": 79,
+          "renewPrice": 79,
+          "transferPrice": 79
+        },
+        {
+          "tld": "social",
+          "currency": "CNY",
+          "registerPrice": 89,
+          "renewPrice": 259,
+          "transferPrice": 259
+        },
+        {
+          "tld": "baby",
+          "currency": "CNY",
+          "registerPrice": 139,
+          "renewPrice": 459,
+          "transferPrice": 459
+        },
+        {
+          "tld": "college",
+          "currency": "CNY",
+          "registerPrice": 139,
+          "renewPrice": 459,
+          "transferPrice": 459
+        },
+        {
+          "tld": "monster",
+          "currency": "CNY",
+          "registerPrice": 19,
+          "renewPrice": 129,
+          "transferPrice": 129
+        },
+        {
+          "tld": "rent",
+          "currency": "CNY",
+          "registerPrice": 139,
+          "renewPrice": 459,
+          "transferPrice": 459
+        },
+        {
+          "tld": "quest",
+          "currency": "CNY",
+          "registerPrice": 19,
+          "renewPrice": 129,
+          "transferPrice": 129
+        },
+        {
+          "tld": "vote",
+          "currency": "CNY",
+          "registerPrice": 209,
+          "renewPrice": 529,
+          "transferPrice": 529
+        },
+        {
+          "tld": "beauty",
+          "currency": "CNY",
+          "registerPrice": 19,
+          "renewPrice": 129,
+          "transferPrice": 129
+        },
+        {
+          "tld": "voto",
+          "currency": "CNY",
+          "registerPrice": 179,
+          "renewPrice": 459,
+          "transferPrice": 459
+        },
+        {
+          "tld": "hair",
+          "currency": "CNY",
+          "registerPrice": 19,
+          "renewPrice": 129,
+          "transferPrice": 129
+        },
+        {
+          "tld": "skin",
+          "currency": "CNY",
+          "registerPrice": 19,
+          "renewPrice": 129,
+          "transferPrice": 129
+        },
+        {
+          "tld": "makeup",
+          "currency": "CNY",
+          "registerPrice": 19,
+          "renewPrice": 129,
+          "transferPrice": 129
+        },
+        {
+          "tld": "homes",
+          "currency": "CNY",
+          "registerPrice": 19,
+          "renewPrice": 129,
+          "transferPrice": 129
+        },
+        {
+          "tld": "autos",
+          "currency": "CNY",
+          "registerPrice": 19,
+          "renewPrice": 129,
+          "transferPrice": 129
+        },
+        {
+          "tld": "motorcycles",
+          "currency": "CNY",
+          "registerPrice": 19,
+          "renewPrice": 129,
+          "transferPrice": 129
+        },
+        {
+          "tld": "boats",
+          "currency": "CNY",
+          "registerPrice": 19,
+          "renewPrice": 129,
+          "transferPrice": 129
+        },
+        {
+          "tld": "art",
+          "currency": "CNY",
+          "registerPrice": 99,
+          "renewPrice": 199,
+          "transferPrice": 199
+        },
+        {
+          "tld": "yachts",
+          "currency": "CNY",
+          "registerPrice": 19,
+          "renewPrice": 129,
+          "transferPrice": 129
+        },
+        {
+          "tld": "center",
+          "currency": "CNY",
+          "registerPrice": 59,
+          "renewPrice": 199,
+          "transferPrice": 199
+        },
+        {
+          "tld": "video",
+          "currency": "CNY",
+          "registerPrice": 89,
+          "renewPrice": 239,
+          "transferPrice": 239
+        },
+        {
+          "tld": "team",
+          "currency": "CNY",
+          "registerPrice": 79,
+          "renewPrice": 239,
+          "transferPrice": 239
+        },
+        {
+          "tld": "show",
+          "currency": "CNY",
+          "registerPrice": 89,
+          "renewPrice": 259,
+          "transferPrice": 259
+        },
+        {
+          "tld": "cool",
+          "currency": "CNY",
+          "registerPrice": 69,
+          "renewPrice": 259,
+          "transferPrice": 259
+        },
+        {
+          "tld": "zone",
+          "currency": "CNY",
+          "registerPrice": 79,
+          "renewPrice": 259,
+          "transferPrice": 259
+        },
+        {
+          "tld": "city",
+          "currency": "CNY",
+          "registerPrice": 79,
+          "renewPrice": 179,
+          "transferPrice": 179
+        },
+        {
+          "tld": "chat",
+          "currency": "CNY",
+          "registerPrice": 79,
+          "renewPrice": 279,
+          "transferPrice": 279
+        },
+        {
+          "tld": "fund",
+          "currency": "CNY",
+          "registerPrice": 99,
+          "renewPrice": 419,
+          "transferPrice": 419
+        },
+        {
+          "tld": "gold",
+          "currency": "CNY",
+          "registerPrice": 79,
+          "renewPrice": 599,
+          "transferPrice": 599
+        },
+        {
+          "tld": "plus",
+          "currency": "CNY",
+          "registerPrice": 79,
+          "renewPrice": 339,
+          "transferPrice": 339
+        },
+        {
+          "tld": "guru",
+          "currency": "CNY",
+          "registerPrice": 59,
+          "renewPrice": 269,
+          "transferPrice": 269
+        },
+        {
+          "tld": "run",
+          "currency": "CNY",
+          "registerPrice": 59,
+          "renewPrice": 179,
+          "transferPrice": 179
+        },
+        {
+          "tld": "pub",
+          "currency": "CNY",
+          "registerPrice": 79,
+          "renewPrice": 259,
+          "transferPrice": 259
+        },
+        {
+          "tld": "band",
+          "currency": "CNY",
+          "registerPrice": 139,
+          "renewPrice": 199,
+          "transferPrice": 199
+        },
+        {
+          "tld": "design",
+          "currency": "CNY",
+          "registerPrice": 99,
+          "renewPrice": 189,
+          "transferPrice": 189
+        },
+        {
+          "tld": "cab",
+          "currency": "CNY",
+          "registerPrice": 79,
+          "renewPrice": 199,
+          "transferPrice": 199
+        },
+        {
+          "tld": "cafe",
+          "currency": "CNY",
+          "registerPrice": 79,
+          "renewPrice": 269,
+          "transferPrice": 269
+        },
+        {
+          "tld": "wiki",
+          "currency": "CNY",
+          "registerPrice": 29,
+          "renewPrice": 169,
+          "transferPrice": 169
+        },
+        {
+          "tld": "cash",
+          "currency": "CNY",
+          "registerPrice": 79,
+          "renewPrice": 239,
+          "transferPrice": 239
+        },
+        {
+          "tld": "ink",
+          "currency": "CNY",
+          "registerPrice": 29,
+          "renewPrice": 169,
+          "transferPrice": 169
+        },
+        {
+          "tld": "vin",
+          "currency": "CNY",
+          "registerPrice": 79,
+          "renewPrice": 239,
+          "transferPrice": 239
+        },
+        {
+          "tld": "games",
+          "currency": "CNY",
+          "registerPrice": 199,
+          "renewPrice": 199,
+          "transferPrice": 199
+        },
+        {
+          "tld": "market",
+          "currency": "CNY",
+          "registerPrice": 269,
+          "renewPrice": 269,
+          "transferPrice": 269
+        },
+        {
+          "tld": "mba",
+          "currency": "CNY",
+          "registerPrice": 99,
+          "renewPrice": 239,
+          "transferPrice": 239
+        },
+        {
+          "tld": "sale",
+          "currency": "CNY",
+          "registerPrice": 79,
+          "renewPrice": 239,
+          "transferPrice": 239
+        },
+        {
+          "tld": "shopping",
+          "currency": "CNY",
+          "registerPrice": 199,
+          "renewPrice": 199,
+          "transferPrice": 199
+        },
+        {
+          "tld": "tax",
+          "currency": "CNY",
+          "registerPrice": 99,
+          "renewPrice": 399,
+          "transferPrice": 399
+        },
+        {
+          "tld": "fyi",
+          "currency": "CNY",
+          "registerPrice": 59,
+          "renewPrice": 79,
+          "transferPrice": 79
+        },
+        {
+          "tld": "technology",
+          "currency": "CNY",
+          "registerPrice": 189,
+          "renewPrice": 199,
+          "transferPrice": 199
+        },
+        {
+          "tld": "archi",
+          "currency": "CNY",
+          "registerPrice": 129,
+          "renewPrice": 599,
+          "transferPrice": 599
+        },
+        {
+          "tld": "bio",
+          "currency": "CNY",
+          "registerPrice": 79,
+          "renewPrice": 459,
+          "transferPrice": 459
+        },
+        {
+          "tld": "black",
+          "currency": "CNY",
+          "registerPrice": 179,
+          "renewPrice": 399,
+          "transferPrice": 399
+        },
+        {
+          "tld": "blue",
+          "currency": "CNY",
+          "registerPrice": 129,
+          "renewPrice": 169,
+          "transferPrice": 169
+        },
+        {
+          "tld": "fans",
+          "currency": "CNY",
+          "registerPrice": 89,
+          "renewPrice": 99,
+          "transferPrice": 99
+        },
+        {
+          "tld": "fan",
+          "currency": "CNY",
+          "registerPrice": 319,
+          "renewPrice": 339,
+          "transferPrice": 339
+        },
+        {
+          "tld": "global",
+          "currency": "CNY",
+          "registerPrice": 299,
+          "renewPrice": 569,
+          "transferPrice": 569
+        },
+        {
+          "tld": "green",
+          "currency": "CNY",
+          "registerPrice": 109,
+          "renewPrice": 469,
+          "transferPrice": 469
+        },
+        {
+          "tld": "kids",
+          "currency": "CNY",
+          "registerPrice": 89,
+          "renewPrice": 169,
+          "transferPrice": 169
+        },
+        {
+          "tld": "kim",
+          "currency": "CNY",
+          "registerPrice": 99,
+          "renewPrice": 159,
+          "transferPrice": 159
+        },
+        {
+          "tld": "ren",
+          "currency": "CNY",
+          "registerPrice": 99,
+          "renewPrice": 99,
+          "transferPrice": 99
+        }
+      ]
+    },
     "blacknight": {
       "name": "Blacknight",
       "website": "https://www.blacknight.com/domain-names/",
       "currency": "EUR",
       "strategy": "html",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "extension",
@@ -87512,7 +88354,7 @@
       "website": "https://www.exabytes.my/domains/domain-name-search",
       "currency": "MYR",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "com",
@@ -87955,7 +88797,7 @@
       "website": "https://www.networksolutions.com/domains/domain-name-pricing",
       "currency": "USD",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "ac",
@@ -88188,7 +89030,7 @@
       "website": "https://truehost.co.ke/domains/",
       "currency": "USD",
       "strategy": "html",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "com",
@@ -92236,7 +93078,7 @@
       "website": "https://www.hosting.kr/domain",
       "currency": "KRW",
       "strategy": "playwright",
-      "collectedAt": "2026-09-27T14:03:40.676Z",
+      "collectedAt": "2026-09-27T14:19:33.932Z",
       "prices": [
         {
           "tld": "io",

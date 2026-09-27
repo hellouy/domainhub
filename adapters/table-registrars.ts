@@ -215,6 +215,7 @@ export const jumingAdapter = createTableAdapter({
   urls: ["https://www.juming.com/price.htm"],
   columnOrder: ["register", "renew", "transfer"],
   owner: "Data Team",
+  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true },
 })
 
 export const blacknightAdapter = createTableAdapter({

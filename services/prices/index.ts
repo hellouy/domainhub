@@ -205,6 +205,7 @@ export async function queryRegistrars() {
         })
         .from(registrars)
         .leftJoin(registrarCapabilities, eq(registrarCapabilities.registrarId, registrars.id))
+        .where(eq(registrars.isActive, true))
         .orderBy(registrars.slug)
       return rows
     },
