@@ -22,7 +22,7 @@
 | 注册商 | slug | 覆盖潜力 | 状态 | 观察到源/问题 | 解锁条件 |
 |--------|------|---------|------|----------------|----------|
 | gandi.net | gandi | 700+ | 🔒 需凭据 | api.gandi.net 返回 401；SSR 页仅 42 行、无定价 XHR | 提供 api.gandi.net API Key（Organization） |
-| infomaniak | infomaniak | 数百 | 🔒 需凭据 | 页面 bot 拦截 ERR_CONNECTION_CLOSED；当前 20 行为次级源 | 提供 Infomaniak API token |
+| infomaniak | infomaniak | 数百 | ❌ 暂不可用 | 页面 bot 拦截，抓到的 20 行为脏数据（com=3313 CHF），已从适配器注册表移除 + DB is_active=false；若恢复需 Infomaniak API token | 提供 Infomaniak API token 后需验证数据质量再入采 |
 | namecheap | namecheap | 全量 | 🔒 需凭据 | private-api 报 APIUser 参数错误（未配置 key） | 提供 Namecheap API key + username |
 | godaddy | godaddy | 全量 | 🔒 需凭据 | private-api fetch failed（未配置 key） | 提供 GoDaddy API key |
 | netim | netim | 数百 | 🔒 需凭据 | private-api 会话 HTTP 400（代理商 ID/密钥未启用） | 提供 Netim 代理商 ID + 密钥 |
