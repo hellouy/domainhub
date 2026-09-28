@@ -149,6 +149,27 @@ async function main() {
         ) {
           registerPrice = null
         }
+        /** 促销贴纸归一：注册价 < 续费价/3 视为首年促销贴纸（如 name.com $1 vs $30），
+          *  为保证各注册商 register 列口径一致（都报"标准注册价"），置 null 让前端以续费价兜底 */
+        if (
+          registerPrice != null &&
+          renewPrice != null &&
+          renewPrice > 0 &&
+          registerPrice > 0 &&
+          registerPrice < renewPrice / 3
+        ) {
+          registerPrice = null
+        }
+        /** 单值误解析兜底：register 为极小整数(<=2)而续费/转入均缺失(如 forpsi "1 rok"→1 CZK)，
+          *  明显是 term/数量列被误当价格，置 null */
+        if (
+          registerPrice != null &&
+          registerPrice <= 2 &&
+          renewPrice == null &&
+          transferPrice == null
+        ) {
+          registerPrice = null
+        }
         prices.push({
           tld,
           currency: (raw.currency ?? currency).toUpperCase(),

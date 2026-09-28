@@ -193,7 +193,9 @@ export const forpsiAdapter = createTableAdapter({
   currency: "CZK",
   numberFormat: "eu",
   urls: ["https://www.forpsi.com/domain/"],
-  columnOrder: ["register", "renew"],
+  // 每行固定 5 列: [".TLD 类别", "1 rok(期限)", "", "注册价(不含/含DPH -)", "续费价(不含/含DPH)"]
+  // 跳过前两列(期限"1 rok"曾误当 1 CZK 注册价), 第4列=注册, 第5列=续费(ex-VAT 为首值)
+  columnOrder: ["skip", "skip", "register", "renew"],
   owner: "Data Team",
 })
 

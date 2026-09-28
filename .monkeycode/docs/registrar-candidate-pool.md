@@ -75,7 +75,10 @@
 ## 2026-09-28 广度扫描复核（数据排查 + 新源探测）
 
 - **keliweb 数据修正**：定位 reg/renew 误标（真值见上表），已按源修正入库并部署。
+- **namecom 促销贴纸**：XHR 定价接口返回 400 后回落浏览器抓取到首年促销价（$1 贴纸），导致 register 普遍 $1/行。已加全局 guard：`register < renew/3 → null`（用续费标准价兜底），`.co/.app` 等已置 null，`.com/.net/.org` 保留真实标准价。
+- **forpsi 期限列误解析**：表行第 2 列"1 rok"被当注册价（220 行 $1.00 CZK）。已改 `columnOrder:["skip","skip","register","renew"]`，`.xyz 400/400`、`.org 360/385` 等真实 CZK 恢复；DB register<=2 行清零。
 - **ovhcloud 全 0 占位清理**：目录 API 中 register/renew/transfer 全为 0 的 TLD（br、gr.com、net.cn、org.cn、hu.net、in.net、jpn.com、mex.com、se.net）并非 €0 促销而是占位，已跳过 + 删 DB 旧行。
+- **全局数据口径 guard**（export-prices.ts）：① register<renew/50 → null（散射）；② register<renew/3 → null（促销贴纸口径归一）；③ register<=2 且 renew/transfer 均 null → null（term/数量误解析）。全 32 家 register<renew/3 行已为 0。
 - 广为探测被封锁/低价值、勿重复试探：namecheap.com、domain.com、bigrock.in、crazydomains、hostgator、niagahoster、epik、exabytes(my/api)、one.com、wedos（60s 超时）、registrobr/123-reg/openprovider/active24（SPA 且仅 10+ 行）、sav.com/internetbs（连接超时）、fles större CF/JS 挑战。
 - 仍未打通的主杠杆（阻塞 100+）：ResellerClub/1API/Enom/netim/namecheap/godaddy 批发 API，全部需代理商凭证；平台护栏禁止反爬/逆向。
 
