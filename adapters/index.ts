@@ -61,6 +61,7 @@ import { cn22Adapter } from "./22cn"
 import { westcnAdapter } from "./westcn"
 import { openproviderAdapter } from "./openprovider"
 import { krystalAdapter } from "./krystal"
+import { inwxAdapter } from "./inwx"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -109,6 +110,7 @@ export const allAdapters = [
   networksolutionsAdapter,
   truehostAdapter,
   hostingkrAdapter,
+  inwxAdapter,
 ]
 
 for (const adapter of allAdapters) {

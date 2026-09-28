@@ -65,6 +65,7 @@ const HOSTS: Record<string, string> = {
   spaceship: "https://www.spaceship.com/domains/",
   aliyun: "https://wanwang.aliyun.com/domain/tld",
   openprovider: "https://www.openprovider.com/pricing/",
+  inwx: "https://www.inwx.com/en/domains",
   cloudns: "https://www.cloudns.net/domain-pricing/",
   hostpoint: "https://www.hostpoint.ch/en/domains/domain-prices",
   xserver: "https://www.xserver.ne.jp/domain_price.php",
@@ -97,12 +98,17 @@ function hostFor(slug: string, def: { currency?: string; strategies?: { url?: st
 async function main() {
   const all = listRegisteredAdapters()
   const knownTlds = loadKnownTlds()
-  console.log(`共 ${all.length} 家已注册适配器，开始逐家采集导出…(knownTlds=${knownTlds.size})`)
+  const only = (process.env.ONLY_SLUGS ?? "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean)
+  const filtered = only.length > 0 ? all.filter((a) => only.includes((a.slug ?? a.definition.slug).toLowerCase())) : all
+  console.log(`共 ${filtered.length} 家已注册适配器，开始逐家采集导出…(knownTlds=${knownTlds.size})`)
 
   const out: Record<string, OutRegistrar> = {}
   const collectedAt = new Date().toISOString()
 
-  for (const a of all) {
+  for (const a of filtered) {
     const slug = a.slug ?? a.definition.slug
     const ctx = {
       registrarId: 0,
