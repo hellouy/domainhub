@@ -72,7 +72,7 @@ const HOSTS: Record<string, string> = {
   value_domain: "https://www.value-domain.com/domain_price/",
   muumuu_domain: "https://muumuu-domain.com/",
   onamae: "https://www.onamae.com/domain/charge/",
-  infomaniak: "https://www.infomaniak.com/en/domains",
+  
   hostinger: "https://www.hostinger.com/domain-names/",
   ovhcloud: "https://www.ovhcloud.com/en/domains/",
   gandi: "https://www.gandi.net/en/domain",
@@ -137,12 +137,24 @@ async function main() {
         const tld = (raw.tld ?? "").trim().toLowerCase().replace(/^\./, "")
         if (!tld || seen.has(tld)) continue
         seen.add(tld)
+        let registerPrice = parsePriceString(raw.registerPrice)
+        const renewPrice = parsePriceString(raw.renewPrice)
+        const transferPrice = parsePriceString(raw.transferPrice)
+        /** 散射保护：取消价远低于续费价（<1/50）视为脏数据，置 null 兜底（如 onamae .com reg=¥2） */
+        if (
+          registerPrice != null &&
+          renewPrice != null &&
+          renewPrice > 0 &&
+          registerPrice < renewPrice / 50
+        ) {
+          registerPrice = null
+        }
         prices.push({
           tld,
           currency: (raw.currency ?? currency).toUpperCase(),
-          registerPrice: parsePriceString(raw.registerPrice),
-          renewPrice: parsePriceString(raw.renewPrice),
-          transferPrice: parsePriceString(raw.transferPrice),
+          registerPrice,
+          renewPrice,
+          transferPrice,
         })
       }
       if (prices.length === 0) continue

@@ -65,16 +65,6 @@ export const metanameAdapter = createTableAdapter({
   columnOrder: ["register", "renew", "transfer"],
 })
 
-export const infomaniakAdapter = createTableAdapter({
-  slug: "infomaniak",
-  name: "Infomaniak",
-  website: "https://www.infomaniak.com",
-  currency: "CHF",
-  urls: ["https://www.infomaniak.com/en/domains/prices"],
-  columnOrder: ["register", "renew", "transfer"],
-  browser: { waitFor: "table", waitForTimeoutMs: 30_000 },
-})
-
 export const loopiaAdapter = createTableAdapter({
   slug: "loopia",
   name: "Loopia",

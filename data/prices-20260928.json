@@ -1,12 +1,12 @@
 {
-  "collectedAt": "2026-09-28T00:48:51.077Z",
+  "collectedAt": "2026-09-28T08:23:36.746Z",
   "registrars": {
     "cloudflare": {
       "name": "Cloudflare",
       "website": "https://www.cloudflare.com/products/registrar/",
       "currency": "USD",
       "strategy": "json",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "academy",
@@ -3025,7 +3025,7 @@
       "website": "https://porkbun.com/products/domains",
       "currency": "USD",
       "strategy": "api",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "1",
@@ -9397,7 +9397,7 @@
       "website": "https://www.dynadot.com/domain/tlds",
       "currency": "USD",
       "strategy": "xhr",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "com",
@@ -14505,51 +14505,51 @@
         {
           "tld": "ke",
           "currency": "USD",
-          "registerPrice": 40.23,
-          "renewPrice": 40.23,
-          "transferPrice": 40.23
+          "registerPrice": 40.21,
+          "renewPrice": 40.21,
+          "transferPrice": 40.21
         },
         {
           "tld": "co.ke",
           "currency": "USD",
-          "registerPrice": 14.54,
-          "renewPrice": 14.54,
-          "transferPrice": 14.54
+          "registerPrice": 14.53,
+          "renewPrice": 14.53,
+          "transferPrice": 14.53
         },
         {
           "tld": "me.ke",
           "currency": "USD",
-          "registerPrice": 14.54,
-          "renewPrice": 14.54,
-          "transferPrice": 14.54
+          "registerPrice": 14.53,
+          "renewPrice": 14.53,
+          "transferPrice": 14.53
         },
         {
           "tld": "ne.ke",
           "currency": "USD",
-          "registerPrice": 14.54,
-          "renewPrice": 14.54,
-          "transferPrice": 14.54
+          "registerPrice": 14.53,
+          "renewPrice": 14.53,
+          "transferPrice": 14.53
         },
         {
           "tld": "or.ke",
           "currency": "USD",
-          "registerPrice": 14.54,
-          "renewPrice": 14.54,
-          "transferPrice": 14.54
+          "registerPrice": 14.53,
+          "renewPrice": 14.53,
+          "transferPrice": 14.53
         },
         {
           "tld": "info.ke",
           "currency": "USD",
-          "registerPrice": 14.54,
-          "renewPrice": 14.54,
-          "transferPrice": 14.54
+          "registerPrice": 14.53,
+          "renewPrice": 14.53,
+          "transferPrice": 14.53
         },
         {
           "tld": "mobi.ke",
           "currency": "USD",
-          "registerPrice": 14.54,
-          "renewPrice": 14.54,
-          "transferPrice": 14.54
+          "registerPrice": 14.53,
+          "renewPrice": 14.53,
+          "transferPrice": 14.53
         },
         {
           "tld": "fr",
@@ -14596,8 +14596,8 @@
         {
           "tld": "cz",
           "currency": "USD",
-          "registerPrice": 8.98,
-          "renewPrice": 8.98,
+          "registerPrice": 8.96,
+          "renewPrice": 8.96,
           "transferPrice": 0.32
         },
         {
@@ -15139,7 +15139,7 @@
       "website": "https://www.ovhcloud.com/en/domains/",
       "currency": "EUR",
       "strategy": "api",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "family",
@@ -15676,7 +15676,7 @@
         {
           "tld": "asso.fr",
           "currency": "EUR",
-          "registerPrice": 0,
+          "registerPrice": null,
           "renewPrice": 6.99,
           "transferPrice": 149
         },
@@ -21798,7 +21798,7 @@
       "website": "https://www.gandi.net/en/domain",
       "currency": "USD",
       "strategy": "html",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "abogado",
@@ -22101,7 +22101,7 @@
       "website": "https://www.name.com/domains",
       "currency": "USD",
       "strategy": "playwright",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "io",
@@ -22148,7 +22148,7 @@
         {
           "tld": "abogado",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 53.99,
           "transferPrice": 53.99
         },
@@ -22190,14 +22190,14 @@
         {
           "tld": "adult",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 179.99,
           "transferPrice": 179.99
         },
         {
           "tld": "ag",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 89,
           "transferPrice": 141.99
         },
@@ -22211,21 +22211,21 @@
         {
           "tld": "ai",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 99.99,
           "transferPrice": 99.99
         },
         {
           "tld": "airforce",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 149.99,
           "transferPrice": 149.99
         },
         {
           "tld": "am",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 99,
           "transferPrice": 99
         },
@@ -22288,7 +22288,7 @@
         {
           "tld": "attorney",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 69.99,
           "transferPrice": 81.99
         },
@@ -22302,14 +22302,14 @@
         {
           "tld": "audio",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 299.99,
           "transferPrice": 299.99
         },
         {
           "tld": "auto",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 2999.99,
           "transferPrice": 3799.99
         },
@@ -22386,7 +22386,7 @@
         {
           "tld": "berlin",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 75.99,
           "transferPrice": 56.99
         },
@@ -22449,7 +22449,7 @@
         {
           "tld": "blackfriday",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 299.99,
           "transferPrice": 299.99
         },
@@ -22498,7 +22498,7 @@
         {
           "tld": "bot",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 99.99,
           "transferPrice": 99.99
         },
@@ -22526,7 +22526,7 @@
         {
           "tld": "build",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 69.99,
           "transferPrice": 69.99
         },
@@ -22610,7 +22610,7 @@
         {
           "tld": "car",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 2999.99,
           "transferPrice": 3799.99
         },
@@ -22638,7 +22638,7 @@
         {
           "tld": "cars",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 2999.99,
           "transferPrice": 3799.99
         },
@@ -22764,7 +22764,7 @@
         {
           "tld": "cl",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 64.99,
           "transferPrice": 64.99
         },
@@ -22778,7 +22778,7 @@
         {
           "tld": "cleaning",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 80.99,
           "transferPrice": 103.99
         },
@@ -22820,7 +22820,7 @@
         {
           "tld": "cm",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 149,
           "transferPrice": 149
         },
@@ -22855,7 +22855,7 @@
         {
           "tld": "co.il",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 64.99,
           "transferPrice": 64.99
         },
@@ -22974,7 +22974,7 @@
         {
           "tld": "condos",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 71.99,
           "transferPrice": 75.99
         },
@@ -23023,7 +23023,7 @@
         {
           "tld": "country",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 2499.99,
           "transferPrice": 3799.99
         },
@@ -23072,7 +23072,7 @@
         {
           "tld": "cx",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 79.99,
           "transferPrice": 79.99
         },
@@ -23135,14 +23135,14 @@
         {
           "tld": "deal",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 59.99,
           "transferPrice": 59.99
         },
         {
           "tld": "dealer",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 350,
           "transferPrice": 3799.99
         },
@@ -23177,21 +23177,21 @@
         {
           "tld": "dental",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 88.99,
           "transferPrice": 94.99
         },
         {
           "tld": "dentist",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 76.99,
           "transferPrice": 94.99
         },
         {
           "tld": "desi",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 180,
           "transferPrice": null
         },
@@ -23212,14 +23212,14 @@
         {
           "tld": "diamonds",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 75.99,
           "transferPrice": 75.99
         },
         {
           "tld": "diet",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 299.99,
           "transferPrice": 299.99
         },
@@ -23303,14 +23303,14 @@
         {
           "tld": "ec",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 69.99,
           "transferPrice": 69.99
         },
         {
           "tld": "eco",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 75,
           "transferPrice": 113.99
         },
@@ -23401,7 +23401,7 @@
         {
           "tld": "eus",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 99.99,
           "transferPrice": 99.99
         },
@@ -23506,7 +23506,7 @@
         {
           "tld": "film",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 89.99,
           "transferPrice": 113.99
         },
@@ -23562,7 +23562,7 @@
         {
           "tld": "flights",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 60,
           "transferPrice": 75.99
         },
@@ -23576,14 +23576,14 @@
         {
           "tld": "flowers",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 299.99,
           "transferPrice": 299.99
         },
         {
           "tld": "fm",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 99,
           "transferPrice": 160.99
         },
@@ -23646,7 +23646,7 @@
         {
           "tld": "free",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 59.99,
           "transferPrice": 59.99
         },
@@ -23695,7 +23695,7 @@
         {
           "tld": "game",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 350,
           "transferPrice": 619.99
         },
@@ -23716,7 +23716,7 @@
         {
           "tld": "gay",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 53.99,
           "transferPrice": 53.99
         },
@@ -23737,7 +23737,7 @@
         {
           "tld": "gg",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 129.99,
           "transferPrice": 129.99
         },
@@ -23772,14 +23772,14 @@
         {
           "tld": "glass",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 77.99,
           "transferPrice": 83.99
         },
         {
           "tld": "global",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 59.99,
           "transferPrice": 121.99
         },
@@ -23849,7 +23849,7 @@
         {
           "tld": "gs",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 55,
           "transferPrice": 55
         },
@@ -23863,7 +23863,7 @@
         {
           "tld": "guitars",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 299.99,
           "transferPrice": 299.99
         },
@@ -23891,7 +23891,7 @@
         {
           "tld": "hamburg",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 59.99,
           "transferPrice": 59.99
         },
@@ -23912,7 +23912,7 @@
         {
           "tld": "healthcare",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 91.99,
           "transferPrice": 113.99
         },
@@ -23933,14 +23933,14 @@
         {
           "tld": "hiv",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 184.99,
           "transferPrice": 184.99
         },
         {
           "tld": "hn",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 138,
           "transferPrice": 138
         },
@@ -23954,7 +23954,7 @@
         {
           "tld": "holdings",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 80.99,
           "transferPrice": 84.99
         },
@@ -23982,28 +23982,28 @@
         {
           "tld": "hospital",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 77.99,
           "transferPrice": 83.99
         },
         {
           "tld": "host",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 134.99,
           "transferPrice": 134.99
         },
         {
           "tld": "hosting",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 599.99,
           "transferPrice": 599.99
         },
         {
           "tld": "hot",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 79.99,
           "transferPrice": 79.99
         },
@@ -24059,7 +24059,7 @@
         {
           "tld": "inc",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 350,
           "transferPrice": 3799.99
         },
@@ -24136,7 +24136,7 @@
         {
           "tld": "je",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 129.99,
           "transferPrice": 129.99
         },
@@ -24157,14 +24157,14 @@
         {
           "tld": "jobs",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 159,
           "transferPrice": 179.99
         },
         {
           "tld": "jp",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 55.99,
           "transferPrice": 55.99
         },
@@ -24178,7 +24178,7 @@
         {
           "tld": "juegos",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 599.99,
           "transferPrice": 599.99
         },
@@ -24248,14 +24248,14 @@
         {
           "tld": "law",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 119.99,
           "transferPrice": 151.99
         },
         {
           "tld": "lawyer",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 69.99,
           "transferPrice": 81.99
         },
@@ -24360,7 +24360,7 @@
         {
           "tld": "locker",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 59.99,
           "transferPrice": 59.99
         },
@@ -24374,14 +24374,14 @@
         {
           "tld": "london",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 59.99,
           "transferPrice": 59.99
         },
         {
           "tld": "lotto",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 1599,
           "transferPrice": 1599
         },
@@ -24444,7 +24444,7 @@
         {
           "tld": "market",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 64.99,
           "transferPrice": 64.99
         },
@@ -24486,7 +24486,7 @@
         {
           "tld": "med",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 139.99,
           "transferPrice": 279.99
         },
@@ -24500,7 +24500,7 @@
         {
           "tld": "melbourne",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 84.99,
           "transferPrice": 84.99
         },
@@ -24514,7 +24514,7 @@
         {
           "tld": "memorial",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 64.99,
           "transferPrice": 65.99
         },
@@ -24542,7 +24542,7 @@
         {
           "tld": "mn",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 69.99,
           "transferPrice": 69.99
         },
@@ -24626,21 +24626,21 @@
         {
           "tld": "movie",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 69.99,
           "transferPrice": 436.99
         },
         {
           "tld": "mu",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 99.99,
           "transferPrice": 99.99
         },
         {
           "tld": "music",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 74.99,
           "transferPrice": 74.99
         },
@@ -24710,7 +24710,7 @@
         {
           "tld": "new",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 549.99,
           "transferPrice": 549.99
         },
@@ -24759,7 +24759,7 @@
         {
           "tld": "now",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 59.99,
           "transferPrice": 59.99
         },
@@ -24878,7 +24878,7 @@
         {
           "tld": "paris",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 65.99,
           "transferPrice": 65.99
         },
@@ -24941,7 +24941,7 @@
         {
           "tld": "physio",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 99.99,
           "transferPrice": 99.99
         },
@@ -25018,14 +25018,14 @@
         {
           "tld": "porn",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 179.99,
           "transferPrice": 179.99
         },
         {
           "tld": "press",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 114.99,
           "transferPrice": 114.99
         },
@@ -25067,21 +25067,21 @@
         {
           "tld": "property",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 179.99,
           "transferPrice": 299.99
         },
         {
           "tld": "protection",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 2999.99,
           "transferPrice": 3799.99
         },
         {
           "tld": "pt",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 59.99,
           "transferPrice": 59.99
         },
@@ -25151,7 +25151,7 @@
         {
           "tld": "realty",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 179.99,
           "transferPrice": 349.99
         },
@@ -25179,7 +25179,7 @@
         {
           "tld": "reise",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 99.99,
           "transferPrice": 122.99
         },
@@ -25256,7 +25256,7 @@
         {
           "tld": "rich",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 149.99,
           "transferPrice": 299.99
         },
@@ -25270,7 +25270,7 @@
         {
           "tld": "ro",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 110.99,
           "transferPrice": 110.99
         },
@@ -25305,7 +25305,7 @@
         {
           "tld": "ru.com",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 199.99,
           "transferPrice": 199.99
         },
@@ -25326,7 +25326,7 @@
         {
           "tld": "sa.com",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 399.99,
           "transferPrice": 399.99
         },
@@ -25361,7 +25361,7 @@
         {
           "tld": "sc",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 170,
           "transferPrice": 170
         },
@@ -25389,7 +25389,7 @@
         {
           "tld": "scot",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 54.99,
           "transferPrice": 54.99
         },
@@ -25410,7 +25410,7 @@
         {
           "tld": "security",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 2999.99,
           "transferPrice": 3799.99
         },
@@ -25424,21 +25424,21 @@
         {
           "tld": "sex",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 179.99,
           "transferPrice": 179.99
         },
         {
           "tld": "sexy",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 2999,
           "transferPrice": 2999
         },
         {
           "tld": "sh",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 60,
           "transferPrice": 99
         },
@@ -25515,7 +25515,7 @@
         {
           "tld": "so",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 85.99,
           "transferPrice": 250
         },
@@ -25585,7 +25585,7 @@
         {
           "tld": "storage",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 799,
           "transferPrice": 949.99
         },
@@ -25655,14 +25655,14 @@
         {
           "tld": "surgery",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 67.49,
           "transferPrice": 71.99
         },
         {
           "tld": "sydney",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 84.99,
           "transferPrice": 84.99
         },
@@ -25676,7 +25676,7 @@
         {
           "tld": "talk",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 59.99,
           "transferPrice": 59.99
         },
@@ -25732,7 +25732,7 @@
         {
           "tld": "tennis",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 80.99,
           "transferPrice": 86.99
         },
@@ -25753,14 +25753,14 @@
         {
           "tld": "theatre",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 750,
           "transferPrice": 949.99
         },
         {
           "tld": "tickets",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 669.99,
           "transferPrice": 669.99
         },
@@ -25788,14 +25788,14 @@
         {
           "tld": "tl",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 79.99,
           "transferPrice": 79.99
         },
         {
           "tld": "to",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 99.99,
           "transferPrice": 99.99
         },
@@ -25956,7 +25956,7 @@
         {
           "tld": "vana",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 3999.99,
           "transferPrice": 3999.99
         },
@@ -25984,14 +25984,14 @@
         {
           "tld": "vet",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 50.99,
           "transferPrice": 54.99
         },
         {
           "tld": "viajes",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 63.99,
           "transferPrice": 65.99
         },
@@ -26047,7 +26047,7 @@
         {
           "tld": "voting",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 1599.99,
           "transferPrice": 1599.99
         },
@@ -26075,7 +26075,7 @@
         {
           "tld": "watches",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 99.99,
           "transferPrice": 474.99
         },
@@ -26166,7 +26166,7 @@
         {
           "tld": "xxx",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 179.99,
           "transferPrice": 179.99
         },
@@ -26215,7 +26215,7 @@
         {
           "tld": "za.com",
           "currency": "USD",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 399.99,
           "transferPrice": 399.99
         },
@@ -26240,7 +26240,7 @@
       "website": "https://www.namesilo.com/",
       "currency": "USD",
       "strategy": "playwright",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "com",
@@ -29546,180 +29546,180 @@
       "website": "https://www.onamae.com/domain/charge/",
       "currency": "JPY",
       "strategy": "playwright",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "com",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 1287,
           "transferPrice": 1012
         },
         {
           "tld": "net",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 1507,
           "transferPrice": 1012
         },
         {
           "tld": "jp",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 3091,
           "transferPrice": 3124
         },
         {
           "tld": "blog",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 3058,
           "transferPrice": null
         },
         {
           "tld": "email",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 3245,
           "transferPrice": 3245
         },
         {
           "tld": "life",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 4345,
           "transferPrice": 4345
         },
         {
           "tld": "link",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 1628,
           "transferPrice": 1628
         },
         {
           "tld": "me",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 2728,
           "transferPrice": 2728
         },
         {
           "tld": "monster",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 2453,
           "transferPrice": 2453
         },
         {
           "tld": "online",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 5040,
           "transferPrice": null
         },
         {
           "tld": "org",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 1507,
           "transferPrice": 1012
         },
         {
           "tld": "pro",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 3723,
           "transferPrice": 3723
         },
         {
           "tld": "rocks",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 4235,
           "transferPrice": 4235
         },
         {
           "tld": "shop",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 6688,
           "transferPrice": 6688
         },
         {
           "tld": "site",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 4268,
           "transferPrice": 4378
         },
         {
           "tld": "space",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 3168,
           "transferPrice": 3278
         },
         {
           "tld": "support",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 5236,
           "transferPrice": 5236
         },
         {
           "tld": "tokyo",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 2560,
           "transferPrice": 2560
         },
         {
           "tld": "website",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 3278,
           "transferPrice": 3278
         },
         {
           "tld": "works",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 4345,
           "transferPrice": 4345
         },
         {
           "tld": "xyz",
           "currency": "JPY",
-          "registerPrice": 2,
+          "registerPrice": null,
           "renewPrice": 2013,
           "transferPrice": 2013
         },
         {
           "tld": "click",
           "currency": "JPY",
-          "registerPrice": 12,
+          "registerPrice": null,
           "renewPrice": 2002,
           "transferPrice": null
         },
         {
           "tld": "help",
           "currency": "JPY",
-          "registerPrice": 12,
+          "registerPrice": null,
           "renewPrice": 4048,
           "transferPrice": null
         },
         {
           "tld": "bond",
           "currency": "JPY",
-          "registerPrice": 90,
+          "registerPrice": null,
           "renewPrice": 10780,
           "transferPrice": 32780
         },
         {
           "tld": "cfd",
           "currency": "JPY",
-          "registerPrice": 90,
+          "registerPrice": null,
           "renewPrice": 5478,
           "transferPrice": 5478
         },
@@ -29782,7 +29782,7 @@
         {
           "tld": "baby",
           "currency": "JPY",
-          "registerPrice": 190,
+          "registerPrice": null,
           "renewPrice": 9768,
           "transferPrice": 9878
         },
@@ -30293,14 +30293,14 @@
         {
           "tld": "business",
           "currency": "JPY",
-          "registerPrice": 1.1,
+          "registerPrice": null,
           "renewPrice": 7491,
           "transferPrice": 7491
         },
         {
           "tld": "black",
           "currency": "JPY",
-          "registerPrice": 1.18,
+          "registerPrice": null,
           "renewPrice": 5478,
           "transferPrice": 5478
         },
@@ -32651,161 +32651,12 @@
         }
       ]
     },
-    "infomaniak": {
-      "name": "Infomaniak",
-      "website": "https://www.infomaniak.com/en/domains",
-      "currency": "CHF",
-      "strategy": "playwright",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
-      "prices": [
-        {
-          "tld": "com",
-          "currency": "CHF",
-          "registerPrice": 3313.61,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "dev",
-          "currency": "CHF",
-          "registerPrice": 1715.5,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "biz",
-          "currency": "CHF",
-          "registerPrice": 17.65,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "online",
-          "currency": "CHF",
-          "registerPrice": 8927.6,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "info",
-          "currency": "CHF",
-          "registerPrice": 1520.43,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "net",
-          "currency": "CHF",
-          "registerPrice": 2113.4,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "site",
-          "currency": "CHF",
-          "registerPrice": 9027.6,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "shop",
-          "currency": "CHF",
-          "registerPrice": 8734.55,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "me",
-          "currency": "CHF",
-          "registerPrice": 1816.25,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "art",
-          "currency": "CHF",
-          "registerPrice": 8421.9,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "org",
-          "currency": "CHF",
-          "registerPrice": 3114.26,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "store",
-          "currency": "CHF",
-          "registerPrice": 9342.1,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "fun",
-          "currency": "CHF",
-          "registerPrice": 9130.1,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "eco",
-          "currency": "CHF",
-          "registerPrice": 54.78,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "io",
-          "currency": "CHF",
-          "registerPrice": 649.25,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "contact",
-          "currency": "CHF",
-          "registerPrice": 179.91,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "cloud",
-          "currency": "CHF",
-          "registerPrice": 8022.28,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "tech",
-          "currency": "CHF",
-          "registerPrice": 9349.1,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "xyz",
-          "currency": "CHF",
-          "registerPrice": 511.65,
-          "renewPrice": null,
-          "transferPrice": null
-        },
-        {
-          "tld": "top",
-          "currency": "CHF",
-          "registerPrice": 5.65,
-          "renewPrice": null,
-          "transferPrice": null
-        }
-      ]
-    },
     "hostpoint": {
       "name": "Hostpoint",
       "website": "https://www.hostpoint.ch/en/domains/domain-prices",
       "currency": "CHF",
       "strategy": "xhr",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "at",
@@ -40969,7 +40820,7 @@
       "website": "https://www.xserver.ne.jp/domain_price.php",
       "currency": "JPY",
       "strategy": "html",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "com",
@@ -42903,7 +42754,7 @@
       "website": "https://www.value-domain.com/domain/price/",
       "currency": "JPY",
       "strategy": "html",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "com",
@@ -42971,7 +42822,7 @@
         {
           "tld": "site",
           "currency": "JPY",
-          "registerPrice": 100,
+          "registerPrice": null,
           "renewPrice": 5641,
           "transferPrice": null
         },
@@ -42985,7 +42836,7 @@
         {
           "tld": "bond",
           "currency": "JPY",
-          "registerPrice": 160,
+          "registerPrice": null,
           "renewPrice": 13421,
           "transferPrice": null
         },
@@ -46174,7 +46025,7 @@
       "website": "https://muumuu-domain.com/domain/price/",
       "currency": "JPY",
       "strategy": "html",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "com",
@@ -48258,7 +48109,7 @@
         {
           "tld": "site",
           "currency": "JPY",
-          "registerPrice": 99,
+          "registerPrice": null,
           "renewPrice": 5280,
           "transferPrice": 5280
         },
@@ -48377,7 +48228,7 @@
         {
           "tld": "online",
           "currency": "JPY",
-          "registerPrice": 53,
+          "registerPrice": null,
           "renewPrice": 5962,
           "transferPrice": 5962
         },
@@ -49109,7 +48960,7 @@
       "website": "https://www.hostinger.com/domain-names/",
       "currency": "USD",
       "strategy": "xhr",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "com",
@@ -52275,7 +52126,7 @@
       "website": "https://www.cloudns.net/domain-pricing/",
       "currency": "EUR",
       "strategy": "playwright",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "com",
@@ -60845,7 +60696,7 @@
       "website": "https://www.22.cn/",
       "currency": "CNY",
       "strategy": "html",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "com",
@@ -61547,7 +61398,7 @@
       "website": "https://www.west.cn/",
       "currency": "CNY",
       "strategy": "playwright",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "com",
@@ -62382,7 +62233,7 @@
       "website": "https://www.openprovider.com/pricing/",
       "currency": "USD",
       "strategy": "api",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "5g.in",
@@ -76874,7 +76725,7 @@
       "website": "https://krystal.uk/domains",
       "currency": "GBP",
       "strategy": "playwright",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "ac.uk",
@@ -77023,7 +76874,7 @@
       "website": "https://www.directnic.com/",
       "currency": "USD",
       "strategy": "html",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "info",
@@ -80777,7 +80628,7 @@
       "website": "https://www.dreamhost.com/domains/",
       "currency": "USD",
       "strategy": "html",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "guru",
@@ -83019,7 +82870,7 @@
       "website": "https://www.forpsi.com/domains/",
       "currency": "CZK",
       "strategy": "html",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "blue",
@@ -84368,7 +84219,7 @@
         {
           "tld": "la",
           "currency": "CZK",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 1100,
           "transferPrice": null
         },
@@ -84522,21 +84373,21 @@
         {
           "tld": "info.pl",
           "currency": "CZK",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 99,
           "transferPrice": null
         },
         {
           "tld": "net.pl",
           "currency": "CZK",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 99,
           "transferPrice": null
         },
         {
           "tld": "com.pl",
           "currency": "CZK",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 99,
           "transferPrice": null
         },
@@ -84564,21 +84415,21 @@
         {
           "tld": "akce",
           "currency": "CZK",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 170,
           "transferPrice": null
         },
         {
           "tld": "net",
           "currency": "CZK",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 330,
           "transferPrice": null
         },
         {
           "tld": "shop",
           "currency": "CZK",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 119,
           "transferPrice": null
         },
@@ -84592,7 +84443,7 @@
         {
           "tld": "io",
           "currency": "CZK",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 699,
           "transferPrice": null
         },
@@ -84606,7 +84457,7 @@
         {
           "tld": "pl",
           "currency": "CZK",
-          "registerPrice": 1,
+          "registerPrice": null,
           "renewPrice": 99,
           "transferPrice": null
         },
@@ -84631,7 +84482,7 @@
       "website": "https://www.juming.com/",
       "currency": "CNY",
       "strategy": "playwright",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "net",
@@ -85473,7 +85324,7 @@
       "website": "https://www.blacknight.com/domain-names/",
       "currency": "EUR",
       "strategy": "html",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "extension",
@@ -86581,7 +86432,7 @@
       "website": "https://www.exabytes.my/domains/domain-name-search",
       "currency": "MYR",
       "strategy": "playwright",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "com",
@@ -87024,45 +86875,24 @@
       "website": "https://www.networksolutions.com/domains/domain-name-pricing",
       "currency": "USD",
       "strategy": "playwright",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
-          "tld": "army",
+          "tld": "ac",
+          "currency": "USD",
+          "registerPrice": 79.99,
+          "renewPrice": 86.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "academy",
           "currency": "USD",
           "registerPrice": 39.99,
           "renewPrice": 44.99,
           "transferPrice": 1
         },
         {
-          "tld": "actor",
-          "currency": "USD",
-          "registerPrice": 49.99,
-          "renewPrice": 54.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "aero",
-          "currency": "USD",
-          "registerPrice": 99,
-          "renewPrice": 103.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "adult",
-          "currency": "USD",
-          "registerPrice": 123.99,
-          "renewPrice": 132.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "architect",
-          "currency": "USD",
-          "registerPrice": 52.99,
-          "renewPrice": 52.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "associates",
+          "tld": "accountant",
           "currency": "USD",
           "registerPrice": 39.99,
           "renewPrice": 44.99,
@@ -87076,10 +86906,101 @@
           "transferPrice": 1
         },
         {
-          "tld": "attorney",
+          "tld": "actor",
           "currency": "USD",
           "registerPrice": 49.99,
           "renewPrice": 54.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "adult",
+          "currency": "USD",
+          "registerPrice": 123.99,
+          "renewPrice": 132.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "ae",
+          "currency": "USD",
+          "registerPrice": 70.99,
+          "renewPrice": 74.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "aero",
+          "currency": "USD",
+          "registerPrice": 99,
+          "renewPrice": 103.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "ag",
+          "currency": "USD",
+          "registerPrice": 99.99,
+          "renewPrice": 107.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "agency",
+          "currency": "USD",
+          "registerPrice": 3.99,
+          "renewPrice": 30.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "ah.cn",
+          "currency": "USD",
+          "registerPrice": 39.99,
+          "renewPrice": 44.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "ai",
+          "currency": "USD",
+          "registerPrice": 159.98,
+          "renewPrice": 299.98,
+          "transferPrice": 2
+        },
+        {
+          "tld": "airforce",
+          "currency": "USD",
+          "registerPrice": 39.99,
+          "renewPrice": 91.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "am",
+          "currency": "USD",
+          "registerPrice": 74.99,
+          "renewPrice": 80.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "amsterdam",
+          "currency": "USD",
+          "registerPrice": 65.05,
+          "renewPrice": 71.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "apartments",
+          "currency": "USD",
+          "registerPrice": 65.99,
+          "renewPrice": 71.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "app",
+          "currency": "USD",
+          "registerPrice": 19.99,
+          "renewPrice": 19.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "ar.com",
+          "currency": "USD",
+          "registerPrice": 29.99,
+          "renewPrice": 42.99,
           "transferPrice": 1
         },
         {
@@ -87090,14 +87011,70 @@
           "transferPrice": 1
         },
         {
-          "tld": "ac",
+          "tld": "architect",
           "currency": "USD",
-          "registerPrice": 79.99,
-          "renewPrice": 86.99,
+          "registerPrice": 52.99,
+          "renewPrice": 52.99,
           "transferPrice": 1
         },
         {
-          "tld": "ah.cn",
+          "tld": "army",
+          "currency": "USD",
+          "registerPrice": 39.99,
+          "renewPrice": 44.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "art",
+          "currency": "USD",
+          "registerPrice": 39.99,
+          "renewPrice": 39.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "as",
+          "currency": "USD",
+          "registerPrice": 115,
+          "renewPrice": 154.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "asia",
+          "currency": "USD",
+          "registerPrice": 34.99,
+          "renewPrice": 42.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "associates",
+          "currency": "USD",
+          "registerPrice": 39.99,
+          "renewPrice": 44.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "at",
+          "currency": "USD",
+          "registerPrice": 69.99,
+          "renewPrice": 36.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "attorney",
+          "currency": "USD",
+          "registerPrice": 49.99,
+          "renewPrice": 54.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "au",
+          "currency": "USD",
+          "registerPrice": 9.99,
+          "renewPrice": 20.99,
+          "transferPrice": 1
+        },
+        {
+          "tld": "auction",
           "currency": "USD",
           "registerPrice": 39.99,
           "renewPrice": 44.99,
@@ -87111,104 +87088,6 @@
           "transferPrice": 1
         },
         {
-          "tld": "asia",
-          "currency": "USD",
-          "registerPrice": 34.99,
-          "renewPrice": 42.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "auction",
-          "currency": "USD",
-          "registerPrice": 39.99,
-          "renewPrice": 44.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "airforce",
-          "currency": "USD",
-          "registerPrice": 39.99,
-          "renewPrice": 91.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "ai",
-          "currency": "USD",
-          "registerPrice": 159.98,
-          "renewPrice": 299.98,
-          "transferPrice": 2
-        },
-        {
-          "tld": "academy",
-          "currency": "USD",
-          "registerPrice": 39.99,
-          "renewPrice": 44.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "ag",
-          "currency": "USD",
-          "registerPrice": 99.99,
-          "renewPrice": 107.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "autos",
-          "currency": "USD",
-          "registerPrice": 999.99,
-          "renewPrice": 1052.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "ae",
-          "currency": "USD",
-          "registerPrice": 70.99,
-          "renewPrice": 74.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "as",
-          "currency": "USD",
-          "registerPrice": 115,
-          "renewPrice": 154.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "amsterdam",
-          "currency": "USD",
-          "registerPrice": 65.05,
-          "renewPrice": 71.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "am",
-          "currency": "USD",
-          "registerPrice": 74.99,
-          "renewPrice": 80.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "apartments",
-          "currency": "USD",
-          "registerPrice": 65.99,
-          "renewPrice": 71.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "ar.com",
-          "currency": "USD",
-          "registerPrice": 29.99,
-          "renewPrice": 42.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "au",
-          "currency": "USD",
-          "registerPrice": 9.99,
-          "renewPrice": 20.99,
-          "transferPrice": 1
-        },
-        {
           "tld": "auto",
           "currency": "USD",
           "registerPrice": 2799.99,
@@ -87216,38 +87095,10 @@
           "transferPrice": 1
         },
         {
-          "tld": "at",
+          "tld": "autos",
           "currency": "USD",
-          "registerPrice": 69.99,
-          "renewPrice": 36.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "art",
-          "currency": "USD",
-          "registerPrice": 39.99,
-          "renewPrice": 39.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "accountant",
-          "currency": "USD",
-          "registerPrice": 39.99,
-          "renewPrice": 44.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "app",
-          "currency": "USD",
-          "registerPrice": 19.99,
-          "renewPrice": 19.99,
-          "transferPrice": 1
-        },
-        {
-          "tld": "agency",
-          "currency": "USD",
-          "registerPrice": 3.99,
-          "renewPrice": 30.99,
+          "registerPrice": 999.99,
+          "renewPrice": 1052.99,
           "transferPrice": 1
         }
       ]
@@ -87257,7 +87108,7 @@
       "website": "https://truehost.co.ke/domains/",
       "currency": "USD",
       "strategy": "html",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "com",
@@ -91305,7 +91156,7 @@
       "website": "https://www.hosting.kr/domain",
       "currency": "KRW",
       "strategy": "playwright",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "io",
@@ -91398,7 +91249,7 @@
       "website": "https://www.inwx.com/en/domains",
       "currency": "USD",
       "strategy": "api",
-      "collectedAt": "2026-09-28T00:48:51.077Z",
+      "collectedAt": "2026-09-28T08:23:36.746Z",
       "prices": [
         {
           "tld": "2000.hu",
