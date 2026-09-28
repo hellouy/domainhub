@@ -51,7 +51,7 @@
 | westcn | westcn | 118 | ✅ 已入采 v2.0.0 | 已修：自定义 script 精确定位 El-popover 各列（reg/renew/transfer） | 已采 118（reg/renew/transfer 全对，CNY） |
 | ukrnames | ukrnames | 471 | ✅ 已入采 | createTableAdapter 标准 `<tr>/<td>` 表（UA 本地价格，UAH） | 已采 471（register/renew/transfer/restore，UAH） |
 | idwebhost | idwebhost | 243 | ✅ 已入采 | `<option data-hs-select-option='{...}'>` 内嵌 JSON | 已采 243（register only，IDR） |
-| keliweb | keliweb | 668 | ✅ 已入采 | `<li data-val data-p>` + `<del>` 解析（EUR） | 已采 668（register+renew，EUR，当天需 40s+ 抓取） |
+| keliweb | keliweb | 668 | ✅ 已入采 | `<li data-val data-p>` 中 data-p=年续费价，`<del>€X</del> €Y`：X=续费、Y=促销注册价；无 del=单值沿用双列。2026-09-28 源验证后修正（.com 12.72/15.90，.it 促销年免 null/12.90） | 已采 668（EUR，直连偶 303 stub，需浏览器重试） |
 | jagoanhosting | jagoanhosting | 194 | ❌ 已否决 | 194 行 TLD 但 151 行解析失败（每 TLD 结构变化） | 结构不稳定，接入价值低 |
 | alibaba-cloud-intl | aliyun | 全量 | 🌀 需逆向 / ❌ 无公开源 | 海外版 www.alibabacloud.com/domain 为登录门控 SPA，load 时零价格 XHR（仅 is_login/log），无游标外公开价表 | 需 Alibaba Cloud 域业务 API/SDK 凭证（intl），或用 api 策略接 CreateOrder/查询域（需鉴权） |
 | ionos/1&1 | ionos | 全量 | 🛡 反爬 | 域名页 301/404 + bot 保护 | 需过 bot（不稳定） |
@@ -71,6 +71,13 @@
 - **OpenProvider API** — 已有
 - 候选新增: **1API/HEXONET**、**ResellerClub API**、**Enom API**、**Netim API**（均需凭据）
 - 候选新增（可能公开 JSON）: **99RDP/Namesilo 竞品**、**Sav.com**、**101domain(已有)**、**BigRock API**、**HostPoint(已有)**
+
+## 2026-09-28 广度扫描复核（数据排查 + 新源探测）
+
+- **keliweb 数据修正**：定位 reg/renew 误标（真值见上表），已按源修正入库并部署。
+- **ovhcloud 全 0 占位清理**：目录 API 中 register/renew/transfer 全为 0 的 TLD（br、gr.com、net.cn、org.cn、hu.net、in.net、jpn.com、mex.com、se.net）并非 €0 促销而是占位，已跳过 + 删 DB 旧行。
+- 广为探测被封锁/低价值、勿重复试探：namecheap.com、domain.com、bigrock.in、crazydomains、hostgator、niagahoster、epik、exabytes(my/api)、one.com、wedos（60s 超时）、registrobr/123-reg/openprovider/active24（SPA 且仅 10+ 行）、sav.com/internetbs（连接超时）、fles större CF/JS 挑战。
+- 仍未打通的主杠杆（阻塞 100+）：ResellerClub/1API/Enom/netim/namecheap/godaddy 批发 API，全部需代理商凭证；平台护栏禁止反爬/逆向。
 
 ## 建议执行序（按解锁条件就绪时）
 
