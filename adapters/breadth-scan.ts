@@ -77,17 +77,35 @@ function num(s: string): number | null {
 async function parseKeliweb(raw: string, _ctx: AdapterContext): Promise<RawPrice[]> {
   const out: RawPrice[] = []
   const seen = new Set<string>()
-  // 每条: <li class="item ..." data-val=".it" data-p="12.90"> ... <del>€ 12.90</del> € 0.00 ...
+  // 每条: <li class="item ..." data-val=".it" data-p="15.90"> <div class="right"><del>€ 15.90</del> € 12.72</div> ...
+  // 语义（已验证 2026-09-28 source）:
+  //   - <del>€ X</del> € Y   => X=原价/年续费价, Y=当前促销价(注册首年/当前实付)
+  //   - € Z（无 del）         => 无促销, 注册=续费=Z
   const re = /<li[^>]*data-val="(\.?[a-z0-9_.-]+)"[^>]*data-p="([0-9.,]+)"[^>]*>[\s\S]*?<\/li>/gi
   let m: RegExpExecArray | null
   while ((m = re.exec(raw)) !== null) {
     const tld = m[1].trim().toLowerCase().replace(/^\./, "")
     if (!tld || seen.has(tld)) continue
-    const registerPrice = num(m[2])
     const block = m[0]
-    // <del>€ Y</del> 为原价/续费基准；取倒数第二个 €
     const dels = [...block.matchAll(/<del[^>]*>([\s\S]*?)<\/del>/gi)].map((x) => num(x[1]))
-    const renewPrice = dels.length > 0 ? dels[dels.length - 1] : null
+    // <del> 存在 => 促销：del=年续费价；非 del 的当前价=注册价
+    // 无 <del> => 单一价，注册=续费
+    let registerPrice: number | null
+    let renewPrice: number | null
+    if (dels.length > 0) {
+      renewPrice = dels[dels.length - 1]
+      // 取 <del> 之后紧邻的当前价（促销实付价）
+      const after = block
+        .split("</del>")
+        .slice(1)
+        .join("</del>")
+      const cur = num((after.match(/€\s*([\d.,]+)/) ?? [])[1] ?? "")
+      registerPrice = cur
+    } else {
+      const annual = num(m[2])
+      registerPrice = annual
+      renewPrice = annual
+    }
     if (registerPrice == null && renewPrice == null) continue
     seen.add(tld)
     out.push({ tld, currency: "EUR", registerPrice, renewPrice, sourceUrl: "https://www.keliweb.it/domini/" })

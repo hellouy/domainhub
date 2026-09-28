@@ -93,3 +93,21 @@ Entries discovered by the Agent during task execution should follow this format:
 - Instructions:
   - webcentral.au 等澳大利亚注册商站点响应 21–60s 波动，worker 的 60s 导航超时频繁 502，浏览器策略采集不稳定，不适合入库
   - SSR 全量价格表站点（xserver.ne.jp、value-domain.com、muumuu-domain.com）最稳定，优先作为适配器候选
+
+[Project Knowledge Summary]
+- Date: 2026-09-28
+- Context: Discovered by Agent while 注册商广度扩展到 32 家
+- Category: Operations & Deployment
+- Instructions:
+  - 批量新增注册商完整链路：export-prices（ONLY_SLUGS 指定集）→ 合并闪断失败源 → generate-seed-data → bulk-load-new.cjs 入库 → tsc+next build → commit+push → Vercel REST 部署 → 验证 /api/v1/statistics
+  - export 单家闪断（xhr:terminated / playwright 302/502 / 提取空行）不代表结构坏：本轮 hostpoint/101domain/krystal 失败，从上一版 `data/prices-20260927.json` 合并携带其数据到新 export 防回归（DB 用 upsert 无 delete，缺失 slug 行不会被清）
+  - 数据准确性排查方法论：核对 `/api/v1/prices?tld=<ccTLD>` 新注册商首行真实值（ukrnames .ua 3528 UAH / idwebhost .id 190000 IDR / keliweb .it 1290 EUR），对照 sourceUrl 原始站点校验；DB 口径见 /api/v1/statistics，最新 32 active / 2998 tlds / 16875 prices（infomaniak 仍 is_active=false）
+  - 生产验证用 www.tldbi.com（Vercel 项目 domainhub，账号 8839029-5124），不用本地 host
+
+[User Instruction Summary]
+- Date: 2026-09-28
+- Context: 用户要求继续扩量到 100+ 家，同时对现有已接入数据做准确性排查，确保无误
+- Instructions:
+  - 扩量优先打通批发/API 价源（一个源覆盖数百 TLD）作为主杠杆；凭证齐全前并行广度扫描各大洲干净 SSR 表格/公开 JSON/simple XHR 注册商，命中标准: 无登录、无 Cloudflare、结构稳定
+  - 数据排查维度：对照 sourceUrl 原始站点三列（register/renew/transfer）逐家抽查；校验 @ 首年促销价 vs 常规价不误标；防 unicode 报价（如规划中的 3371 值）、cheap 列无条件价格、负数/0、列错位；对明显脏数据从适配器注册表移除 + DB is_active=false，不靠 seed 掩盖
+  - 每轮改动（新增适配器/数据修复）都要 tsc+build 通过并部署到 Vercel 生产后再向用户汇报，保留提交日志 traceability

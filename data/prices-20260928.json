@@ -15139,7 +15139,7 @@
       "website": "https://www.ovhcloud.com/en/domains/",
       "currency": "EUR",
       "strategy": "api",
-      "collectedAt": "2026-09-28T14:21:52.131Z",
+      "collectedAt": "2026-09-28T17:42:45.955Z",
       "prices": [
         {
           "tld": "family",
@@ -15742,13 +15742,6 @@
           "registerPrice": 50.59,
           "renewPrice": 52.49,
           "transferPrice": 50.59
-        },
-        {
-          "tld": "mex.com",
-          "currency": "EUR",
-          "registerPrice": 0,
-          "renewPrice": 0,
-          "transferPrice": 0
         },
         {
           "tld": "jobs",
@@ -16493,13 +16486,6 @@
           "transferPrice": 55.39
         },
         {
-          "tld": "br",
-          "currency": "EUR",
-          "registerPrice": 0,
-          "renewPrice": 0,
-          "transferPrice": 0
-        },
-        {
           "tld": "broker",
           "currency": "EUR",
           "registerPrice": 30.89,
@@ -16834,13 +16820,6 @@
           "registerPrice": 9.99,
           "renewPrice": 9.99,
           "transferPrice": 10.29
-        },
-        {
-          "tld": "gr.com",
-          "currency": "EUR",
-          "registerPrice": 0,
-          "renewPrice": 0,
-          "transferPrice": 0
         },
         {
           "tld": "trading",
@@ -17282,20 +17261,6 @@
           "registerPrice": 29.59,
           "renewPrice": 29.89,
           "transferPrice": 29.59
-        },
-        {
-          "tld": "in.net",
-          "currency": "EUR",
-          "registerPrice": 0,
-          "renewPrice": 0,
-          "transferPrice": 0
-        },
-        {
-          "tld": "hu.net",
-          "currency": "EUR",
-          "registerPrice": 0,
-          "renewPrice": 0,
-          "transferPrice": 0
         },
         {
           "tld": "vet",
@@ -18451,13 +18416,6 @@
           "registerPrice": 22.59,
           "renewPrice": 22.99,
           "transferPrice": 22.59
-        },
-        {
-          "tld": "se.net",
-          "currency": "EUR",
-          "registerPrice": 0,
-          "renewPrice": 0,
-          "transferPrice": 0
         },
         {
           "tld": "info",
@@ -20217,13 +20175,6 @@
           "transferPrice": 0
         },
         {
-          "tld": "jpn.com",
-          "currency": "EUR",
-          "registerPrice": 0,
-          "renewPrice": 0,
-          "transferPrice": 0
-        },
-        {
           "tld": "ltda",
           "currency": "EUR",
           "registerPrice": 32.99,
@@ -20959,13 +20910,6 @@
           "transferPrice": 121.69
         },
         {
-          "tld": "net.cn",
-          "currency": "EUR",
-          "registerPrice": 0,
-          "renewPrice": 0,
-          "transferPrice": 0
-        },
-        {
           "tld": "plumbing",
           "currency": "EUR",
           "registerPrice": 55.29,
@@ -21580,13 +21524,6 @@
           "registerPrice": 88.99,
           "renewPrice": 119.99,
           "transferPrice": 137
-        },
-        {
-          "tld": "org.cn",
-          "currency": "EUR",
-          "registerPrice": 0,
-          "renewPrice": 0,
-          "transferPrice": 0
         },
         {
           "tld": "haus",
@@ -103585,19 +103522,19 @@
       "website": "https://www.keliweb.it/domini/",
       "currency": "EUR",
       "strategy": "html",
-      "collectedAt": "2026-09-28T14:21:52.131Z",
+      "collectedAt": "2026-09-28T17:42:45.955Z",
       "prices": [
         {
           "tld": "it",
           "currency": "EUR",
-          "registerPrice": 1290,
+          "registerPrice": null,
           "renewPrice": 1290,
           "transferPrice": null
         },
         {
           "tld": "com",
           "currency": "EUR",
-          "registerPrice": 1590,
+          "registerPrice": 1272,
           "renewPrice": 1590,
           "transferPrice": null
         },
@@ -103605,69 +103542,69 @@
           "tld": "biz",
           "currency": "EUR",
           "registerPrice": 2390,
-          "renewPrice": null,
+          "renewPrice": 2390,
           "transferPrice": null
         },
         {
           "tld": "info",
           "currency": "EUR",
           "registerPrice": 2790,
-          "renewPrice": null,
+          "renewPrice": 2790,
           "transferPrice": null
         },
         {
           "tld": "net",
           "currency": "EUR",
           "registerPrice": 1590,
-          "renewPrice": null,
+          "renewPrice": 1590,
           "transferPrice": null
         },
         {
           "tld": "org",
           "currency": "EUR",
           "registerPrice": 1790,
-          "renewPrice": null,
+          "renewPrice": 1790,
           "transferPrice": null
         },
         {
           "tld": "name",
           "currency": "EUR",
           "registerPrice": 3000,
-          "renewPrice": null,
+          "renewPrice": 3000,
           "transferPrice": null
         },
         {
           "tld": "mobi",
           "currency": "EUR",
           "registerPrice": 7900,
-          "renewPrice": null,
+          "renewPrice": 7900,
           "transferPrice": null
         },
         {
           "tld": "ws",
           "currency": "EUR",
           "registerPrice": 4000,
-          "renewPrice": null,
+          "renewPrice": 4000,
           "transferPrice": null
         },
         {
           "tld": "tel",
           "currency": "EUR",
           "registerPrice": 1490,
-          "renewPrice": null,
+          "renewPrice": 1490,
           "transferPrice": null
         },
         {
           "tld": "tv",
           "currency": "EUR",
           "registerPrice": 8000,
-          "renewPrice": null,
+          "renewPrice": 8000,
           "transferPrice": null
         },
         {
           "tld": "eu",
           "currency": "EUR",
-          "registerPrice": 990,
+          "registerPrice": 792,
           "renewPrice": 990,
           "transferPrice": null
         },
@@ -103675,4017 +103612,4017 @@
           "tld": "us",
           "currency": "EUR",
           "registerPrice": 1900,
-          "renewPrice": null,
+          "renewPrice": 1900,
           "transferPrice": null
         },
         {
           "tld": "de",
           "currency": "EUR",
           "registerPrice": 3900,
-          "renewPrice": null,
+          "renewPrice": 3900,
           "transferPrice": null
         },
         {
           "tld": "tw",
           "currency": "EUR",
           "registerPrice": 5000,
-          "renewPrice": null,
+          "renewPrice": 5000,
           "transferPrice": null
         },
         {
           "tld": "ch",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "co.uk",
           "currency": "EUR",
           "registerPrice": 1900,
-          "renewPrice": null,
+          "renewPrice": 1900,
           "transferPrice": null
         },
         {
           "tld": "es",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "nl",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "fr",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "me",
           "currency": "EUR",
           "registerPrice": 4290,
-          "renewPrice": null,
+          "renewPrice": 4290,
           "transferPrice": null
         },
         {
           "tld": "ro",
           "currency": "EUR",
           "registerPrice": 7500,
-          "renewPrice": null,
+          "renewPrice": 7500,
           "transferPrice": null
         },
         {
           "tld": "at",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "co",
           "currency": "EUR",
           "registerPrice": 4900,
-          "renewPrice": null,
+          "renewPrice": 4900,
           "transferPrice": null
         },
         {
           "tld": "be",
           "currency": "EUR",
           "registerPrice": 1500,
-          "renewPrice": null,
+          "renewPrice": 1500,
           "transferPrice": null
         },
         {
           "tld": "cc",
           "currency": "EUR",
           "registerPrice": 3400,
-          "renewPrice": null,
+          "renewPrice": 3400,
           "transferPrice": null
         },
         {
           "tld": "rm.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "jp",
           "currency": "EUR",
           "registerPrice": 13900,
-          "renewPrice": null,
+          "renewPrice": 13900,
           "transferPrice": null
         },
         {
           "tld": "in",
           "currency": "EUR",
           "registerPrice": 1990,
-          "renewPrice": null,
+          "renewPrice": 1990,
           "transferPrice": null
         },
         {
           "tld": "pl",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "xxx",
           "currency": "EUR",
           "registerPrice": 9900,
-          "renewPrice": null,
+          "renewPrice": 9900,
           "transferPrice": null
         },
         {
           "tld": "hu",
           "currency": "EUR",
           "registerPrice": 8900,
-          "renewPrice": null,
+          "renewPrice": 8900,
           "transferPrice": null
         },
         {
           "tld": "ms.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "bs.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "asia",
           "currency": "EUR",
           "registerPrice": 1900,
-          "renewPrice": null,
+          "renewPrice": 1900,
           "transferPrice": null
         },
         {
           "tld": "novara.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "photography",
           "currency": "EUR",
           "registerPrice": 4000,
-          "renewPrice": null,
+          "renewPrice": 4000,
           "transferPrice": null
         },
         {
           "tld": "bike",
           "currency": "EUR",
           "registerPrice": 5000,
-          "renewPrice": null,
+          "renewPrice": 5000,
           "transferPrice": null
         },
         {
           "tld": "camera",
           "currency": "EUR",
           "registerPrice": 5500,
-          "renewPrice": null,
+          "renewPrice": 5500,
           "transferPrice": null
         },
         {
           "tld": "voyage",
           "currency": "EUR",
           "registerPrice": 5400,
-          "renewPrice": null,
+          "renewPrice": 5400,
           "transferPrice": null
         },
         {
           "tld": "clothing",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "enterprises",
           "currency": "EUR",
           "registerPrice": 5000,
-          "renewPrice": null,
+          "renewPrice": 5000,
           "transferPrice": null
         },
         {
           "tld": "equipment",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "diamonds",
           "currency": "EUR",
           "registerPrice": 5400,
-          "renewPrice": null,
+          "renewPrice": 5400,
           "transferPrice": null
         },
         {
           "tld": "directory",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "tips",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "estate",
           "currency": "EUR",
           "registerPrice": 3250,
-          "renewPrice": null,
+          "renewPrice": 3250,
           "transferPrice": null
         },
         {
           "tld": "ventures",
           "currency": "EUR",
           "registerPrice": 5400,
-          "renewPrice": null,
+          "renewPrice": 5400,
           "transferPrice": null
         },
         {
           "tld": "gallery",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "graphics",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "today",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "technology",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "guru",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "singles",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "plumbing",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "holdings",
           "currency": "EUR",
           "registerPrice": 5400,
-          "renewPrice": null,
+          "renewPrice": 5400,
           "transferPrice": null
         },
         {
           "tld": "lighting",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "careers",
           "currency": "EUR",
           "registerPrice": 4900,
-          "renewPrice": null,
+          "renewPrice": 4900,
           "transferPrice": null
         },
         {
           "tld": "company",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "construction",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "contractors",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "domains",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "kitchen",
           "currency": "EUR",
           "registerPrice": 5500,
-          "renewPrice": null,
+          "renewPrice": 5500,
           "transferPrice": null
         },
         {
           "tld": "land",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "limo",
           "currency": "EUR",
           "registerPrice": 4900,
-          "renewPrice": null,
+          "renewPrice": 4900,
           "transferPrice": null
         },
         {
           "tld": "photos",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "recipes",
           "currency": "EUR",
           "registerPrice": 4900,
-          "renewPrice": null,
+          "renewPrice": 4900,
           "transferPrice": null
         },
         {
           "tld": "sexy",
           "currency": "EUR",
           "registerPrice": 300000,
-          "renewPrice": null,
+          "renewPrice": 300000,
           "transferPrice": null
         },
         {
           "tld": "menu",
           "currency": "EUR",
           "registerPrice": 3900,
-          "renewPrice": null,
+          "renewPrice": 3900,
           "transferPrice": null
         },
         {
           "tld": "uno",
           "currency": "EUR",
           "registerPrice": 3900,
-          "renewPrice": null,
+          "renewPrice": 3900,
           "transferPrice": null
         },
         {
           "tld": "academy",
           "currency": "EUR",
           "registerPrice": 3900,
-          "renewPrice": null,
+          "renewPrice": 3900,
           "transferPrice": null
         },
         {
           "tld": "center",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "computer",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "management",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "cab",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "email",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "builders",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "solutions",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "support",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "training",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "ceo",
           "currency": "EUR",
           "registerPrice": 9900,
-          "renewPrice": null,
+          "renewPrice": 9900,
           "transferPrice": null
         },
         {
           "tld": "camp",
           "currency": "EUR",
           "registerPrice": 5500,
-          "renewPrice": null,
+          "renewPrice": 5500,
           "transferPrice": null
         },
         {
           "tld": "glass",
           "currency": "EUR",
           "registerPrice": 4900,
-          "renewPrice": null,
+          "renewPrice": 4900,
           "transferPrice": null
         },
         {
           "tld": "institute",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "repair",
           "currency": "EUR",
           "registerPrice": 3900,
-          "renewPrice": null,
+          "renewPrice": 3900,
           "transferPrice": null
         },
         {
           "tld": "house",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "coffee",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "florist",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "solar",
           "currency": "EUR",
           "registerPrice": 5700,
-          "renewPrice": null,
+          "renewPrice": 5700,
           "transferPrice": null
         },
         {
           "tld": "buzz",
           "currency": "EUR",
           "registerPrice": 3900,
-          "renewPrice": null,
+          "renewPrice": 3900,
           "transferPrice": null
         },
         {
           "tld": "gift",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "guitars",
           "currency": "EUR",
           "registerPrice": 14900,
-          "renewPrice": null,
+          "renewPrice": 14900,
           "transferPrice": null
         },
         {
           "tld": "link",
           "currency": "EUR",
           "registerPrice": 1990,
-          "renewPrice": null,
+          "renewPrice": 1990,
           "transferPrice": null
         },
         {
           "tld": "photo",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "pics",
           "currency": "EUR",
           "registerPrice": 3600,
-          "renewPrice": null,
+          "renewPrice": 3600,
           "transferPrice": null
         },
         {
           "tld": "marketing",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "holiday",
           "currency": "EUR",
           "registerPrice": 5500,
-          "renewPrice": null,
+          "renewPrice": 5500,
           "transferPrice": null
         },
         {
           "tld": "codes",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "farm",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "viajes",
           "currency": "EUR",
           "registerPrice": 4900,
-          "renewPrice": null,
+          "renewPrice": 4900,
           "transferPrice": null
         },
         {
           "tld": "io",
           "currency": "EUR",
           "registerPrice": 4900,
-          "renewPrice": null,
+          "renewPrice": 4900,
           "transferPrice": null
         },
         {
           "tld": "build",
           "currency": "EUR",
           "registerPrice": 6900,
-          "renewPrice": null,
+          "renewPrice": 6900,
           "transferPrice": null
         },
         {
           "tld": "bargains",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "boutique",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "cheap",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "zone",
           "currency": "EUR",
           "registerPrice": 5200,
-          "renewPrice": null,
+          "renewPrice": 5200,
           "transferPrice": null
         },
         {
           "tld": "kiwi",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "shoes",
           "currency": "EUR",
           "registerPrice": 4900,
-          "renewPrice": null,
+          "renewPrice": 4900,
           "transferPrice": null
         },
         {
           "tld": "club",
           "currency": "EUR",
           "registerPrice": 1900,
-          "renewPrice": null,
+          "renewPrice": 1900,
           "transferPrice": null
         },
         {
           "tld": "cool",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "watch",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "venezia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "expert",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "works",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "luxury",
           "currency": "EUR",
           "registerPrice": 52900,
-          "renewPrice": null,
+          "renewPrice": 52900,
           "transferPrice": null
         },
         {
           "tld": "best",
           "currency": "EUR",
           "registerPrice": 8900,
-          "renewPrice": null,
+          "renewPrice": 8900,
           "transferPrice": null
         },
         {
           "tld": "exposed",
           "currency": "EUR",
           "registerPrice": 1900,
-          "renewPrice": null,
+          "renewPrice": 1900,
           "transferPrice": null
         },
         {
           "tld": "dance",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "democrat",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "foundation",
           "currency": "EUR",
           "registerPrice": 3490,
-          "renewPrice": null,
+          "renewPrice": 3490,
           "transferPrice": null
         },
         {
           "tld": "wiki",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "cruises",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "flights",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "rentals",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "vacations",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "villas",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "ninja",
           "currency": "EUR",
           "registerPrice": 1900,
-          "renewPrice": null,
+          "renewPrice": 1900,
           "transferPrice": null
         },
         {
           "tld": "xyz",
           "currency": "EUR",
           "registerPrice": 1200,
-          "renewPrice": null,
+          "renewPrice": 1200,
           "transferPrice": null
         },
         {
           "tld": "maison",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "tienda",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "condos",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "futbol",
           "currency": "EUR",
           "registerPrice": 1200,
-          "renewPrice": null,
+          "renewPrice": 1200,
           "transferPrice": null
         },
         {
           "tld": "reviews",
           "currency": "EUR",
           "registerPrice": 2200,
-          "renewPrice": null,
+          "renewPrice": 2200,
           "transferPrice": null
         },
         {
           "tld": "social",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "bid",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "trade",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "webcam",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "uk",
           "currency": "EUR",
           "registerPrice": 900,
-          "renewPrice": null,
+          "renewPrice": 900,
           "transferPrice": null
         },
         {
           "tld": "dating",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "events",
           "currency": "EUR",
           "registerPrice": 3490,
-          "renewPrice": null,
+          "renewPrice": 3490,
           "transferPrice": null
         },
         {
           "tld": "partners",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "productions",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "se",
           "currency": "EUR",
           "registerPrice": 2700,
-          "renewPrice": null,
+          "renewPrice": 2700,
           "transferPrice": null
         },
         {
           "tld": "cards",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "catering",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "community",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "ink",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "industries",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "parts",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "supplies",
           "currency": "EUR",
           "registerPrice": 1900,
-          "renewPrice": null,
+          "renewPrice": 1900,
           "transferPrice": null
         },
         {
           "tld": "tools",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "fish",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "report",
           "currency": "EUR",
           "registerPrice": 1900,
-          "renewPrice": null,
+          "renewPrice": 1900,
           "transferPrice": null
         },
         {
           "tld": "vision",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "services",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "pub",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "bar",
           "currency": "EUR",
           "registerPrice": 6900,
-          "renewPrice": null,
+          "renewPrice": 6900,
           "transferPrice": null
         },
         {
           "tld": "rest",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "moda",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "capital",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "engineering",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "exchange",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "associates",
           "currency": "EUR",
           "registerPrice": 4900,
-          "renewPrice": null,
+          "renewPrice": 4900,
           "transferPrice": null
         },
         {
           "tld": "lease",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "media",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "pictures",
           "currency": "EUR",
           "registerPrice": 1200,
-          "renewPrice": null,
+          "renewPrice": 1200,
           "transferPrice": null
         },
         {
           "tld": "consulting",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "voting",
           "currency": "EUR",
           "registerPrice": 99900,
-          "renewPrice": null,
+          "renewPrice": 99900,
           "transferPrice": null
         },
         {
           "tld": "town",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "toys",
           "currency": "EUR",
           "registerPrice": 4900,
-          "renewPrice": null,
+          "renewPrice": 4900,
           "transferPrice": null
         },
         {
           "tld": "university",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "fail",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "financial",
           "currency": "EUR",
           "registerPrice": 6590,
-          "renewPrice": null,
+          "renewPrice": 6590,
           "transferPrice": null
         },
         {
           "tld": "limited",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "wtf",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "rocks",
           "currency": "EUR",
           "registerPrice": 1950,
-          "renewPrice": null,
+          "renewPrice": 1950,
           "transferPrice": null
         },
         {
           "tld": "actor",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "care",
           "currency": "EUR",
           "registerPrice": 3900,
-          "renewPrice": null,
+          "renewPrice": 3900,
           "transferPrice": null
         },
         {
           "tld": "bio",
           "currency": "EUR",
           "registerPrice": 6900,
-          "renewPrice": null,
+          "renewPrice": 6900,
           "transferPrice": null
         },
         {
           "tld": "cash",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "fund",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "tax",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "clinic",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "dental",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "fitness",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "furniture",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "gratis",
           "currency": "EUR",
           "registerPrice": 1900,
-          "renewPrice": null,
+          "renewPrice": 1900,
           "transferPrice": null
         },
         {
           "tld": "credit",
           "currency": "EUR",
           "registerPrice": 8500,
-          "renewPrice": null,
+          "renewPrice": 8500,
           "transferPrice": null
         },
         {
           "tld": "pro",
           "currency": "EUR",
           "registerPrice": 5900,
-          "renewPrice": null,
+          "renewPrice": 5900,
           "transferPrice": null
         },
         {
           "tld": "cooking",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "fishing",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "vodka",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "country",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "guide",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "host",
           "currency": "EUR",
           "registerPrice": 8500,
-          "renewPrice": null,
+          "renewPrice": 8500,
           "transferPrice": null
         },
         {
           "tld": "life",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "press",
           "currency": "EUR",
           "registerPrice": 6500,
-          "renewPrice": null,
+          "renewPrice": 6500,
           "transferPrice": null
         },
         {
           "tld": "place",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "direct",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "beer",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "surf",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "city",
           "currency": "EUR",
           "registerPrice": 1900,
-          "renewPrice": null,
+          "renewPrice": 1900,
           "transferPrice": null
         },
         {
           "tld": "market",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "agency",
           "currency": "EUR",
           "registerPrice": 2350,
-          "renewPrice": null,
+          "renewPrice": 2350,
           "transferPrice": null
         },
         {
           "tld": "hosting",
           "currency": "EUR",
           "registerPrice": 39900,
-          "renewPrice": null,
+          "renewPrice": 39900,
           "transferPrice": null
         },
         {
           "tld": "help",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "dk",
           "currency": "EUR",
           "registerPrice": 1500,
-          "renewPrice": null,
+          "renewPrice": 1500,
           "transferPrice": null
         },
         {
           "tld": "li",
           "currency": "EUR",
           "registerPrice": 2490,
-          "renewPrice": null,
+          "renewPrice": 2490,
           "transferPrice": null
         },
         {
           "tld": "business",
           "currency": "EUR",
           "registerPrice": 1900,
-          "renewPrice": null,
+          "renewPrice": 1900,
           "transferPrice": null
         },
         {
           "tld": "network",
           "currency": "EUR",
           "registerPrice": 2350,
-          "renewPrice": null,
+          "renewPrice": 2350,
           "transferPrice": null
         },
         {
           "tld": "software",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "pizza",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "auction",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "pe.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "abruzzo.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "calabria.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "bo.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "pv.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "bz.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "digital",
           "currency": "EUR",
           "registerPrice": 3900,
-          "renewPrice": null,
+          "renewPrice": 3900,
           "transferPrice": null
         },
         {
           "tld": "abr.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "basilicata.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "lucania.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "bas.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "cal.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "campania.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "cam.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "emilia-romagna.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "emiliaromagna.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "emr.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "friuli-ve-giulia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "friulivegiulia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "friuli-vegiulia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "friulive-giulia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "friuliveneziagiulia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "friuli-veneziagiulia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "friulivenezia-giulia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "friuli-venezia-giulia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "friulivgiulia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "friuli-vgiulia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "friuliv-giulia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "friuli-v-giulia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "fvg.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "lazio.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "laz.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "liguria.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "lig.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "lombardia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "lombardy.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "lom.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "marche.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "mar.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "molise.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "mol.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "piemonte.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "piedmont.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "pmn.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "puglia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "pug.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "sardegna.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "sardinia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "sar.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "sicilia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "sicily.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "sic.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "toscana.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "tuscany.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "tos.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentino.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentino-a-adige.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentinoaadige.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentino-s-tirol.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentinostirol.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentino-s-tyrol.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentinostyrol.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentino-aadige.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentinoa-adige.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentinoaltoadige.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentino-altoadige.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentinoalto-adige.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentino-alto-adige.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentino-stirol.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentinos-tirol.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentino-sudtirol.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentinosud-tirol.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentino-sud-tirol.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentinosuedtirol.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentino-suedtirol.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentinosued-tirol.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trentino-sued-tirol.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "alto-adige.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "altoadige.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "suedtirol.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "taa.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "umbria.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "umb.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "valle-aosta.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "valleaosta.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "vallee-aoste.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "valleeaoste.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "valdaosta.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "val-daosta.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "vald-aosta.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "val-d-aosta.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "valledaosta.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "valle-daosta.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "valled-aosta.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "valle-d-aosta.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "aosta-valley.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "aostavalley.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "vao.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "vda.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "veneto.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ven.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "laquila.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "aq.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "chieti.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ch.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "pescara.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "teramo.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "te.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "matera.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "mt.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "potenza.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "pz.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "cosenza.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "cs.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "catanzaro.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "cz.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "crotone.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "kr.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "reggio-calabria.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "reggiocalabria.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "rc.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "vibo-valentia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "vibovalentia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "vv.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "avellino.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "av.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "benevento.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "bn.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "caserta.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ce.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "napoli.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "naples.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "na.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "salerno.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "sa.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "bologna.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ferrara.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "fe.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "vi.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "forli-cesena.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "vicenza.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "forlicesena.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "fc.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "vr.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "modena.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "mo.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "verona.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "parma.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ve.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "venice.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "pr.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "piacenza.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "pc.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ravenna.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ra.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "tv.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "reggio-emilia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "reggioemilia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "treviso.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "re.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ro.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "rimini.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "rovigo.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "rn.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "pd.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "gorizia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "padua.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "go.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "padova.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "pordenone.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "bl.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "pn.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "belluno.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trieste.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ao.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "aoste.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "aosta.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "tr.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "terni.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "perugia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "tn.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trento.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "bozen.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "bolzano.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "si.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "siena.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "po.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "prato.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "pt.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "pistoia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "pi.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "massacarrara.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "massa-carrara.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "lu.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "lucca.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ts.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "li.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "udine.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ud.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "gr.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "grosseto.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "frosinone.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "fi.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "florence.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "fr.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "firenze.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ar.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "arezzo.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "latina.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "trapani.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "sr.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "rieti.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "siracusa.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ri.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "roma.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ragusa.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "rome.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "pa.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "palermo.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "me.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "viterbo.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "messina.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "vt.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "en.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "genova.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "genoa.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "enna.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ge.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ct.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "imperia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "catania.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "im.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "la-spezia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "cl.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "laspezia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "sp.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "savona.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "sv.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "sassari.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "or.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "bergamo.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "bg.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "brescia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "como.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "co.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "cremona.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "cr.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "lecco.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "lc.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "lodi.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "lo.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "mantova.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "mn.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "milano.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "milan.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "mi.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "monza.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "monzabrianza.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "monza-brianza.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "mb.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "pavia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "sondrio.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "so.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "varese.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "va.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ancona.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "an.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "olbiatempio.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "og.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ascoli-piceno.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ascolipiceno.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ogliastra.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ap.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "nu.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "fermo.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "nuoro.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "vs.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "medio-campidano.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "fm.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "macerata.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "mediocampidano.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ci.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "mc.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "carbonia-iglesias.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "pesaro-urbino.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "carboniaiglesias.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ca.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "pesarourbino.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "cagliari.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "pu.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "campobasso.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "cb.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "taranto.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "isernia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "lecce.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "is.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "alessandria.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "fg.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "foggia.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "br.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "bt.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "al.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "barletta-andria-trani.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "asti.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "at.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ba.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "bari.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "vc.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "vercelli.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "vb.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "to.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "torino.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "restaurant",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "mortgage",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "forsale",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "gifts",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "sarl",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "engineer",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "quebec",
           "currency": "EUR",
           "registerPrice": 3500,
-          "renewPrice": null,
+          "renewPrice": 3500,
           "transferPrice": null
         },
         {
           "tld": "band",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "rip",
           "currency": "EUR",
           "registerPrice": 1900,
-          "renewPrice": null,
+          "renewPrice": 1900,
           "transferPrice": null
         },
         {
           "tld": "click",
           "currency": "EUR",
           "registerPrice": 1500,
-          "renewPrice": null,
+          "renewPrice": 1500,
           "transferPrice": null
         },
         {
           "tld": "diet",
           "currency": "EUR",
           "registerPrice": 16900,
-          "renewPrice": null,
+          "renewPrice": 16900,
           "transferPrice": null
         },
         {
           "tld": "property",
           "currency": "EUR",
           "registerPrice": 14900,
-          "renewPrice": null,
+          "renewPrice": 14900,
           "transferPrice": null
         },
         {
           "tld": "paris",
           "currency": "EUR",
           "registerPrice": 5900,
-          "renewPrice": null,
+          "renewPrice": 5900,
           "transferPrice": null
         },
         {
           "tld": "delivery",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "energy",
           "currency": "EUR",
           "registerPrice": 8900,
-          "renewPrice": null,
+          "renewPrice": 8900,
           "transferPrice": null
         },
         {
           "tld": "immo",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "physio",
           "currency": "EUR",
           "registerPrice": 8500,
-          "renewPrice": null,
+          "renewPrice": 8500,
           "transferPrice": null
         },
         {
           "tld": "dentist",
           "currency": "EUR",
           "registerPrice": 5900,
-          "renewPrice": null,
+          "renewPrice": 5900,
           "transferPrice": null
         },
         {
           "tld": "rehab",
           "currency": "EUR",
           "registerPrice": 8900,
-          "renewPrice": null,
+          "renewPrice": 8900,
           "transferPrice": null
         },
         {
           "tld": "degree",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "gives",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "space",
           "currency": "EUR",
           "registerPrice": 2000,
-          "renewPrice": null,
+          "renewPrice": 2000,
           "transferPrice": null
         },
         {
           "tld": "how",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "coach",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "legal",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "memorial",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "money",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "tires",
           "currency": "EUR",
           "registerPrice": 8900,
-          "renewPrice": null,
+          "renewPrice": 8900,
           "transferPrice": null
         },
         {
           "tld": "sale",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "video",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "design",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "bingo",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "chat",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "style",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "tennis",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "yoga",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "wedding",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "cymru",
           "currency": "EUR",
           "registerPrice": 1500,
-          "renewPrice": null,
+          "renewPrice": 1500,
           "transferPrice": null
         },
         {
           "tld": "wales",
           "currency": "EUR",
           "registerPrice": 1500,
-          "renewPrice": null,
+          "renewPrice": 1500,
           "transferPrice": null
         },
         {
           "tld": "ponzanoromano.rm.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "world",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "cafe",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "plus",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "srl",
           "currency": "EUR",
           "registerPrice": 4690,
-          "renewPrice": null,
+          "renewPrice": 4690,
           "transferPrice": null
         },
         {
           "tld": "tours",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "vazzano.vv.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "fashion",
           "currency": "EUR",
           "registerPrice": 3900,
-          "renewPrice": null,
+          "renewPrice": 3900,
           "transferPrice": null
         },
         {
           "tld": "online",
           "currency": "EUR",
           "registerPrice": 475,
-          "renewPrice": null,
+          "renewPrice": 475,
           "transferPrice": null
         },
         {
           "tld": "education",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "cloud",
           "currency": "EUR",
           "registerPrice": 3000,
-          "renewPrice": null,
+          "renewPrice": 3000,
           "transferPrice": null
         },
         {
           "tld": "casa",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "team",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "tech",
           "currency": "EUR",
           "registerPrice": 5000,
-          "renewPrice": null,
+          "renewPrice": 5000,
           "transferPrice": null
         },
         {
           "tld": "group",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "studio",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "wine",
           "currency": "EUR",
           "registerPrice": 6900,
-          "renewPrice": null,
+          "renewPrice": 6900,
           "transferPrice": null
         },
         {
           "tld": "cn",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "com.cn",
           "currency": "EUR",
           "registerPrice": 6000,
-          "renewPrice": null,
+          "renewPrice": 6000,
           "transferPrice": null
         },
         {
           "tld": "com.hk",
           "currency": "EUR",
           "registerPrice": 6500,
-          "renewPrice": null,
+          "renewPrice": 6500,
           "transferPrice": null
         },
         {
           "tld": "one",
           "currency": "EUR",
           "registerPrice": 1200,
-          "renewPrice": null,
+          "renewPrice": 1200,
           "transferPrice": null
         },
         {
           "tld": "store",
           "currency": "EUR",
-          "registerPrice": 7290,
+          "registerPrice": 300,
           "renewPrice": 7290,
           "transferPrice": null
         },
@@ -107693,27 +107630,27 @@
           "tld": "live",
           "currency": "EUR",
           "registerPrice": 2890,
-          "renewPrice": null,
+          "renewPrice": 2890,
           "transferPrice": null
         },
         {
           "tld": "sangillio.to.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "film",
           "currency": "EUR",
           "registerPrice": 8900,
-          "renewPrice": null,
+          "renewPrice": 8900,
           "transferPrice": null
         },
         {
           "tld": "shop",
           "currency": "EUR",
-          "registerPrice": 3790,
+          "registerPrice": 250,
           "renewPrice": 3790,
           "transferPrice": null
         },
@@ -107721,546 +107658,546 @@
           "tld": "ca",
           "currency": "EUR",
           "registerPrice": 1900,
-          "renewPrice": null,
+          "renewPrice": 1900,
           "transferPrice": null
         },
         {
           "tld": "art",
           "currency": "EUR",
           "registerPrice": 5900,
-          "renewPrice": null,
+          "renewPrice": 5900,
           "transferPrice": null
         },
         {
           "tld": "blog",
           "currency": "EUR",
           "registerPrice": 3200,
-          "renewPrice": null,
+          "renewPrice": 3200,
           "transferPrice": null
         },
         {
           "tld": "site",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "website",
           "currency": "EUR",
           "registerPrice": 2000,
-          "renewPrice": null,
+          "renewPrice": 2000,
           "transferPrice": null
         },
         {
           "tld": "swiss",
           "currency": "EUR",
           "registerPrice": 12900,
-          "renewPrice": null,
+          "renewPrice": 12900,
           "transferPrice": null
         },
         {
           "tld": "news",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "hk",
           "currency": "EUR",
           "registerPrice": 9900,
-          "renewPrice": null,
+          "renewPrice": 9900,
           "transferPrice": null
         },
         {
           "tld": "app",
           "currency": "EUR",
           "registerPrice": 1990,
-          "renewPrice": null,
+          "renewPrice": 1990,
           "transferPrice": null
         },
         {
           "tld": "systems",
           "currency": "EUR",
           "registerPrice": 2490,
-          "renewPrice": null,
+          "renewPrice": 2490,
           "transferPrice": null
         },
         {
           "tld": "edu.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "international",
           "currency": "EUR",
           "registerPrice": 3790,
-          "renewPrice": null,
+          "renewPrice": 3790,
           "transferPrice": null
         },
         {
           "tld": "is",
           "currency": "EUR",
           "registerPrice": 13590,
-          "renewPrice": null,
+          "renewPrice": 13590,
           "transferPrice": null
         },
         {
           "tld": "eu.com",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "dev",
           "currency": "EUR",
           "registerPrice": 1900,
-          "renewPrice": null,
+          "renewPrice": 1900,
           "transferPrice": null
         },
         {
           "tld": "fun",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "sex",
           "currency": "EUR",
           "registerPrice": 8490,
-          "renewPrice": null,
+          "renewPrice": 8490,
           "transferPrice": null
         },
         {
           "tld": "organic",
           "currency": "EUR",
           "registerPrice": 6900,
-          "renewPrice": null,
+          "renewPrice": 6900,
           "transferPrice": null
         },
         {
           "tld": "green",
           "currency": "EUR",
           "registerPrice": 6900,
-          "renewPrice": null,
+          "renewPrice": 6900,
           "transferPrice": null
         },
         {
           "tld": "sm",
           "currency": "EUR",
           "registerPrice": 14900,
-          "renewPrice": null,
+          "renewPrice": 14900,
           "transferPrice": null
         },
         {
           "tld": "sh",
           "currency": "EUR",
           "registerPrice": 9900,
-          "renewPrice": null,
+          "renewPrice": 9900,
           "transferPrice": null
         },
         {
           "tld": "net.cn",
           "currency": "EUR",
           "registerPrice": 6900,
-          "renewPrice": null,
+          "renewPrice": 6900,
           "transferPrice": null
         },
         {
           "tld": "org.cn",
           "currency": "EUR",
           "registerPrice": 6900,
-          "renewPrice": null,
+          "renewPrice": 6900,
           "transferPrice": null
         },
         {
           "tld": "shopping",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "coop",
           "currency": "EUR",
           "registerPrice": 12900,
-          "renewPrice": null,
+          "renewPrice": 12900,
           "transferPrice": null
         },
         {
           "tld": "express",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "love",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "cz",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "hr",
           "currency": "EUR",
           "registerPrice": 17900,
-          "renewPrice": null,
+          "renewPrice": 17900,
           "transferPrice": null
         },
         {
           "tld": "com.ve",
           "currency": "EUR",
           "registerPrice": 14900,
-          "renewPrice": null,
+          "renewPrice": 14900,
           "transferPrice": null
         },
         {
           "tld": "ie",
           "currency": "EUR",
           "registerPrice": 10150,
-          "renewPrice": null,
+          "renewPrice": 10150,
           "transferPrice": null
         },
         {
           "tld": "ae",
           "currency": "EUR",
           "registerPrice": 14900,
-          "renewPrice": null,
+          "renewPrice": 14900,
           "transferPrice": null
         },
         {
           "tld": "fm",
           "currency": "EUR",
           "registerPrice": 8900,
-          "renewPrice": null,
+          "renewPrice": 8900,
           "transferPrice": null
         },
         {
           "tld": "vip",
           "currency": "EUR",
           "registerPrice": 1900,
-          "renewPrice": null,
+          "renewPrice": 1900,
           "transferPrice": null
         },
         {
           "tld": "pet",
           "currency": "EUR",
           "registerPrice": 1900,
-          "renewPrice": null,
+          "renewPrice": 1900,
           "transferPrice": null
         },
         {
           "tld": "tattoo",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "ski",
           "currency": "EUR",
           "registerPrice": 5000,
-          "renewPrice": null,
+          "renewPrice": 5000,
           "transferPrice": null
         },
         {
           "tld": "co.il",
           "currency": "EUR",
           "registerPrice": 3900,
-          "renewPrice": null,
+          "renewPrice": 3900,
           "transferPrice": null
         },
         {
           "tld": "racing",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "onl",
           "currency": "EUR",
           "registerPrice": 1900,
-          "renewPrice": null,
+          "renewPrice": 1900,
           "transferPrice": null
         },
         {
           "tld": "pt",
           "currency": "EUR",
           "registerPrice": 1900,
-          "renewPrice": null,
+          "renewPrice": 1900,
           "transferPrice": null
         },
         {
           "tld": "si",
           "currency": "EUR",
           "registerPrice": 5150,
-          "renewPrice": null,
+          "renewPrice": 5150,
           "transferPrice": null
         },
         {
           "tld": "fi",
           "currency": "EUR",
           "registerPrice": 2250,
-          "renewPrice": null,
+          "renewPrice": 2250,
           "transferPrice": null
         },
         {
           "tld": "run",
           "currency": "EUR",
           "registerPrice": 4000,
-          "renewPrice": null,
+          "renewPrice": 4000,
           "transferPrice": null
         },
         {
           "tld": "ist",
           "currency": "EUR",
           "registerPrice": 2500,
-          "renewPrice": null,
+          "renewPrice": 2500,
           "transferPrice": null
         },
         {
           "tld": "al",
           "currency": "EUR",
           "registerPrice": 3490,
-          "renewPrice": null,
+          "renewPrice": 3490,
           "transferPrice": null
         },
         {
           "tld": "fit",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "bg",
           "currency": "EUR",
           "registerPrice": 6000,
-          "renewPrice": null,
+          "renewPrice": 6000,
           "transferPrice": null
         },
         {
           "tld": "com.pl",
           "currency": "EUR",
           "registerPrice": 1200,
-          "renewPrice": null,
+          "renewPrice": 1200,
           "transferPrice": null
         },
         {
           "tld": "lgbt",
           "currency": "EUR",
           "registerPrice": 4900,
-          "renewPrice": null,
+          "renewPrice": 4900,
           "transferPrice": null
         },
         {
           "tld": "xn--fiqs8s",
           "currency": "EUR",
           "registerPrice": 3900,
-          "renewPrice": null,
+          "renewPrice": 3900,
           "transferPrice": null
         },
         {
           "tld": "eco",
           "currency": "EUR",
           "registerPrice": 6490,
-          "renewPrice": null,
+          "renewPrice": 6490,
           "transferPrice": null
         },
         {
           "tld": "gr",
           "currency": "EUR",
           "registerPrice": 4500,
-          "renewPrice": null,
+          "renewPrice": 4500,
           "transferPrice": null
         },
         {
           "tld": "no",
           "currency": "EUR",
           "registerPrice": 2490,
-          "renewPrice": null,
+          "renewPrice": 2490,
           "transferPrice": null
         },
         {
           "tld": "ar",
           "currency": "EUR",
           "registerPrice": 15000,
-          "renewPrice": null,
+          "renewPrice": 15000,
           "transferPrice": null
         },
         {
           "tld": "school",
           "currency": "EUR",
           "registerPrice": 3000,
-          "renewPrice": null,
+          "renewPrice": 3000,
           "transferPrice": null
         },
         {
           "tld": "co.in",
           "currency": "EUR",
           "registerPrice": 2900,
-          "renewPrice": null,
+          "renewPrice": 2900,
           "transferPrice": null
         },
         {
           "tld": "com.au",
           "currency": "EUR",
           "registerPrice": 5790,
-          "renewPrice": null,
+          "renewPrice": 5790,
           "transferPrice": null
         },
         {
           "tld": "top",
           "currency": "EUR",
           "registerPrice": 1050,
-          "renewPrice": null,
+          "renewPrice": 1050,
           "transferPrice": null
         },
         {
           "tld": "beauty",
           "currency": "EUR",
           "registerPrice": 1890,
-          "renewPrice": null,
+          "renewPrice": 1890,
           "transferPrice": null
         },
         {
           "tld": "cr",
           "currency": "EUR",
           "registerPrice": 28900,
-          "renewPrice": null,
+          "renewPrice": 28900,
           "transferPrice": null
         },
         {
           "tld": "carimate.co.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "global",
           "currency": "EUR",
           "registerPrice": 10590,
-          "renewPrice": null,
+          "renewPrice": 10590,
           "transferPrice": null
         },
         {
           "tld": "blackfriday",
           "currency": "EUR",
           "registerPrice": 15900,
-          "renewPrice": null,
+          "renewPrice": 15900,
           "transferPrice": null
         },
         {
           "tld": "biella.it",
           "currency": "EUR",
           "registerPrice": 990,
-          "renewPrice": null,
+          "renewPrice": 990,
           "transferPrice": null
         },
         {
           "tld": "ai",
           "currency": "EUR",
           "registerPrice": 32500,
-          "renewPrice": null,
+          "renewPrice": 32500,
           "transferPrice": null
         },
         {
           "tld": "lawyer",
           "currency": "EUR",
           "registerPrice": 6900,
-          "renewPrice": null,
+          "renewPrice": 6900,
           "transferPrice": null
         },
         {
           "tld": "md",
           "currency": "EUR",
           "registerPrice": 7900,
-          "renewPrice": null,
+          "renewPrice": 7900,
           "transferPrice": null
         },
         {
           "tld": "ua",
           "currency": "EUR",
           "registerPrice": 10000,
-          "renewPrice": null,
+          "renewPrice": 10000,
           "transferPrice": null
         },
         {
           "tld": "by",
           "currency": "EUR",
           "registerPrice": 15000,
-          "renewPrice": null,
+          "renewPrice": 15000,
           "transferPrice": null
         },
         {
           "tld": "ee",
           "currency": "EUR",
           "registerPrice": 5000,
-          "renewPrice": null,
+          "renewPrice": 5000,
           "transferPrice": null
         },
         {
           "tld": "lv",
           "currency": "EUR",
           "registerPrice": 5000,
-          "renewPrice": null,
+          "renewPrice": 5000,
           "transferPrice": null
         },
         {
           "tld": "lt",
           "currency": "EUR",
           "registerPrice": 4000,
-          "renewPrice": null,
+          "renewPrice": 4000,
           "transferPrice": null
         },
         {
           "tld": "law",
           "currency": "EUR",
           "registerPrice": 13000,
-          "renewPrice": null,
+          "renewPrice": 13000,
           "transferPrice": null
         },
         {
           "tld": "dog",
           "currency": "EUR",
           "registerPrice": 9990,
-          "renewPrice": null,
+          "renewPrice": 9990,
           "transferPrice": null
         },
         {
           "tld": "food",
           "currency": "EUR",
           "registerPrice": 4940,
-          "renewPrice": null,
+          "renewPrice": 4940,
           "transferPrice": null
         },
         {
           "tld": "com.do",
           "currency": "EUR",
           "registerPrice": 15900,
-          "renewPrice": null,
+          "renewPrice": 15900,
           "transferPrice": null
         },
         {
           "tld": "do",
           "currency": "EUR",
           "registerPrice": 14900,
-          "renewPrice": null,
+          "renewPrice": 14900,
           "transferPrice": null
         }
       ]
