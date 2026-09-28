@@ -61,6 +61,7 @@ import { westcnAdapter } from "./westcn"
 import { openproviderAdapter } from "./openprovider"
 import { krystalAdapter } from "./krystal"
 import { inwxAdapter } from "./inwx"
+import { ukrnamesAdapter, idwebhostAdapter, keliwebAdapter } from "./breadth-scan"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -109,6 +110,9 @@ export const allAdapters = [
   truehostAdapter,
   hostingkrAdapter,
   inwxAdapter,
+  ukrnamesAdapter,
+  idwebhostAdapter,
+  keliwebAdapter,
 ]
 
 for (const adapter of allAdapters) {

@@ -2,7 +2,7 @@
 
 > 所有权: Data Team · 最近核查: 2026-09-28
 >
-> 用途: 记录已系统性探测但尚未入适配器的注册商，标注"解锁条件"，供联网检索/凭据恢复后按优先级补采。已入适配器且在采的注册商见 `adapters/index.ts`（当前 29 active / 18 inactive）。
+> 用途: 记录已系统性探测但尚未入适配器的注册商，标注"解锁条件"，供联网检索/凭据恢复后按优先级补采。已入适配器且在采的注册商见 `adapters/index.ts`（当前 32 active / 19 inactive）。
 >
 > 状态图例补充:
 > - `❌ 无公开源` — 系统性探测后确认无游标外的公开价格源（登录门控 SPA / 需凭据接口），按平台规范不逆向，直接降级，勿重复试探。
@@ -49,6 +49,10 @@
 | networksolutions | networksolutions | 全量 | ✅ 已入采 | 已修：URL→/domains/domain-name-pricing + 补 transfer 列 | 已采 32 |
 | juming (聚名) | juming | 数百 | ✅ 已入采 | 已修：加 playwright waitForTimeoutMs+scrollToBottom 兜底 | 已采 119（CNY） |
 | westcn | westcn | 118 | ✅ 已入采 v2.0.0 | 已修：自定义 script 精确定位 El-popover 各列（reg/renew/transfer） | 已采 118（reg/renew/transfer 全对，CNY） |
+| ukrnames | ukrnames | 471 | ✅ 已入采 | createTableAdapter 标准 `<tr>/<td>` 表（UA 本地价格，UAH） | 已采 471（register/renew/transfer/restore，UAH） |
+| idwebhost | idwebhost | 243 | ✅ 已入采 | `<option data-hs-select-option='{...}'>` 内嵌 JSON | 已采 243（register only，IDR） |
+| keliweb | keliweb | 668 | ✅ 已入采 | `<li data-val data-p>` + `<del>` 解析（EUR） | 已采 668（register+renew，EUR，当天需 40s+ 抓取） |
+| jagoanhosting | jagoanhosting | 194 | ❌ 已否决 | 194 行 TLD 但 151 行解析失败（每 TLD 结构变化） | 结构不稳定，接入价值低 |
 | alibaba-cloud-intl | aliyun | 全量 | 🌀 需逆向 / ❌ 无公开源 | 海外版 www.alibabacloud.com/domain 为登录门控 SPA，load 时零价格 XHR（仅 is_login/log），无游标外公开价表 | 需 Alibaba Cloud 域业务 API/SDK 凭证（intl），或用 api 策略接 CreateOrder/查询域（需鉴权） |
 | ionos/1&1 | ionos | 全量 | 🛡 反爬 | 域名页 301/404 + bot 保护 | 需过 bot（不稳定） |
 | squarespace | squarespace | 数百 | 🌀 需逆向 | 仅购物车 API，无公开全量价表 | 需逆向前端 |
