@@ -3,22 +3,61 @@
  * ------------------------------------------------------------
  * 所有权: Data Team
  *
- * 浏览器提取全量价格页 `/web/price/domainpricelist`（JS 注入表格，fetch 无 SSR 行）。
+ * 浏览器提取全量价格页 `/web/price/domainpricelist`（Element UI el-table，JS 注入，fetch 无 SSR 行）。
  * 列结构：域名 | 注册价格 | 续费价格 | 转入价格 | 操作。
  *
- * 注册价格单元格为混合促销文案（"1年 ¥79 3年 ¥257 … 原价 ¥86"），提取值由多个
- * 数字拼接而成而不可靠，因此在 hooks.validate 中清洗：清空 registerPrice（促销），
- * 保留真实续费/转入价，再走默认校验平台。
+ * 单元格为 El-popover 促销结构：隐藏的 year-list（1年/3年/5年/10年）+ 可见参考价。
+ * 通用 extract-json 会把注册格的原价（old-price）和续费格隐藏的多年限价一起拼坏，
+ * 因此用自定义 script 精确定位可视 1 年价：
+ *   - 注册 column_3 = `.el-popover__reference .price`（排除 `.old-price`）
+ *   - 续费 column_4 = `.el-popover__reference .price`
+ *   - 转入 column_5 = `.price`
+ * 经实测列名与真实价一致，不再清空注册价。
  */
 import { defineAdapter } from "@/packages/adapter-sdk"
 import { validatePrices } from "@/packages/adapter-sdk/validation"
+
+const WEST_SCRIPT = `(() => {
+  const num = (el) => {
+    if (!el) return null
+    const raw = (el.textContent || "").trim()
+    const t = raw.replace(/[^\\d.,]/g, "")
+    if (!t) return null
+    const lastDot = t.lastIndexOf(".")
+    const lastComma = t.lastIndexOf(",")
+    const sep = Math.max(lastDot, lastComma)
+    const da = sep >= 0 ? t.slice(sep + 1).length : 0
+    let s = t
+    if (sep >= 0 && da === 3) s = t.replace(/[.,\\s\\u00a0]/g, "")
+    else if (lastComma > lastDot) s = t.replace(/[.\\s\\u00a0]/g, "").replace(",", ".")
+    else s = t.replace(/[,\\s\\u00a0]/g, "")
+    const v = parseFloat(s)
+    return Number.isFinite(v) && v > 0 && v < 1000000 ? Math.round(v * 100) / 100 : null
+  }
+  const out = []
+  for (const tr of document.querySelectorAll("table.el-table__body tr")) {
+    const tds = tr.querySelectorAll("td")
+    if (!tds.length) continue
+    const m = (tr.querySelector(".cell")?.textContent || "").trim().toLowerCase().match(/^.?([a-z0-9-]{2,20}(?:\\.[a-z0-9-]{2,15}){0,2})(?:\\s|$)/)
+    if (!m) continue
+    const row = { tld: m[1], register: null, renew: null, transfer: null }
+    for (const td of tds) {
+      const cls = td.className || ""
+      if (cls.includes("column_3")) row.register = num(td.querySelector(".el-popover__reference .price"))
+      else if (cls.includes("column_4")) row.renew = num(td.querySelector(".el-popover__reference .price")) ?? num(td.querySelector("span.price"))
+      else if (cls.includes("column_5")) row.transfer = num(td.querySelector(".price")) ?? num(td.querySelector(".cell"))
+    }
+    out.push(row)
+  }
+  return JSON.stringify(out)
+})()`
 
 export const westcnAdapter = defineAdapter({
   slug: "westcn",
   name: "West.cn（西部数码）",
   website: "https://www.west.cn",
-  version: "1.0.0",
-  parserVersion: "1.0.0",
+  version: "2.0.0",
+  parserVersion: "2.0.0",
   owner: "Data Team",
   currency: "CNY",
   capabilities: { registration: true, renewal: true, transfer: true, supportedCurrencies: ["CNY"] },
@@ -29,15 +68,15 @@ export const westcnAdapter = defineAdapter({
       url: "https://www.west.cn/web/price/domainpricelist",
       browser: {
         extract: "extract-json",
-        waitForTimeoutMs: 15_000,
+        script: WEST_SCRIPT,
+        waitForTimeoutMs: 20_000,
         scrollToBottom: true,
       },
     },
   ],
   hooks: {
-    async validate(prices, ctx) {
-      const clean = prices.map((p) => ({ ...p, registerPrice: null }))
-      return validatePrices(clean, "CNY")
+    async validate(prices) {
+      return validatePrices(prices, "CNY")
     },
   },
 })
