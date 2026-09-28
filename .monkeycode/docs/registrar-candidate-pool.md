@@ -1,8 +1,11 @@
 # 注册商候选采集池（Backlog）
 
-> 所有权: Data Team · 最近核查: 2026-09-27
+> 所有权: Data Team · 最近核查: 2026-09-28
 >
-> 用途: 记录已系统性探测但尚未入适配器的注册商，标注"解锁条件"，供联网检索/凭据恢复后按优先级补采。已入适配器且在采的 26 家见 `adapters/index.ts`。
+> 用途: 记录已系统性探测但尚未入适配器的注册商，标注"解锁条件"，供联网检索/凭据恢复后按优先级补采。已入适配器且在采的注册商见 `adapters/index.ts`（当前 29 active / 18 inactive）。
+>
+> 状态图例补充:
+> - `❌ 无公开源` — 系统性探测后确认无游标外的公开价格源（登录门控 SPA / 需凭据接口），按平台规范不逆向，直接降级，勿重复试探。
 
 ## 读取约定
 
@@ -42,12 +45,11 @@
 | aruba | aruba | 数百 | 🏗 结构漂移 | aruba.it/domini/... 404 | 需新 URL |
 | eurodns | eurodns | 20 | ❄ 低温 | 页面间歇（20/20/0 行），20 行即上限 | 页面稳定后再接（低价值） |
 | onecom | onecom | 数百 | 🛡 反爬 | embedded-json fetch failed | 需稳定 API |
-| exabytes | exabytes | 数百 | 🏗 结构漂移 | 表解析空；playwright 502 | 需修 playwright/浏览器服务 |
-| networksolutions | networksolutions | 全量 | 🛡 反爬 | 价格页 404 / 需登录 | 需登录会话 |
-| godaddy-full | godaddy | 全量 | 🔒 需凭据 | 同上 godaddy | 同 godaddy |
-| juming (聚名) | juming | 数百 | 🏗 结构漂移 | 聚名网表解析空（结构变） | 需新结构提取 |
-| 22cn | 22cn | 99 | 🛡 反爬 | /domain/price/ 带 /ym?suffix= 反爬，页上限 99 | 需过反爬才能扩（不稳定） |
-| westcn | westcn | 118 | 🌀 需逆向 | 价格数据 PHP 服务端注入（HTML 中为 `$tableData` 字面量），页上限 118 | 需逆向服务端 API（禁止/不稳定） |
+| exabytes | exabytes | 数百 | ✅ 已入采 | 已修：URL→/domain-name-search，去掉卡死 worker 的 waitFor:"table" | 已采 62（register-only，MYR） |
+| networksolutions | networksolutions | 全量 | ✅ 已入采 | 已修：URL→/domains/domain-name-pricing + 补 transfer 列 | 已采 32 |
+| juming (聚名) | juming | 数百 | ✅ 已入采 | 已修：加 playwright waitForTimeoutMs+scrollToBottom 兜底 | 已采 119（CNY） |
+| westcn | westcn | 118 | ✅ 已入采 v2.0.0 | 已修：自定义 script 精确定位 El-popover 各列（reg/renew/transfer） | 已采 118（reg/renew/transfer 全对，CNY） |
+| alibaba-cloud-intl | aliyun | 全量 | 🌀 需逆向 / ❌ 无公开源 | 海外版 www.alibabacloud.com/domain 为登录门控 SPA，load 时零价格 XHR（仅 is_login/log），无游标外公开价表 | 需 Alibaba Cloud 域业务 API/SDK 凭证（intl），或用 api 策略接 CreateOrder/查询域（需鉴权） |
 | ionos/1&1 | ionos | 全量 | 🛡 反爬 | 域名页 301/404 + bot 保护 | 需过 bot（不稳定） |
 | squarespace | squarespace | 数百 | 🌀 需逆向 | 仅购物车 API，无公开全量价表 | 需逆向前端 |
 | pairnic | pairnic | 中小 | ❄ 低温 | 无干净公开端点 | — |
@@ -71,6 +73,7 @@
 1. 提供 gandi/infomaniak Key → 立即可把 42/20 扩到数百，收益最大。
 2. 提供 namecheap/godaddy/netim Key → 三家大注册商全量补回。
 3. 联网检索恢复 → 验证上表"未探测高潜力"新名单，命中即接入。
-4. 其余 🛡/🏗/🌀 项：仅拆分给专项 subagent 且用户明确授权"允许反爬/逆向/登录"时才做，否则保持 📌 待解锁。
+4. **面向各大洲中小型注册商做广度扫描**（优先自行完成，不需外部解锁）: 挑干净 SSR 表格/公开 JSON/简单 XHR 源的注册商接入，避免死磕已被反爬或需凭据锁定的头部大厂。命中标准: 无登录、无 Cloudflare、表结构稳定；命中即按 dynadot/hostinger 的 XHR 首选法或干净表格法接入。
+5. 其余 🛡/🏗/🌀/❌ 项：仅拆分给专项 subagent 且用户明确授权"允许反爬/逆向/登录"时才做，否则保持 📌 待解锁；`❌ 无公开源` 项（如 alibaba-cloud-intl）默认不再重复试探。
 
 > 注: 平台护栏禁止反爬绕过/逆向/威胁登录对抗。上表 🛡/🏗/🌀 项默认不攻，仅记录解锁条件。
