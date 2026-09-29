@@ -113,7 +113,19 @@ export async function createCredential(formData: FormData) {
     label: label || type,
     encryptedPayload: encryptCredential(payload),
   })
+  // 新凭证默认激活，并联动激活该注册商：让“填 Key 后自动进入采集队列”生效，
+  // 无需再到注册商页手动开启 is_active。
+  await activateRegistrarForCredential(registrarId)
   revalidatePath("/admin/credentials")
+}
+
+/**
+ * 为注册商启用凭证时，联动把对应注册商 is_active 置为 true：
+ * 使「后台录入 API Key 即自动生效采集」，无需单独激活注册商。
+ * 不影响已有其它凭证/已激活状态的注册商。
+ */
+async function activateRegistrarForCredential(registrarId: number) {
+  await db.update(registrars).set({ isActive: true }).where(eq(registrars.id, registrarId))
 }
 
 /** 启用/停用凭证 */
@@ -123,6 +135,14 @@ export async function toggleCredential(id: number, isActive: boolean) {
     .update(registrarCredentials)
     .set({ isActive, updatedAt: new Date() })
     .where(eq(registrarCredentials.id, id))
+  if (isActive) {
+    // 启用某条凭证时联动激活注册商（停用时保持当前激活状态）
+    const [row] = await db
+      .select({ registrarId: registrarCredentials.registrarId })
+      .from(registrarCredentials)
+      .where(eq(registrarCredentials.id, id))
+    if (row) await activateRegistrarForCredential(row.registrarId)
+  }
   revalidatePath("/admin/credentials")
 }
 

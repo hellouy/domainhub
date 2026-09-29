@@ -62,6 +62,9 @@ import { openproviderAdapter } from "./openprovider"
 import { krystalAdapter } from "./krystal"
 import { inwxAdapter } from "./inwx"
 import { ukrnamesAdapter, idwebhostAdapter, keliwebAdapter } from "./breadth-scan"
+import { enomAdapter } from "./enom"
+import { infomaniakAdapter } from "./infomaniak"
+import { resellerclubAdapter } from "./resellerclub"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -113,6 +116,10 @@ export const allAdapters = [
   ukrnamesAdapter,
   idwebhostAdapter,
   keliwebAdapter,
+  // 需 API 凭证的注册商（后台配好 Key 后自动生效采集；无 Key 时不产数据）
+  enomAdapter,
+  infomaniakAdapter,
+  resellerclubAdapter,
 ]
 
 for (const adapter of allAdapters) {
