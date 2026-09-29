@@ -120,3 +120,19 @@
 - 唯一稳定的 JSON/text 源 porkbun.com/tld/pricing.json 但 porkbun **已入采**。
 
 **结论**：公开可无凭据/无 CF 直接抓的干净价格源已基本采尽（即当前 32 家）。要扩到 50+ 需依赖：① 批发 API 凭据（gandi/infomaniak/namecheap/godaddy/netim/Enom 任一，一源覆盖数百 TLD）；② 浏览器 worker 提升超时+稳定性后对澳洲等慢源重试；③ 修改接危标准放行"价格混排文字"型源（如 rumahweb，适配成本高、通用 tld 覆盖低）。本轮验证 `porkbun.com/tld/pricing.json` 可作价格事实基准。
+
+## 2026-09-29 后台 API 适配骨架就绪（填 Key 自动生效）
+
+为「各大需 API 的注册商」在后台预置适配器骨架，`is_active=false` 就绪、填 Key 即自动激活采集（见 MEMORY 机制）：
+
+| slug | 适配 | 凭证类型 | 状态 |
+|------|------|---------|------|
+| godaddy | private-api (两步探测注册价) | api_key token/secret | ✅ 已就绪，DB 待 Key |
+| namecheap | private-api (getPricing XML) | api_key token/username/clientIp | ✅ 已就绪，DB 待 Key |
+| netim | private-api (session + 逐 TLD) | basic username/password | ✅ 已就绪，DB 待 Key |
+| gandi | private-api (v5 tlds/prices) + html 降级 | api_key token | ✅ 已补 API 策略(有 Key 数百/无 Key 42 行)，DB active |
+| enom | private-api (GetDomainPricing) | basic UID/PW | ✅ 骨架新建，DB 待 Key |
+| infomaniak | private-api (api.infomaniak.com) | api_key token | ✅ 骨架新建，DB 待 Key |
+| resellerclub | private-api (economypricing.json) | api_key token/secret | ✅ 骨架新建，DB 待 Key |
+
+> 骨架契约（各家 API 价格字段名）标注了「需真实 Key 首采核验微调」，首采后按实际返回微调 parse 即可。1API/HEXONET 保留候选池「🌀需逆向」未建骨架（凭证结构复杂，待需时再加）。

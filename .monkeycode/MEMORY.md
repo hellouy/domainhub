@@ -114,3 +114,12 @@ Entries discovered by the Agent during task execution should follow this format:
   - 扩量优先打通批发/API 价源（一个源覆盖数百 TLD）作为主杠杆；凭证齐全前并行广度扫描各大洲干净 SSR 表格/公开 JSON/simple XHR 注册商，命中标准: 无登录、无 Cloudflare、结构稳定
   - 数据排查维度：对照 sourceUrl 原始站点三列（register/renew/transfer）逐家抽查；校验 @ 首年促销价 vs 常规价不误标；防 unicode 报价（如规划中的 3371 值）、cheap 列无条件价格、负数/0、列错位；对明显脏数据从适配器注册表移除 + DB is_active=false，不靠 seed 掩盖
   - 每轮改动（新增适配器/数据修复）都要 tsc+build 通过并部署到 Vercel 生产后再向用户汇报，保留提交日志 traceability
+[User Instruction Summary]
+- Date: 2026-09-29
+- Context: 用户要求「后台适配所有需 API 的注册商，后期填 Key 即自动生效采集」
+- Instructions:
+  - 需 API 的注册商（godaddy/namecheap/netim/gandi/infomaniak/enom/resellerclub）在后台预置骨架适配器，保持 is_active=false 就绪，不在前端展示
+  - 填 Key 自动生效机制：createCredential/toggleCredential 激活凭证时联动把 registrars.is_active 置 true → scheduleAll 自动入队采集，无需手动激活
+  - 采集端 services/crawl/index.ts 的 getCredentialForRegistrar 从 registrar_credentials 读 active 凭证并 AES 解密注入 ctx；export-prices 命令行用的是 null ctx（不接凭据），真实凭据采集走 /api/v1/crawl 或 cron/api/cron/crawl
+  - API 适配器（enom/infomaniak/resellerclub 等骨架）的价格字段名契约已标注"需真实 Key 首采核验微调"，首采后按实际返回 JSON 微调 parse
+  - 后台凭证录入类型：gandi/godaddy/namecheap/netim 等在 docs/credentials.md；新骨架 enom=basic(UID/PW), resellerclub=api_key(token=api-key,secret=auth-userid), infomaniak=api_key(token)
