@@ -236,11 +236,10 @@ export const truehostAdapter = createTableAdapter({
   slug: "truehost",
   name: "Truehost",
   website: "https://truehost.cloud",
-  currency: "USD",
-  urls: ["https://truehost.cloud/domains"],
-  columnOrder: ["register", "renew", "transfer"],
+  currency: "KES",
+  urls: ["https://truehost.co.ke/domains/"],
+  columnOrder: ["register", "renew", "transfer", "skip"],
   owner: "Data Team",
-  browser: { waitFor: "table", waitForTimeoutMs: 20_000 },
 })
 
 export const hostingkrAdapter = createTableAdapter({
