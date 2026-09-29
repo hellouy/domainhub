@@ -144,3 +144,12 @@
 - 唯一涉价为 GET/POST /api/v1/domains/available（按完整域名），只返回 premiumPricing（premium 溢价 register 一档价），无 register/renew/transfer 常规三档价目
 - 判定：与价目表采集（每 TLD 三档价矩阵）不匹配；实时 premium 查询价值低且引入查询延迟。**保持候选池，不建适配器**。若未来需要 premium 溢价查询可考虑，但非本产品价目口径
 - 关键：不要靠 spaceship.com 网页抓价（Cloudflare 403）
+
+### 补充实测：spaceship.com 网页"有价"但无法批量抓（2026-09-29）
+
+- 页面 https://www.spaceship.com/zh/domain-search/?tab=pricing&query=com 是 React SPA + Cloudflare
+- 浏览器渲染能拿到 1.4MB HTML 壳（title 域名搜索），但壳内**无任何价格/水合数据**（无 __NEXT_DATA__/registerPrice/tldPrices）
+- `query=com` 空载状态不发定价 XHR（xhr-json 捕获 0 条）→ 价格只在用户**输入完整域名并提交查询**后通过异步接口加载
+- render worker 无"输入+点击驱动交互"能力，只能 goto/waitFor/scroll，无法触发那个查询
+- Cloudflare challenge 会话**不稳定**：同 URL 多次渲染时而 1.4MB 完整壳、时而 "Just a moment..." 挑战页
+- 结论：该页虽展示价格，但属交互式登录墙 SPA + CF 高对抗，无 SSR 内嵌、无稳定可枚举接口，无法作为自动价目采集源
