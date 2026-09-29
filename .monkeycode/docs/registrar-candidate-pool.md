@@ -136,3 +136,11 @@
 | resellerclub | private-api (economypricing.json) | api_key token/secret | ✅ 骨架新建，DB 待 Key |
 
 > 骨架契约（各家 API 价格字段名）标注了「需真实 Key 首采核验微调」，首采后按实际返回微调 parse 即可。1API/HEXONET 保留候选池「🌀需逆向」未建骨架（凭证结构复杂，待需时再加）。
+
+## 2026-09-29 Spaceship（http://spaceship.com / spaceship.dev）评估：不接入价目采集
+
+- 认证：X-Api-Key + X-Api-Secret header（两值不编码），spaceship.dev 验证有效，能取账户域名列表
+- API 能力（Read 仅）：域名管理/列表/详情、可用性检查、contacts、DNS、transfer、SellerHub、Hyperlift；**无全量 TLD 价目表端点**
+- 唯一涉价为 GET/POST /api/v1/domains/available（按完整域名），只返回 premiumPricing（premium 溢价 register 一档价），无 register/renew/transfer 常规三档价目
+- 判定：与价目表采集（每 TLD 三档价矩阵）不匹配；实时 premium 查询价值低且引入查询延迟。**保持候选池，不建适配器**。若未来需要 premium 溢价查询可考虑，但非本产品价目口径
+- 关键：不要靠 spaceship.com 网页抓价（Cloudflare 403）
