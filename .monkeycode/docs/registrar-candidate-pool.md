@@ -91,3 +91,16 @@
 5. 其余 🛡/🏗/🌀/❌ 项：仅拆分给专项 subagent 且用户明确授权"允许反爬/逆向/登录"时才做，否则保持 📌 待解锁；`❌ 无公开源` 项（如 alibaba-cloud-intl）默认不再重复试探。
 
 > 注: 平台护栏禁止反爬绕过/逆向/威胁登录对抗。上表 🛡/🏗/🌀 项默认不攻，仅记录解锁条件。
+## 2026-09-29 全量价格核验（重新识别）
+
+对现有全部 active 注册商做了一轮全量重采（32 家 / 16803 条，BROWSER_SERVICE_URL 渲染）并逐家逐 TLD 与库中当前值 diff：
+
+- **30 家完全一致（0 差异）**：cloudflare/porkbun/dynadot/ovhcloud/gandi/namecom/namesilo/onamae/hostpoint/xserver/value-domain/muumuu-domain/hostinger/cloudns/101domain/22cn/westcn/openprovider/krystal/directnic/dreamhost/forpsi/juming/blacknight/exabytes/networksolutions/hostingkr/inwx/ukrnames/idwebhost/keliweb —— 现有价格识别全部准确。
+- **truehost 唯一异常 → 已修正并部署**：
+  - 原值来源是 `truehost.cloud`（USD），且该域现已不可访问（直连 0 字节、渲染 60s 超时），本次重采意外走浏览器把 register/renew 列整体左移错位。
+  - 实际价格源 `truehost.co.ke/domains/` 页面币种是肯尼亚先令 **KES**，库中却误标 USD。
+  - 修正：切回 `truehost.co.ke`，currency `USD→KES`，`columnOrder` 加 `"skip"` 忽略 Grace Period 列。com=999/1600/1259、co.ke=999/1500/1000、ke=2999/3000/2999（KES），全部与源一致。
+  - 清理库中残留 119 条 USD 专属 tld，truehost 现为 514 行全 KES。commit `e40d2d6` 已部署生产 READY。
+- **生产最终统计**：32 active / 3001 tlds / 16817 prices，lastUpdated 2026-09-29。
+
+结论：现有 32 家爬取价格全部重新识别为准确，唯一修正点为 truehost 的币种标注（USD→KES）与来源 URL。
