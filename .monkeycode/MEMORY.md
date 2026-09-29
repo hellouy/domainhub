@@ -100,9 +100,12 @@ Entries discovered by the Agent during task execution should follow this format:
 - Category: Operations & Deployment
 - Instructions:
   - 批量新增注册商完整链路：export-prices（ONLY_SLUGS 指定集）→ 合并闪断失败源 → generate-seed-data → bulk-load-new.cjs 入库 → tsc+next build → commit+push → Vercel REST 部署 → 验证 /api/v1/statistics
+  - 后台跑 export-prices 等重采时**必须显式传 `BROWSER_SERVICE_URL=http://127.0.0.1:8840`**，否则依赖浏览器降级的源（namecom/namesilo/onamae/cloudns/101domain 等）会 FAIL（playwright: 需配置 BROWSER_SERVICE_URL）；像直接 curl 一样后台也很容易漏传导致整轮重采大量 FAIL
+  - truehost 价格源是 `truehost.co.ke`（KES 肯尼亚先令），不是 `truehost.cloud`（现已不可访问且误标 USD）；columnOrder 需带 `"skip"` 忽略 Grace 列
   - export 单家闪断（xhr:terminated / playwright 302/502 / 提取空行）不代表结构坏：本轮 hostpoint/101domain/krystal 失败，从上一版 `data/prices-20260927.json` 合并携带其数据到新 export 防回归（DB 用 upsert 无 delete，缺失 slug 行不会被清）
   - 数据准确性排查方法论：核对 `/api/v1/prices?tld=<ccTLD>` 新注册商首行真实值（ukrnames .ua 3528 UAH / idwebhost .id 190000 IDR / keliweb .it 1290 EUR），对照 sourceUrl 原始站点校验；DB 口径见 /api/v1/statistics，最新 32 active / 2998 tlds / 16875 prices（infomaniak 仍 is_active=false）
   - 生产验证用 www.tldbi.com（Vercel 项目 domainhub，账号 8839029-5124），不用本地 host
+  - 最新口径见 /api/v1/statistics（2026-09-29：32 active / 3001 tlds / 16817 prices）
 
 [User Instruction Summary]
 - Date: 2026-09-28
