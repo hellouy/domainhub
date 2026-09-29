@@ -104,3 +104,19 @@
 - **生产最终统计**：32 active / 3001 tlds / 16817 prices，lastUpdated 2026-09-29。
 
 结论：现有 32 家爬取价格全部重新识别为准确，唯一修正点为 truehost 的币种标注（USD→KES）与来源 URL。
+
+## 2026-09-29 各洲广度扫描（IANA/ICANN 注册商扩量）
+
+应"按 IANA 注册的各洲注册商扩充价格"，从 ICANN 官方认证注册商名单（含 IANA Number/Country）抓取并按七大洲系统探测了 **90+ 注册商公开价格页**，多数为直连+浏览器双探。结果与既有候选池判断一致：**能被干净接入的新源极稀缺**。分区结论：
+
+- **非洲**：dns.africa（table waitFor 超时）、afrihost 404、domains.co.za 403、绝大多数 ENOTFOUND/超时。❌ 无干净公开价表。
+- **南美**：registro.br SPA、locaweb/kinghost 价格在 div/JS、hostgator.mx/donweb 403 CF。❌。
+- **大洋洲**：webcentral/melbourneit/ventraip/synergy 渲染 60s 超时（候选池已记不稳定）；crazydomains 403；netregistry 超时。❌。
+- **中东**：arab.com/seen/enjaz 渲染后无价格行；aeida/qacert/saudinic ENOTFOUND/EAI_AGAIN。❌。
+- **南亚**：znetlive 超时、hostgator.in/bigrock.resellerclub 403 CF、milestone 空页。❌。
+- **东南亚**：rumahweb tld 广(1419)但价格为文字混排非列式、核心通用 tld 少、难适配；niagahoster/webcentral SPA；dewaweb 403。**候选但低优先**。
+- **欧洲**：ionos/hosteurope/online/strato SPA、fasthosts 404、njal 超时、netcup 渲染无价格。❌。
+- **北美**：pair/hover/dotster/web.com/register.com/namecheap/godaddy 全 403 CF 或 SPA。❌。
+- 唯一稳定的 JSON/text 源 porkbun.com/tld/pricing.json 但 porkbun **已入采**。
+
+**结论**：公开可无凭据/无 CF 直接抓的干净价格源已基本采尽（即当前 32 家）。要扩到 50+ 需依赖：① 批发 API 凭据（gandi/infomaniak/namecheap/godaddy/netim/Enom 任一，一源覆盖数百 TLD）；② 浏览器 worker 提升超时+稳定性后对澳洲等慢源重试；③ 修改接危标准放行"价格混排文字"型源（如 rumahweb，适配成本高、通用 tld 覆盖低）。本轮验证 `porkbun.com/tld/pricing.json` 可作价格事实基准。
