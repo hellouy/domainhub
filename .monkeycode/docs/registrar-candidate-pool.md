@@ -153,3 +153,39 @@
 - render worker 无"输入+点击驱动交互"能力，只能 goto/waitFor/scroll，无法触发那个查询
 - Cloudflare challenge 会话**不稳定**：同 URL 多次渲染时而 1.4MB 完整壳、时而 "Just a moment..." 挑战页
 - 结论：该页虽展示价格，但属交互式登录墙 SPA + CF 高对抗，无 SSR 内嵌、无稳定可枚举接口，无法作为自动价目采集源
+
+## 2026-09-29/10-02 tldhub 索引发现与 18 家命中接入
+
+- **发现索引**：`tldhub.com/{tld}` 每页 ~144 家注册商 `data-*_plain`(reg/ren/tra) 三档价，覆盖 ~30 主流 TLD；`tldhub.com/registrar/` 列 **149 家**注册商。
+- **方法**：以 tldhub 为发现索引，对 149 家逐个探索**官方源**（上游可枚举价目），命中标准：无登录、无 Cloudflare、价格结构化(静态表/内嵌 JSON/公开 API/稳定 XHR)、覆盖 ≥10 TLD。SPA 无接口/需登录/反爬不算命中。tldhub 聚合页本身不入库（仅当索引）。
+- 117 家经 3 批并行 subagent 探测，命中率 ~17%，**18 家命中**；用户选定**全量接入**。
+
+### 已接入 16 家（含 tierla/connectreseller 首批，2026-09-29 已上）
+| slug | 源结构 | 覆盖 | 币种 | Parse 验证 |
+|------|--------|------|------|-----------|
+| tierra | JSON `{tld:[reg,renew,transfer,sale,type]}` | 359 | USD | 100% ✓ |
+| connectreseller | 静态表(需整页实体解码) | 650 | USD | 100% ✓ |
+| joker | XHR `result.pricelist.domains[*].*.total.display_total` | 598 | USD | 100% ✓ |
+| nicnames | API `registrars[].prices[]=[tld,reg,renew,transfer]`(取自家) | 599 | USD | 100% ✓ |
+| epik | API `load-200-plus-prices`(Standard 档) | 705 | USD | 100% ✓ |
+| one | REST 每 TLD `display-prices`(仅 register) | 20 | GBP | 100% ✓ |
+| interserver | 静态 `a.tld-row`×3 `span.tld-cost` | 503 | USD | 100% ✓ |
+| ultahost | 静态 `data-usd` + label(<tr> 未闭合按边界切) | 534 | USD | 100% ✓ |
+| domaincostclub | 静态表 panels(members) 3 列 | 459 | USD | 100% ✓ |
+| imena | 静态 `magicprice_UAH` 注册价 | 361 | UAH | 100% ✓ |
+| regtons | 静态表(fr 千分位/逗号小数) | 1092 | USD | 100% ✓ |
+| icdsoft | 静态微数据表(独立注册价) | 30 | USD | 100% ✓ |
+| istanco | 静态隐藏表 3 档价 | 48 | EUR | 100% ✓ |
+| mchost | 静态 `dom_list`(rub 字形, 注册/续费混合) | 380 | RUB | 100% ✓ |
+| hostafrica | 静态表 `R` 前缀 | 10 | ZAR | 100% ✓ |
+| osir | 静态 3 列表 | 17 | USD | 100% ✓ |
+
+### 证伪剔除
+- **fabulous** — 探测误判命中；实为 **Tier 批发阶梯价**(按账户 TLD 数量档), 非 TLD 价目矩阵, 剔除。
+
+### 结构要点（踩坑记录）
+- connectreseller 价格单元格为数值 HTML 实体(`&#36;`=$)，须整页 `&#NNN;`→字符 解码后再解析，否则 parsePrice 误读成 36。
+- ultahost/个别源 `<tr>` 未闭合，按 `<tr` 标签边界 split 切行，不能依赖 `/<\/tr>/`。
+- imena 定位净 `magicprice_UAH` div 为实付注册价，需 UA+Accept-Language header 拿英文页(取 63s，间歇超时)。
+- regtons 用 **空格=千分位、逗号=小数**(fr 格式)，`1 020,00`=1020.00；mchost 卢布用 `span.ruble` 字形、多数行仅注册价。
+- one.com 仅暴露 register(fullPrice)，无 renew/transfer；`tld` 须带前导点否则 400。
