@@ -65,6 +65,8 @@ import { ukrnamesAdapter, idwebhostAdapter, keliwebAdapter } from "./breadth-sca
 import { enomAdapter } from "./enom"
 import { infomaniakAdapter } from "./infomaniak"
 import { resellerclubAdapter } from "./resellerclub"
+import { tierraAdapter } from "./tierra"
+import { connectresellerAdapter } from "./connectreseller"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -120,6 +122,9 @@ export const allAdapters = [
   enomAdapter,
   infomaniakAdapter,
   resellerclubAdapter,
+  // tldhub 索引探测命中：干净可接入（2026-09-29）
+  tierraAdapter,
+  connectresellerAdapter,
 ]
 
 for (const adapter of allAdapters) {
