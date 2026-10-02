@@ -81,6 +81,12 @@ import { istancoAdapter } from "./istanco"
 import { mchostAdapter } from "./mchost"
 import { hostafricaAdapter } from "./hostafrica"
 import { ultahostAdapter } from "./ultahost"
+import { iwantmynameAdapter } from "./iwantmyname"
+import { gnameAdapter } from "./gname"
+import { wpxAdapter } from "./wpx"
+import { whcAdapter } from "./whc"
+import { easyspaceAdapter } from "./easyspace"
+import { onlydomainsAdapter } from "./onlydomains"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -153,6 +159,13 @@ export const allAdapters = [
   mchostAdapter,
   hostafricaAdapter,
   ultahostAdapter,
+  // 第二批探索新增：更广覆盖与多币种（2026-10-02）
+  iwantmynameAdapter,
+  gnameAdapter,
+  wpxAdapter,
+  whcAdapter,
+  easyspaceAdapter,
+  onlydomainsAdapter,
 ]
 
 for (const adapter of allAdapters) {
