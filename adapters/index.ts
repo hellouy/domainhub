@@ -67,6 +67,20 @@ import { infomaniakAdapter } from "./infomaniak"
 import { resellerclubAdapter } from "./resellerclub"
 import { tierraAdapter } from "./tierra"
 import { connectresellerAdapter } from "./connectreseller"
+import { jokerAdapter } from "./joker"
+import { nicnamesAdapter } from "./nicnames"
+import { epikAdapter } from "./epik"
+import { oneAdapter } from "./one"
+import { interserverAdapter } from "./interserver"
+import { domaincostclubAdapter } from "./domaincostclub"
+import { regtonsAdapter } from "./regtons"
+import { osirAdapter } from "./osir"
+import { imenaAdapter } from "./imena"
+import { icdsoftAdapter } from "./icdsoft"
+import { istancoAdapter } from "./istanco"
+import { mchostAdapter } from "./mchost"
+import { hostafricaAdapter } from "./hostafrica"
+import { ultahostAdapter } from "./ultahost"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -125,6 +139,20 @@ export const allAdapters = [
   // tldhub 索引探测命中：干净可接入（2026-09-29）
   tierraAdapter,
   connectresellerAdapter,
+  jokerAdapter,
+  nicnamesAdapter,
+  epikAdapter,
+  oneAdapter,
+  interserverAdapter,
+  domaincostclubAdapter,
+  regtonsAdapter,
+  osirAdapter,
+  imenaAdapter,
+  icdsoftAdapter,
+  istancoAdapter,
+  mchostAdapter,
+  hostafricaAdapter,
+  ultahostAdapter,
 ]
 
 for (const adapter of allAdapters) {
