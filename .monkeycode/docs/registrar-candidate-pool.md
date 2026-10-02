@@ -189,3 +189,28 @@
 - imena 定位净 `magicprice_UAH` div 为实付注册价，需 UA+Accept-Language header 拿英文页(取 63s，间歇超时)。
 - regtons 用 **空格=千分位、逗号=小数**(fr 格式)，`1 020,00`=1020.00；mchost 卢布用 `span.ruble` 字形、多数行仅注册价。
 - one.com 仅暴露 register(fullPrice)，无 renew/transfer；`tld` 须带前导点否则 400。
+
+## 第二轮接入（非 tldhub 索引，新增探索）— 6 家，commit `d8a62ef`，部署 READY `dpl_3vMsHRS52AUVphsxNKstrz2vgcjJ`
+
+子代理对 12 家非 tldhub 149 的新候选探测，7 家命中，实际接入 6 家（truehost 已存在于 table-registrars 聚合）。
+
+| slug | 策略 | 行数 | 币种 | 验证 |
+|------|------|------|------|------|
+| iwantmyname | HTML API `Prices-getPrices`(分页 limit=500, levels=IWMN, currency=USD) | 668 | USD | 100% ✓ |
+| gname | POST `request/get_price`(整页内嵌 JSON) | 86 | USD | 100% ✓ |
+| onlydomains | 静态表(单元格数值实体+`,`) | 896 | AUD | 100% ✓ |
+| easyspace | createTableAdapter(GBP) | 570 | GBP | 100% ✓ |
+| whc | `table.tlds-table`（tld/price/renewprice **属性在 `<tr>` 开标签上**) | 441 | CAD | 99.8% ✓ |
+| wpx | 下单页内嵌 JSON `"products":[`（须 balanced-bracket 提取，index≈120132） | 40 | USD | 100% ✓ |
+
+### 证伪 / 放弃（本轮）
+- **rebel** — SPA，数据顿 client-fetch 获取，无静态表 → 不入
+- **dondominio** — SPA 无静态批价表 → 不入
+- **lcn** — term-only 行少价稀；**eurodns** — 仅逐 TLD 独立页 → 不入
+- **fastcomet** — ClearBook per-search，无全域表 → 不入
+
+### 结构要点（第二批踩坑）
+- **iwantmyname** `tld` 带前导点，levels=IWMN 过滤 + currency 参数；分页按 limit。
+- **whc** 种的 `tld=".ca" price="10.99" renewprice="C$14.99"` 全部是 `<tr>` 的**标签属性**，用 `split(/<tr...>/)` 会把属性随开标签吞掉 → 必须直接 regex 匹配 `<tr[^>]*>` 再取属性；renewprice 含 `C$` 前缀，价格正则需 `[\d.]+`。
+- **wpx** 页面有多个 `"products"`：index 119681 是模块配置，**真域名数组在 index 120132**（40 个含 periods[0]{title,value,register,transfer,renew}），须 balanced-bracket 提取；.com register 14.99 / transfer 14.99 / renew 16.99。
+- **truehost** 删除重复：已由 `adapters/table-registrars.ts` 的 createTableAdapter(slug truehost, KES, url truehost.co.ke/domains/) 覆盖。
