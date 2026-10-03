@@ -1,6 +1,8 @@
 import Link from "next/link"
 import { ArrowUpRight } from "lucide-react"
 import { HomeHero } from "@/components/home-hero"
+import { SocialBadges } from "@/components/brand/social-badges"
+import { ShareSection } from "@/components/brand/share-section"
 import { TldExplorer } from "@/components/tld-explorer"
 import { T, RegistrarDescription } from "@/components/i18n-text"
 import { getActiveRegistrars, getStats, getTldsWithMinPrice } from "@/lib/db/queries"
@@ -13,7 +15,7 @@ export default async function HomePage() {
     getTldsWithMinPrice(),
     getActiveRegistrars(),
   ])
-  /** 已验证后缀：至少有一条真实采集价格记录 */
+
   const verifiedTlds = allTlds
     .filter((t) => t.registrarCount > 0 && t.minRegister !== null)
     .map((t) => ({
@@ -23,6 +25,7 @@ export default async function HomePage() {
       minRegister: t.minRegister,
       registrarCount: t.registrarCount,
     }))
+
   const searchOptions = allTlds.map((t) => ({
     tld: t.tld,
     type: t.type,
@@ -31,7 +34,6 @@ export default async function HomePage() {
 
   return (
     <>
-      {/* Hero：移动端紧凑，统计 2x2，文案随语言切换 */}
       <HomeHero
         stats={{
           registrarCount: stats.registrarCount,
@@ -42,7 +44,62 @@ export default async function HomePage() {
         searchOptions={searchOptions}
       />
 
-      {/* 后缀浏览器：筛选 + 点击就地看价，零跳转 */}
+      <section className="border-b border-border bg-gradient-to-b from-background to-muted/30">
+        <div className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6 md:py-10">
+          <div className="flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between">
+            <div className="space-y-3">
+              <p className="text-xs font-medium uppercase tracking-[0.22em] text-primary">brand</p>
+              <h2 className="text-xl font-semibold tracking-tight md:text-2xl">Trusted by domain investors and operators</h2>
+            </div>
+            <SocialBadges />
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-border">
+        <div className="mx-auto w-full max-w-6xl px-4 py-8 md:px-6 md:py-10">
+          <div className="grid gap-6 lg:grid-cols-[1.15fr_0.85fr]">
+            <div className="rounded-2xl border border-border bg-card p-5 shadow-sm shadow-slate-200/40 dark:shadow-none">
+              <div className="mb-4 flex items-center justify-between gap-3">
+                <div>
+                  <p className="text-[11px] font-medium uppercase tracking-[0.22em] text-primary">01</p>
+                  <h3 className="mt-2 text-lg font-semibold">Brand sharing</h3>
+                </div>
+              </div>
+              <p className="mb-5 max-w-xl text-sm leading-relaxed text-muted-foreground">
+                Share the cheapest registration and renewal data across product communities, newsletters, and social platforms.
+              </p>
+              <ShareSection />
+            </div>
+
+            <div className="rounded-2xl border border-border bg-gradient-to-br from-primary/10 via-background to-sky-100 p-5 dark:from-primary/10 dark:via-background dark:to-sky-950/30">
+              <div className="mb-4 flex items-center gap-2">
+                <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-sky-300 text-sm font-black text-primary-foreground">
+                  D
+                </span>
+                <div>
+                  <p className="text-[11px] uppercase tracking-[0.2em] text-muted-foreground">tldbi</p>
+                  <h3 className="font-semibold">Domain intelligence</h3>
+                </div>
+              </div>
+
+              <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1 xl:grid-cols-3">
+                {[
+                  { label: 'TLDs', value: stats.tldCount.toLocaleString() },
+                  { label: 'Registrars', value: stats.registrarCount.toLocaleString() },
+                  { label: 'Quotes', value: stats.priceCount.toLocaleString() },
+                ].map((item) => (
+                  <div key={item.label} className="rounded-xl border border-border/80 bg-background/80 p-3">
+                    <div className="text-[10px] uppercase tracking-[0.2em] text-muted-foreground">{item.label}</div>
+                    <div className="mt-2 font-mono text-xl font-semibold text-foreground">{item.value}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section aria-labelledby="tld-explorer" className="border-b border-border">
         <div className="mx-auto w-full max-w-6xl px-4 py-10 md:px-6 md:py-14">
           <div className="mb-6 flex flex-col gap-2">
@@ -55,7 +112,6 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* 注册商：移动端紧凑双行 */}
       <section aria-labelledby="registrars-heading">
         <div className="mx-auto w-full max-w-6xl px-4 py-10 md:px-6 md:py-14">
           <div className="mb-6 flex items-end justify-between">

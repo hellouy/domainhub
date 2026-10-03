@@ -1,10 +1,84 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="180" height="40" viewBox="0 0 180 40" role="img" aria-label="Reddit badge">
-  <rect width="180" height="40" rx="12" fill="#ff4500"/>
-  <circle cx="22" cy="20" r="9" fill="#fff" opacity="0.9"/>
-  <circle cx="18" cy="19.5" r="2.2" fill="#ff4500"/>
-  <circle cx="26" cy="19.5" r="2.2" fill="#ff4500"/>
-  <path d="M18 24.2c1.3 1.5 4.8 1.5 6.1 0" fill="none" stroke="#ff4500" stroke-width="1.8" stroke-linecap="round"/>
-  <path d="M27 12.5l3.8-2.4 1.1 2.4-2.5 1.2" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M17 12.5l-3.8-2.4-1.1 2.4 2.5 1.2" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/>
-  <text x="42" y="25" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700">Reddit</text>
-</svg>
+import { ImageResponse } from 'next/og'
+
+export const runtime = 'edge'
+export const alt = 'tldbi.com twitter card'
+export const size = {
+  width: 1200,
+  height: 630,
+}
+export const contentType = 'image/png'
+
+export default async function Image() {
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          display: 'flex',
+          width: '100%',
+          height: '100%',
+          padding: '56px',
+          background: 'linear-gradient(135deg, #020817 0%, #0f172a 24%, #2563eb 100%)',
+          color: '#ecfeff',
+          fontFamily: 'sans-serif',
+          flexDirection: 'column',
+          justifyContent: 'space-between',
+        }}
+      >
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              width: 84,
+              height: 84,
+              borderRadius: 22,
+              background: 'linear-gradient(135deg, #60a5fa 0%, #bfdbfe 100%)',
+              color: '#0f172a',
+              fontSize: 32,
+              fontWeight: 900,
+            }}
+          >
+            D
+          </div>
+          <div style={{ fontSize: 28, letterSpacing: 1.4, opacity: 0.82 }}>tldbi.com</div>
+        </div>
+
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+          <div style={{ fontSize: 62, fontWeight: 800, lineHeight: 1.08, letterSpacing: -2 }}>
+            Cheapest domain prices,
+          </div>
+          <div style={{ fontSize: 62, fontWeight: 800, lineHeight: 1.08, letterSpacing: -2 }}>
+            across the world.
+          </div>
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+          {['.com', '.io', '.ai', '.shop', 'renewal', 'transfer'].map((item) => (
+            <div
+              key={item}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                background: 'rgba(148, 163, 184, 0.16)',
+                border: '1px solid rgba(148,163,184,0.35)',
+                borderRadius: 999,
+                color: '#e2e8f0',
+                padding: '10px 18px',
+                fontSize: 22,
+                fontWeight: 700,
+              }}
+            >
+              {item}
+            </div>
+          ))}
+        </div>
+      </div>
+    ),
+    {
+      width: 1200,
+      height: 630,
+    },
+  )
+}
