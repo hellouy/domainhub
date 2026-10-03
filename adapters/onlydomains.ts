@@ -22,20 +22,22 @@ async function parseOnlyDomains(raw: string, _ctx: AdapterContext): Promise<RawP
   for (const tr of rows) {
     const cells = tr.match(/<td[^>]*>[\s\S]*?<\/td>/gi) ?? []
     if (cells.length < 4) continue
-    const c0 = (cells[0] ?? "").replace(/<[^>]+>/g, "").trim()
-    const tldM = c0.match(/[a-z0-9][a-z0-9-]*(\.[a-z]{2,})?\b/i)
-    if (!tldM || (cells[0] ?? "").includes("<th>")) continue
-    const tld = c0.toLowerCase().replace(/^\./, "")
+    // TLD 取自首列 anchor：<a href="/domains/...">.ac.nz</a>
+    const c0 = cells[0] ?? ""
+    const tldM = c0.match(/<a[^>]*href="[^"]*"[^>]*>\s*\.?([a-z0-9][a-z0-9-]*(?:\.[a-z0-9-]+)*)\s*<\/a>/i)
+    if (!tldM) continue
+    const tld = tldM[1].toLowerCase()
     if (!tld || seen.has(tld)) continue
     const readCell = (c: string): number | null => {
-      // 取单元格内 "$X.XX" 数字
-      const m = c.replace(/<[^>]+>/g, "").replace(/[^\d.,\s-]/g, "").match(/(\d+(?:[.,]\d+)?)/)
+      // 取单元格内 "$X.XX" 形式的价格（忽略整数 aria 副本）
+      const m = c.match(/\$(\d{1,3}(?:[.,]\d{1,3})+(?:[.,]\d{1,2})?)/)
       if (!m) return null
-      const n = Number.parseFloat(m[1].replace(/,/g, ""))
+      const txt = m[1].replace(/,/g, "")
+      const n = Number.parseFloat(txt)
       if (!Number.isFinite(n) || n <= 0) return null
       return Math.round(n * 100) / 100
     }
-    // 列: TLD | Country | Min Term | Price | Renewal | Transfer | Restore
+    // 列: TLD|Country|Min Term|Price|Renewal|Transfer|Restore（用带 $ 前缀的真实价）
     const reg = readCell(cells[3] ?? "")
     const ren = readCell(cells[4] ?? "")
     const tra = readCell(cells[5] ?? "")
