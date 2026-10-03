@@ -143,6 +143,8 @@ export class BaseAdapter {
         premium: raw.premium ?? false,
         promotion: raw.promotion ?? false,
         promoCode: raw.promoCode ?? null,
+        promotionPrice: raw.promotionPrice != null ? parsePriceString(raw.promotionPrice) : null,
+        promotionEndsAt: raw.promotionEndsAt ?? null,
         region: raw.region ?? null,
         billingPeriod: raw.billingPeriod ?? "1y",
         source: sourceDescription,

@@ -103,6 +103,8 @@ export const hostingerAdapter = defineAdapter({
             transferPrice: price.transfer ?? null,
             currency: "USD",
             promotion,
+            // 促销价 = 当前实际购买价（低于标准价时）
+            promotionPrice: promotion ? purchase : null,
             sourceUrl: SEARCH_URL,
           })
         }

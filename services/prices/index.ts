@@ -56,6 +56,9 @@ function seedPricesRows(filter: { registrar?: string; tld?: string; limit?: numb
     registerPrice: number | null
     renewPrice: number | null
     transferPrice: number | null
+    promotionPrice: number | null
+    promoCode: string | null
+    promotionEndsAt: Date | null
     sourceUrl: string | null
     updatedAt: Date
   }[] = []
@@ -71,6 +74,9 @@ function seedPricesRows(filter: { registrar?: string; tld?: string; limit?: numb
         registerPrice: num(p.registerPrice),
         renewPrice: num(p.renewPrice),
         transferPrice: num(p.transferPrice),
+        promotionPrice: null,
+        promoCode: null,
+        promotionEndsAt: null,
         sourceUrl: p.sourceUrl,
         updatedAt: p.updatedAt,
       })
@@ -118,6 +124,9 @@ export async function queryPrices(filter: { registrar?: string; tld?: string; li
           registerPrice: prices.registerPrice,
           renewPrice: prices.renewPrice,
           transferPrice: prices.transferPrice,
+          promotionPrice: prices.promotionPrice,
+          promoCode: prices.promoCode,
+          promotionEndsAt: prices.promotionEndsAt,
           sourceUrl: prices.sourceUrl,
           updatedAt: prices.updatedAt,
         })
@@ -133,6 +142,7 @@ export async function queryPrices(filter: { registrar?: string; tld?: string; li
         registerPrice: num(r.registerPrice),
         renewPrice: num(r.renewPrice),
         transferPrice: num(r.transferPrice),
+        promotionPrice: num(r.promotionPrice),
       }))
     },
     () => seedPricesRows(filter),
@@ -181,6 +191,101 @@ export async function queryHistory(filter: {
       }))
     },
     () => [],
+  )
+}
+
+/** 有效促销列表（deals-and-coupons） */
+export async function queryDeals(filter: {
+  registrar?: string
+  tld?: string
+  onlyActive?: boolean
+  limit?: number
+}) {
+  return withFallback(
+    "queryDeals",
+    async () => {
+      const conditions = [sql`${prices.promotionPrice} IS NOT NULL`, eq(registrars.isActive, true)]
+      if (filter.registrar) conditions.push(eq(registrars.slug, filter.registrar))
+      if (filter.tld) conditions.push(eq(tlds.tld, normalizeTld(filter.tld)))
+      // 默认只看未过期促销（promotion_ends_at 为空视为长期有效）
+      if (filter.onlyActive !== false) {
+        conditions.push(sql`(${prices.promotionEndsAt} IS NULL OR ${prices.promotionEndsAt} > now())`)
+      }
+
+      const rows = await db
+        .select({
+          registrar: registrars.slug,
+          registrarName: registrars.name,
+          tld: tlds.tld,
+          currency: prices.currency,
+          registerPrice: prices.registerPrice,
+          renewPrice: prices.renewPrice,
+          transferPrice: prices.transferPrice,
+          promotionPrice: prices.promotionPrice,
+          promoCode: prices.promoCode,
+          promotionEndsAt: prices.promotionEndsAt,
+          sourceUrl: prices.sourceUrl,
+          updatedAt: prices.updatedAt,
+        })
+        .from(prices)
+        .innerJoin(registrars, eq(prices.registrarId, registrars.id))
+        .innerJoin(tlds, eq(prices.tldId, tlds.id))
+        .where(and(...conditions))
+        .orderBy(prices.promotionPrice)
+        .limit(Math.min(filter.limit ?? 100, 500))
+
+      return rows.map((r) => ({
+        ...r,
+        registerPrice: num(r.registerPrice),
+        renewPrice: num(r.renewPrice),
+        transferPrice: num(r.transferPrice),
+        promotionPrice: num(r.promotionPrice),
+      }))
+    },
+    () => [],
+  )
+}
+
+/** 某后缀最便宜排名（有促销取促销价，无则标准注册价） */
+export async function queryCheapest(tld: string, limit = 20) {
+  return withFallback(
+    "queryCheapest",
+    async () => {
+      const t = normalizeTld(tld)
+      const rows = await db
+        .select({
+          registrar: registrars.slug,
+          registrarName: registrars.name,
+          currency: prices.currency,
+          registerPrice: prices.registerPrice,
+          renewPrice: prices.renewPrice,
+          transferPrice: prices.transferPrice,
+          promotionPrice: prices.promotionPrice,
+          promoCode: prices.promoCode,
+          promotionEndsAt: prices.promotionEndsAt,
+          effectivePrice: sql<string>`CASE WHEN ${prices.promotionPrice} IS NOT NULL AND ${prices.promotionPrice} < ${prices.registerPrice} THEN ${prices.promotionPrice} ELSE ${prices.registerPrice} END`,
+        })
+        .from(prices)
+        .innerJoin(registrars, eq(prices.registrarId, registrars.id))
+        .innerJoin(tlds, eq(prices.tldId, tlds.id))
+        .where(and(eq(registrars.isActive, true), eq(tlds.tld, t)))
+        .orderBy(sql`CASE WHEN ${prices.promotionPrice} IS NOT NULL AND ${prices.promotionPrice} < ${prices.registerPrice} THEN ${prices.promotionPrice} ELSE COALESCE(${prices.registerPrice}, 0) END`)
+        .limit(Math.min(limit, 50))
+
+      return {
+        tld: t,
+        count: rows.length,
+        data: rows.map((r) => ({
+          ...r,
+          registerPrice: num(r.registerPrice),
+          renewPrice: num(r.renewPrice),
+          transferPrice: num(r.transferPrice),
+          promotionPrice: num(r.promotionPrice),
+          effectivePrice: num(r.effectivePrice),
+        })),
+      }
+    },
+    () => ({ tld: normalizeTld(tld), count: 0, data: [] }),
   )
 }
 

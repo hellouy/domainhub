@@ -90,12 +90,15 @@ export const dynadotAdapter = defineAdapter({
             typeof entry.original_reg_price === "string" && entry.original_reg_price !== "-1"
           prices.push({
             tld: entry.name,
-            registerPrice: entry.reg_price ?? null,
+            // 标准注册价优先用原价; 无原价时用当前注册价
+            registerPrice: isPromo ? entry.original_reg_price ?? null : entry.reg_price ?? null,
             renewPrice: entry.renew_price ?? null,
             transferPrice: entry.tr_price ?? null,
             restorePrice: entry.restore ?? null,
             currency: "USD",
             promotion: isPromo,
+            // 促销价 = 当前注册价（当存在原价时即为折扣价）
+            promotionPrice: isPromo ? entry.reg_price ?? null : null,
             sourceUrl: PRICING_PAGE,
           })
         }
@@ -131,12 +134,15 @@ export const dynadotAdapter = defineAdapter({
             typeof entry.original_reg_price === "string" && entry.original_reg_price !== "-1"
           prices.push({
             tld: entry.name,
-            registerPrice: entry.reg_price ?? null,
+            // 标准注册价优先用原价; 无原价时用当前注册价
+            registerPrice: isPromo ? entry.original_reg_price ?? null : entry.reg_price ?? null,
             renewPrice: entry.renew_price ?? null,
             transferPrice: entry.tr_price ?? null,
             restorePrice: entry.restore ?? null,
             currency: "USD",
             promotion: isPromo,
+            // 促销价 = 当前注册价（当存在原价时即为折扣价）
+            promotionPrice: isPromo ? entry.reg_price ?? null : null,
             sourceUrl: PRICING_PAGE,
           })
         }

@@ -75,6 +75,9 @@ export async function createPriceSink(registrarId: number): Promise<{
     return {
       registerPrice: row.registerPrice ? Number.parseFloat(row.registerPrice) : null,
       renewPrice: row.renewPrice ? Number.parseFloat(row.renewPrice) : null,
+      promotionPrice: row.promotionPrice ? Number.parseFloat(row.promotionPrice) : null,
+      promoCode: row.promoCode,
+      promotionEndsAt: row.promotionEndsAt,
     }
   }
 
@@ -106,21 +109,38 @@ export async function createPriceSink(registrarId: number): Promise<{
         knownTlds.add(price.tld)
       }
 
+      // 促销价须低于标准注册价才有意义；否则置空（防把涨价挂到促销列）
+      const promoPrice =
+        price.promotionPrice != null &&
+        price.registerPrice != null &&
+        price.promotionPrice < price.registerPrice
+          ? price.promotionPrice
+          : null
+
       const next = {
         registerPrice: norm(price.registerPrice),
         renewPrice: norm(price.renewPrice),
         transferPrice: norm(price.transferPrice),
         currency: price.currency,
+        promotionPrice: norm(promoPrice),
+        promoCode: price.promoCode ?? null,
+        // 促销截止时间:往前保证 UTC ISO 输出由 DB 存储 timestamp
+        promotionEndsAt: price.promotionEndsAt ? new Date(price.promotionEndsAt) : null,
       }
       const prev = existingByTldId.get(tldId)
 
-      // compare：价格与币种完全一致则跳过
+      // compare：价格、币种与促销信息完全一致则跳过
       if (
         prev &&
         prev.registerPrice === next.registerPrice &&
         prev.renewPrice === next.renewPrice &&
         prev.transferPrice === next.transferPrice &&
-        prev.currency === next.currency
+        prev.currency === next.currency &&
+        (prev.promotionPrice === null ? null : Number.parseFloat(prev.promotionPrice)) ===
+          (next.promotionPrice === null ? null : Number.parseFloat(next.promotionPrice)) &&
+        prev.promoCode === next.promoCode &&
+        (prev.promotionEndsAt?.toISOString() ?? null) ===
+          (next.promotionEndsAt?.toISOString() ?? null)
       ) {
         skipped++
         continue
@@ -175,7 +195,12 @@ export async function createDryRunSink(registrarId: number): Promise<{
           inserted++
         } else if (
           norm(price.registerPrice) === (prev.registerPrice === null ? null : prev.registerPrice.toFixed(2)) &&
-          norm(price.renewPrice) === (prev.renewPrice === null ? null : prev.renewPrice.toFixed(2))
+          norm(price.renewPrice) === (prev.renewPrice === null ? null : prev.renewPrice.toFixed(2)) &&
+          norm(price.promotionPrice ?? null) ===
+            (prev.promotionPrice === null || prev.promotionPrice === undefined
+              ? null
+              : prev.promotionPrice.toFixed(2)) &&
+          (price.promoCode ?? null) === (prev.promoCode ?? null)
         ) {
           skipped++
         } else {
