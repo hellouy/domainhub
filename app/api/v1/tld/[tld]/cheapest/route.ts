@@ -6,9 +6,13 @@
 import { NextResponse } from "next/server"
 import { queryCheapest } from "@/services/prices"
 
-export async function GET(_request: Request, { params }: { params: { tld: string } }) {
+export async function GET(
+  _request: Request,
+  { params }: { params: Promise<{ tld: string }> },
+) {
   try {
-    const result = await queryCheapest(params.tld)
+    const { tld } = await params
+    const result = await queryCheapest(tld)
     return NextResponse.json(
       { apiVersion: "v1", ...result },
       {
