@@ -87,6 +87,8 @@ import { wpxAdapter } from "./wpx"
 import { whcAdapter } from "./whc"
 import { easyspaceAdapter } from "./easyspace"
 import { onlydomainsAdapter } from "./onlydomains"
+import { dotweeAdapter } from "./dotwee"
+import { dotologyAdapter } from "./dotology"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -166,6 +168,9 @@ export const allAdapters = [
   whcAdapter,
   easyspaceAdapter,
   onlydomainsAdapter,
+  // 第三批：ICANN 全局索引探测命中（2026-10-03）
+  dotweeAdapter,
+  dotologyAdapter,
 ]
 
 for (const adapter of allAdapters) {

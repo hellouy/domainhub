@@ -123,3 +123,16 @@ Entries discovered by the Agent during task execution should follow this format:
   - 采集端 services/crawl/index.ts 的 getCredentialForRegistrar 从 registrar_credentials 读 active 凭证并 AES 解密注入 ctx；export-prices 命令行用的是 null ctx（不接凭据），真实凭据采集走 /api/v1/crawl 或 cron/api/cron/crawl
   - API 适配器（enom/infomaniak/resellerclub 等骨架）的价格字段名契约已标注"需真实 Key 首采核验微调"，首采后按实际返回 JSON 微调 parse
   - 后台凭证录入类型：gandi/godaddy/namecheap/netim 等在 docs/credentials.md；新骨架 enom=basic(UID/PW), resellerclub=api_key(token=api-key,secret=auth-userid), infomaniak=api_key(token)
+
+[Project Knowledge Summary]
+- Date: 2026-10-03
+- Context: Discovered by Agent while 从 ICANN/IANA 官方清单构建全局注册商发现索引
+- Category: Troubleshooting & Debugging
+- Instructions:
+  - 全局注册商发现主源(官方、稳定、静态可爬)：
+    - ICANN 认证注册商清单 `https://www.icann.org/en/contracted-parties/accredited-registrars/list-of-accredited-registrars`（Angular SPA 但服务端渲染首屏，curl 200；行结构 `<label class="search-drop-down__item"><span>Company Name - IANA_ID</span>`；另有 `registrar-launch` 链接给官网）。沙箱对 icann.org 出站间歇 ECONNRESET，需重试。
+    - IANA `https://www.iana.org/assignments/registrar-ids/registrar-ids-1.csv`（4505 行 CSV：ID,Name,Status,RDAP URL；CSV 字段带引号含逗号须自写 parseCSV，不能 split(',')）。RDAP URL 的 host 常是注册商域名但多是批发/中间层（`*.tucows.com`/`ascio.com`/`corenic.net`/`rdap*.`）须过滤。
+  - 已产出索引：ICANN 3322 家(带 IANA ID) → join IANA → 469 唯一域 → 过滤批发/中间层后 407 候选域（`/tmp/opencode/vw/candidates.json`、`probe-queue.json`）。
+  - 聚合目录 tldes.com 提供 `/<tld>` 静态三列价表 + `/go/<slug>` 302→官网域，但沙箱现被 Cloudflare 403，不可用作主源。
+  - 反爬现状：tld-list.com/namecheap=Cloudflare managed challenge(403)，godaddy=Akamai；clean 优先 SSR 静态表/公开 JSON/简单 XHR，反爬太狠按用户「实用主义」约定标记跳过而非过度投入。
+  - 用户本轮指令：扩量两遍都选「两者兼顾/实用主义/大批量」，即先批量覆盖所有可采注册商再按量分级，反爬源限次重试否则跳过。
