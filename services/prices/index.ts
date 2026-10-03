@@ -220,7 +220,7 @@ export async function queryStatistics() {
     async () => {
       const [row] = await db
         .select({
-          registrarCount: sql<number>`(SELECT count(*) FROM ${registrars} WHERE ${registrars.isActive} = true)`,
+          registrarCount: sql<number>`(SELECT count(DISTINCT ${prices.registrarId}) FROM ${prices} JOIN ${registrars} ON ${registrars.id} = ${prices.registrarId} WHERE ${registrars.isActive} = true)`,
           tldCount: sql<number>`(SELECT count(*) FROM ${tlds})`,
           priceCount: sql<number>`(SELECT count(*) FROM ${prices})`,
           historyCount: sql<number>`(SELECT count(*) FROM ${priceHistory})`,

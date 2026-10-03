@@ -198,7 +198,7 @@
 |------|------|------|------|------|
 | iwantmyname | HTML API `Prices-getPrices`(分页 limit=500, levels=IWMN, currency=USD) | 668 | USD | 100% ✓ |
 | gname | POST `request/get_price`(整页内嵌 JSON) | 86 | USD | 100% ✓ |
-| onlydomains | 静态表(单元格数值实体+`,`) | 896 | AUD | 100% ✓ |
+| onlydomains | 静态表(单元格数值实体+`,`, TLD/价格从可解析列取) | 750(实写) | AUD | 100% ✓ |
 | easyspace | createTableAdapter(GBP) | 570 | GBP | 100% ✓ |
 | whc | `table.tlds-table`（tld/price/renewprice **属性在 `<tr>` 开标签上**) | 441 | CAD | 99.8% ✓ |
 | wpx | 下单页内嵌 JSON `"products":[`（须 balanced-bracket 提取，index≈120132） | 40 | USD | 100% ✓ |
@@ -214,3 +214,13 @@
 - **whc** 种的 `tld=".ca" price="10.99" renewprice="C$14.99"` 全部是 `<tr>` 的**标签属性**，用 `split(/<tr...>/)` 会把属性随开标签吞掉 → 必须直接 regex 匹配 `<tr[^>]*>` 再取属性；renewprice 含 `C$` 前缀，价格正则需 `[\d.]+`。
 - **wpx** 页面有多个 `"products"`：index 119681 是模块配置，**真域名数组在 index 120132**（40 个含 periods[0]{title,value,register,transfer,renew}），须 balanced-bracket 提取；.com register 14.99 / transfer 14.99 / renew 16.99。
 - **truehost** 删除重复：已由 `adapters/table-registrars.ts` 的 createTableAdapter(slug truehost, KES, url truehost.co.ke/domains/) 覆盖。
+
+## 第三轮：真实采集（此前仅干跑验证，未写库）— 2026-10-03
+
+此前 21 家 active 注册商 `--no-db` 干跑只验解析器、**从不写库**，导致 `is_active=54` 但大量空壳。本轮对 21 家逐一以真实写库方式跑 `test-adapter <slug>`（非 `--no-db`），补齐 `prices` 数据。
+
+- 写库结果：connectreseller 650, domaincostclub 459, epik 705, gname 86, hostafrica 10, icdsoft 30, imena 361, interserver 503, istanco 48, iwantmyname 668, joker 598, nicnames 599, one 20, osir 17, regtons 1092, ultahost 534, whc 440, wpx 40, easyspace 570, onlydomains 750
+- **onlydomains 解析器 bug（commit `0ffedd5`）**：原把首列 `<td>` 内全部响应式文本当 TLD（含 country/term/price 标签），价格误取拼接数字（776776.48）。修复：TLD 从 `<a href="/domains/...">.ac.nz</a>` 提取（支持单标签 gTLD `abogado` 等）、价格只取 `\$X.XX` 形式。修复后 750 行真实写库，Normalize 698 行含注册价、Validation 100%。
+- **内存资源**：并行跑多个 `tsx` 采集进程时 apply cgroup 内存限制可防 OOM；supabase pooler 偶发断连，单适配器重试即可。
+- 终态：active 注册商 **54 家全部有价格数据（0 空壳）**；`prices` 25,731 行、distinct TLD 3,083。
+- 21 家 `is_active=0`（未激活）：aliyun/amen/aruba/domeneshop/enom/eurodns/godaddy/hover/infomaniak/internetbs/loopia/lws/metaname/namecheap/netcup/netim/onecom/registercom/resellerclub/spaceship/transip（多数需 API Key 或无官方批价页）。
