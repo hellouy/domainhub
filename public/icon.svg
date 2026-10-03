@@ -1,4 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#d9502b"/>
-  <text x="16" y="22" font-family="ui-monospace, 'SF Mono', Menlo, monospace" font-size="15" font-weight="700" fill="#faf9f7" text-anchor="middle">T</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="tldbi favicon">
+  <defs>
+    <linearGradient id="g1" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#0b63f6"/>
+      <stop offset="100%" stop-color="#7dd3fc"/>
+    </linearGradient>
+  </defs>
+  <rect width="64" height="64" rx="18" fill="#0f172a"/>
+  <rect x="6" y="6" width="52" height="52" rx="14" fill="url(#g1)"/>
+  <path d="M22 18h11.2c9.7 0 16.8 6 16.8 14s-7.1 14-16.8 14H22V18Zm8.4 8.4v11.2h2.8c4.6 0 7.5-2.4 7.5-5.6s-2.9-5.6-7.5-5.6h-2.8Z" fill="#f8fbff"/>
+  <circle cx="46" cy="20" r="5" fill="#f8fbff" opacity="0.9"/>
 </svg>

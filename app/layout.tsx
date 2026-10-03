@@ -22,8 +22,8 @@ export async function generateMetadata(): Promise<Metadata> {
   const title = localizedTitle(settings, locale)
   const description = localizedDescription(settings, locale)
 
-  // favicon:后台设置了图片则用它,否则回退内置 SVG 图标
-  const icon = settings.faviconUrl ? [{ url: settings.faviconUrl }] : [{ url: '/icon.svg', type: 'image/svg+xml' }]
+  const faviconUrl = settings.faviconUrl || '/favicon.svg'
+  const ogImage = '/opengraph-image'
 
   return {
     metadataBase: new URL('https://tldbi.com'),
@@ -42,16 +42,30 @@ export async function generateMetadata(): Promise<Metadata> {
       description,
       url: 'https://tldbi.com',
       locale: locale === 'en' ? 'en_US' : 'zh_CN',
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: title,
+        },
+      ],
     },
     twitter: {
       card: 'summary_large_image',
       title,
       description,
+      images: [ogImage],
+      creator: '@tldbi',
+      site: '@tldbi',
     },
     robots: { index: true, follow: true },
     icons: {
-      icon,
-      apple: settings.faviconUrl || '/icon.svg',
+      icon: [
+        { url: faviconUrl, type: 'image/svg+xml' },
+        { url: '/icon.svg', type: 'image/svg+xml' },
+      ],
+      apple: faviconUrl,
     },
   }
 }

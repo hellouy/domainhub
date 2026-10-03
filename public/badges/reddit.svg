@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="180" height="40" viewBox="0 0 180 40" role="img" aria-label="Product Hunt badge">
+  <rect width="180" height="40" rx="12" fill="#ff6154"/>
+  <g transform="translate(12 8)">
+    <rect width="24" height="24" rx="6" fill="#fff" opacity="0.2"/>
+    <path d="M12 5.5h3.6a6.4 6.4 0 0 1 0 12.8H12v-5.2h3.2a3.4 3.4 0 0 0 0-6.8H12v-0.8Zm0 8.7h3.2c2.1 0 3.4-1.2 3.4-3.2 0-1.9-1.3-3.2-3.4-3.2H12v6.4Z" fill="#fff"/>
+  </g>
+  <text x="46" y="25" fill="#fff" font-family="Arial, Helvetica, sans-serif" font-size="15" font-weight="700">Product Hunt</text>
+</svg>

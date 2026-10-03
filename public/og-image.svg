@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="TLD domain price comparison social card">
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#020817"/>
+      <stop offset="35%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#2563eb"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect x="80" y="80" width="1040" height="470" rx="38" fill="rgba(15, 23, 42, 0.22)" stroke="rgba(255,255,255,0.18)"/>
+  <g transform="translate(110 110)">
+    <rect width="90" height="90" rx="24" fill="url(#bg)"/>
+    <rect x="8" y="8" width="74" height="74" rx="18" fill="#60a5fa"/>
+    <path d="M29 22h18.9c13.9 0 24.3 8.8 24.3 20.1S61.8 62.2 47.9 62.2H29V22Zm12 12.4v15.5h4.8c6.6 0 10.9-3.3 10.9-7.7s-4.3-7.8-10.9-7.8H41Z" fill="#0f172a"/>
+  </g>
+  <text x="230" y="186" fill="#ecfeff" font-family="Arial, Helvetica, sans-serif" font-size="30" font-weight="700">tldbi.com</text>
+  <text x="110" y="300" fill="#f8fbff" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="800">Cheapest domain prices,</text>
+  <text x="110" y="380" fill="#f8fbff" font-family="Arial, Helvetica, sans-serif" font-size="72" font-weight="800">across the world.</text>
+  <g fill="#e2e8f0" font-family="Arial, Helvetica, sans-serif" font-size="26" font-weight="700">
+    <rect x="110" y="430" width="102" height="48" rx="24" fill="rgba(148,163,184,0.15)" stroke="rgba(148,163,184,0.35)"/>
+    <text x="161" y="461" text-anchor="middle">.com</text>
+    <rect x="230" y="430" width="118" height="48" rx="24" fill="rgba(148,163,184,0.15)" stroke="rgba(148,163,184,0.35)"/>
+    <text x="289" y="461" text-anchor="middle">.io</text>
+    <rect x="366" y="430" width="120" height="48" rx="24" fill="rgba(148,163,184,0.15)" stroke="rgba(148,163,184,0.35)"/>
+    <text x="426" y="461" text-anchor="middle">.ai</text>
+    <rect x="504" y="430" width="136" height="48" rx="24" fill="rgba(148,163,184,0.15)" stroke="rgba(148,163,184,0.35)"/>
+    <text x="572" y="461" text-anchor="middle">.shop</text>
+  </g>
+</svg>

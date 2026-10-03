@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="tldbi comparison card">
+  <defs>
+    <linearGradient id="main" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="48%" stop-color="#0b63f6"/>
+      <stop offset="100%" stop-color="#7dd3fc"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="630" fill="url(#main)"/>
+  <circle cx="1035" cy="122" r="140" fill="rgba(96,165,250,0.18)"/>
+  <circle cx="980" cy="480" r="180" fill="rgba(147,197,253,0.14)"/>
+  <rect x="84" y="74" width="1032" height="482" rx="34" fill="rgba(15,23,42,0.18)" stroke="rgba(255,255,255,0.16)"/>
+  <g transform="translate(120 118)">
+    <rect width="110" height="110" rx="26" fill="#f8fbff"/>
+    <path d="M36 32h26.7c14.2 0 24.7 8.6 24.7 19.8S76.9 72 62.7 72H36V32Zm12.9 11.5v17.6h5.7c8.3 0 13.5-4 13.5-8.8s-5.2-8.8-13.5-8.8h-5.7Z" fill="#0b63f6"/>
+  </g>
+  <text x="260" y="180" fill="#f8fbff" font-family="Arial, Helvetica, sans-serif" font-size="34" font-weight="700">tldbi.com</text>
+  <text x="120" y="312" fill="#f8fbff" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="800">Domain</text>
+  <text x="120" y="390" fill="#f8fbff" font-family="Arial, Helvetica, sans-serif" font-size="78" font-weight="800">price comparison</text>
+  <text x="120" y="458" fill="#dbeafe" font-family="Arial, Helvetica, sans-serif" font-size="30">Compare registrars, renewals and transfers in seconds.</text>
+  <g font-family="Arial, Helvetica, sans-serif" font-size="22" font-weight="700" fill="#f8fbff">
+    <rect x="120" y="490" width="152" height="42" rx="21" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.18)"/>
+    <text x="196" y="518" text-anchor="middle">LIVE</text>
+    <rect x="292" y="490" width="194" height="42" rx="21" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.18)"/>
+    <text x="389" y="518" text-anchor="middle">GLOBAL</text>
+    <rect x="506" y="490" width="214" height="42" rx="21" fill="rgba(255,255,255,0.12)" stroke="rgba(255,255,255,0.18)"/>
+    <text x="613" y="518" text-anchor="middle">CHEAPEST</text>
+  </g>
+</svg>
