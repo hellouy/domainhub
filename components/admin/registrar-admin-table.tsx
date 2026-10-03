@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { CrawlOneButton } from "@/components/admin/crawl-buttons"
+import { RegistrarOnboardDialog } from "@/components/admin/registrar-onboard-dialog"
 import { useRouter } from "next/navigation"
 
 type RegistrarHealth = {
@@ -46,6 +47,8 @@ type Registrar = {
   coverage?: number
   lastPriceAt?: string | null
   lastJobStatus?: string | null
+  crawlUrls?: string[]
+  hasActiveRule?: boolean
 }
 
 function HealthBadge({ health }: { health: RegistrarHealth | null }) {
@@ -217,6 +220,13 @@ export function RegistrarAdminTable({ registrars }: { registrars: Registrar[] })
                   <CrawlOneButton
                     registrarId={r.id}
                     label={r.slug === "cloudflare" ? "运行 Cloudflare 采集" : undefined}
+                  />
+                  <RegistrarOnboardDialog
+                    registrarId={r.id}
+                    name={r.name}
+                    website={r.website}
+                    initialUrls={r.crawlUrls ?? []}
+                    hasActiveRule={r.hasActiveRule ?? false}
                   />
                   <EditDialog registrar={r} />
                 </div>
