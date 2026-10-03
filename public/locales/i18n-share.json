@@ -1,0 +1,18 @@
+{
+  "zh": {
+    "share.title": "分享 tldbi.com",
+    "share.twitter": "我在用 tldbi.com 对比域名价格，找到了最便宜的注册商！全球 1800+ TLD 实时价格对比。",
+    "share.linkedin": "Check out tldbi.com - Compare domain prices across 50+ registrars and 1800+ TLDs globally.",
+    "share.wechat_scan": "使用微信扫一扫分享到微信",
+    "share.copy": "复制链接",
+    "share.copied": "已复制到剪贴板"
+  },
+  "en": {
+    "share.title": "Share tldbi.com",
+    "share.twitter": "I just found the cheapest domain registrar using tldbi.com! Real-time price comparison for 1800+ TLDs across 50+ registrars globally. #domain #tld",
+    "share.linkedin": "Check out tldbi.com - Compare domain prices across 50+ registrars and 1800+ TLDs globally.",
+    "share.wechat_scan": "Scan with WeChat to share",
+    "share.copy": "Copy link",
+    "share.copied": "Copied to clipboard"
+  }
+}
