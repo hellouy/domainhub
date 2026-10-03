@@ -13,8 +13,30 @@ import "@/adapters"
 import { listRegisteredAdapters } from "@/packages/registry"
 import { executeStrategies } from "@/packages/adapter-sdk"
 import { parsePriceString } from "@/packages/parser"
-import { writeFileSync, mkdirSync } from "node:fs"
+import { writeFileSync, mkdirSync, readFileSync, existsSync } from "node:fs"
 import { join, dirname } from "node:path"
+
+/** 用上次导出(或 seed)已覆盖的后缀作为 knownTlds 全集，供"按 knownTlds 取价"型适配器(如 hostinger)扩展覆盖 */
+function loadKnownTlds(): Set<string> {
+  const out = new Set<string>()
+  const candidates = ["data/prices-20260927.json", "data/prices-20260926.json", "data/prices-20260830.json"]
+  for (const file of candidates) {
+    const abs = join(process.cwd(), file)
+    if (!existsSync(abs)) continue
+    try {
+      const data = JSON.parse(readFileSync(abs, "utf8"))
+      for (const r of Object.values(data.registrars ?? {})) {
+        for (const p of (r as { prices?: { tld?: string }[] }).prices ?? []) {
+          if (p.tld) out.add(p.tld.trim().toLowerCase())
+        }
+      }
+      break
+    } catch {
+      /* 跳过损坏/缺失文件 */
+    }
+  }
+  return out
+}
 
 interface OutPrice {
   tld: string
@@ -43,13 +65,14 @@ const HOSTS: Record<string, string> = {
   spaceship: "https://www.spaceship.com/domains/",
   aliyun: "https://wanwang.aliyun.com/domain/tld",
   openprovider: "https://www.openprovider.com/pricing/",
+  inwx: "https://www.inwx.com/en/domains",
   cloudns: "https://www.cloudns.net/domain-pricing/",
   hostpoint: "https://www.hostpoint.ch/en/domains/domain-prices",
   xserver: "https://www.xserver.ne.jp/domain_price.php",
   value_domain: "https://www.value-domain.com/domain_price/",
   muumuu_domain: "https://muumuu-domain.com/",
   onamae: "https://www.onamae.com/domain/charge/",
-  infomaniak: "https://www.infomaniak.com/en/domains",
+  
   hostinger: "https://www.hostinger.com/domain-names/",
   ovhcloud: "https://www.ovhcloud.com/en/domains/",
   gandi: "https://www.gandi.net/en/domain",
@@ -74,12 +97,18 @@ function hostFor(slug: string, def: { currency?: string; strategies?: { url?: st
 
 async function main() {
   const all = listRegisteredAdapters()
-  console.log(`共 ${all.length} 家已注册适配器，开始逐家采集导出…`)
+  const knownTlds = loadKnownTlds()
+  const only = (process.env.ONLY_SLUGS ?? "")
+    .split(",")
+    .map((s) => s.trim().toLowerCase())
+    .filter(Boolean)
+  const filtered = only.length > 0 ? all.filter((a) => only.includes((a.slug ?? a.definition.slug).toLowerCase())) : all
+  console.log(`共 ${filtered.length} 家已注册适配器，开始逐家采集导出…(knownTlds=${knownTlds.size})`)
 
   const out: Record<string, OutRegistrar> = {}
   const collectedAt = new Date().toISOString()
 
-  for (const a of all) {
+  for (const a of filtered) {
     const slug = a.slug ?? a.definition.slug
     const ctx = {
       registrarId: 0,
@@ -89,7 +118,7 @@ async function main() {
       },
       fetch: (url: string, init?: RequestInit) => fetch(url, init),
       getCredential: async () => null,
-      knownTlds: new Set<string>(),
+      knownTlds,
       addRetry: () => {},
     } as never
 
@@ -108,12 +137,45 @@ async function main() {
         const tld = (raw.tld ?? "").trim().toLowerCase().replace(/^\./, "")
         if (!tld || seen.has(tld)) continue
         seen.add(tld)
+        let registerPrice = parsePriceString(raw.registerPrice)
+        const renewPrice = parsePriceString(raw.renewPrice)
+        const transferPrice = parsePriceString(raw.transferPrice)
+        /** 散射保护：取消价远低于续费价（<1/50）视为脏数据，置 null 兜底（如 onamae .com reg=¥2） */
+        if (
+          registerPrice != null &&
+          renewPrice != null &&
+          renewPrice > 0 &&
+          registerPrice < renewPrice / 50
+        ) {
+          registerPrice = null
+        }
+        /** 促销贴纸归一：注册价 < 续费价/3 视为首年促销贴纸（如 name.com $1 vs $30），
+          *  为保证各注册商 register 列口径一致（都报"标准注册价"），置 null 让前端以续费价兜底 */
+        if (
+          registerPrice != null &&
+          renewPrice != null &&
+          renewPrice > 0 &&
+          registerPrice > 0 &&
+          registerPrice < renewPrice / 3
+        ) {
+          registerPrice = null
+        }
+        /** 单值误解析兜底：register 为极小整数(<=2)而续费/转入均缺失(如 forpsi "1 rok"→1 CZK)，
+          *  明显是 term/数量列被误当价格，置 null */
+        if (
+          registerPrice != null &&
+          registerPrice <= 2 &&
+          renewPrice == null &&
+          transferPrice == null
+        ) {
+          registerPrice = null
+        }
         prices.push({
           tld,
           currency: (raw.currency ?? currency).toUpperCase(),
-          registerPrice: parsePriceString(raw.registerPrice),
-          renewPrice: parsePriceString(raw.renewPrice),
-          transferPrice: parsePriceString(raw.transferPrice),
+          registerPrice,
+          renewPrice,
+          transferPrice,
         })
       }
       if (prices.length === 0) continue

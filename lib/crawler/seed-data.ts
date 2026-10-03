@@ -1,37 +1,22 @@
-// 种子价格数据（USD）——贴近各注册商真实定价水平
+// 种子价格数据 —— 真实采集快照 + 品牌占位合并
+// ------------------------------------------------------------
+// 真实部分来自 data/prices-YYYYMMDD.json 采集明细（scripts/generate-seed-data.ts 生成），
+// 覆盖 24 家注册商的全量后缀报价，币种为采集时注册商原币种。
+// 占位部分为采集未覆盖的品牌注册商（API 凭证待配置/反爬），价格贴近真实水平的 USD 估值。
 // 结构：registrar slug -> tld -> [注册价, 续费价, 转入价]（null 表示该注册商不提供该后缀）
+import { SEED_SNAPSHOT } from "./seed-prices"
 
 export type SeedPriceTuple = [number | null, number | null, number | null]
 
-export const SEED_PRICES: Record<string, Record<string, SeedPriceTuple>> = {
-  cloudflare: {
-    com: [9.77, 9.77, 9.77],
-    net: [11.85, 11.85, 11.85],
-    org: [10.11, 10.11, 10.11],
-    io: [45.0, 45.0, 45.0],
-    dev: [10.18, 10.18, 10.18],
-    app: [12.18, 12.18, 12.18],
-    xyz: [8.57, 8.57, 8.57],
-    ai: [72.0, 72.0, 72.0],
-    co: [24.0, 24.0, 24.0],
-    me: [15.5, 15.5, 15.5],
-    cc: [8.0, 8.0, 8.0],
-  },
-  porkbun: {
-    com: [11.06, 11.06, 11.06],
-    net: [12.76, 12.76, 12.76],
-    org: [11.15, 11.15, 11.15],
-    io: [42.79, 47.65, 47.65],
-    dev: [11.34, 13.61, 13.61],
-    app: [13.98, 15.31, 15.31],
-    xyz: [2.18, 10.61, 10.61],
-    ai: [71.83, 71.83, 71.83],
-    co: [26.71, 26.71, 26.71],
-    me: [17.18, 17.18, 17.18],
-    top: [3.44, 4.62, 4.62],
-    sh: [39.98, 45.98, 45.98],
-    cc: [8.76, 8.76, 8.76],
-  },
+export interface SeedRegistrarMeta {
+  name: string
+  website: string
+  currency: string
+  strategy: string | null
+}
+
+/** 采集未覆盖的品牌注册商:USD 占位定价（真实快照优先，以下 slug 均不在快照中） */
+const CURATED_PRICES: Record<string, Record<string, SeedPriceTuple>> = {
   namecheap: {
     com: [10.28, 16.98, 10.28],
     net: [12.98, 16.98, 12.98],
@@ -79,21 +64,6 @@ export const SEED_PRICES: Record<string, Record<string, SeedPriceTuple>> = {
     sh: [42.99, 42.99, 42.99],
     cc: [9.99, 9.99, 9.99],
   },
-  namecom: {
-    com: [12.99, 17.99, 12.99],
-    net: [14.99, 19.99, 14.99],
-    org: [13.99, 18.99, 13.99],
-    io: [49.99, 64.99, 54.99],
-    dev: [14.99, 17.99, 15.99],
-    app: [16.99, 19.99, 17.99],
-    xyz: [2.99, 13.99, 11.99],
-    ai: [79.99, 89.99, 84.99],
-    co: [29.99, 32.99, 29.99],
-    me: [19.99, 22.99, 19.99],
-    top: [3.99, 6.99, 5.99],
-    sh: [44.99, 54.99, 49.99],
-    cc: [10.99, 14.99, 12.99],
-  },
   spaceship: {
     com: [8.98, 10.98, 9.48],
     net: [11.48, 13.48, 11.98],
@@ -122,14 +92,30 @@ export const SEED_PRICES: Record<string, Record<string, SeedPriceTuple>> = {
   },
 }
 
-/** 采集来源页面（用于 source_url 展示） */
-export const SEED_SOURCE_URLS: Record<string, string> = {
-  cloudflare: "https://www.cloudflare.com/products/registrar/",
-  porkbun: "https://porkbun.com/products/domains",
-  namecheap: "https://www.namecheap.com/domains/",
-  godaddy: "https://www.godaddy.com/domains",
-  dynadot: "https://www.dynadot.com/domain/tlds",
-  namecom: "https://www.name.com/domains",
-  spaceship: "https://www.spaceship.com/domains/",
-  aliyun: "https://wanwang.aliyun.com/domain/tld",
+const CURATED_META: Record<string, SeedRegistrarMeta> = {
+  namecheap: { name: "Namecheap", website: "https://www.namecheap.com", currency: "USD", strategy: null },
+  godaddy: { name: "GoDaddy", website: "https://www.godaddy.com", currency: "USD", strategy: null },
+  dynadot: { name: "Dynadot", website: "https://www.dynadot.com", currency: "USD", strategy: null },
+  spaceship: { name: "Spaceship", website: "https://www.spaceship.com", currency: "USD", strategy: null },
+  aliyun: { name: "阿里云万网", website: "https://wanwang.aliyun.com", currency: "USD", strategy: null },
 }
+
+/** 合并后的全量价格表:真实采集快照 + 品牌占位 */
+export const SEED_PRICES: Record<string, Record<string, SeedPriceTuple>> = { ...CURATED_PRICES }
+for (const [slug, r] of Object.entries(SEED_SNAPSHOT.registrars)) {
+  SEED_PRICES[slug] = r.prices
+}
+
+/** 合并后的注册商元信息(名称/官网/计价币种) */
+export const SEED_REGISTRAR_META: Record<string, SeedRegistrarMeta> = { ...CURATED_META }
+for (const [slug, r] of Object.entries(SEED_SNAPSHOT.registrars)) {
+  SEED_REGISTRAR_META[slug] = { name: r.name, website: r.website, currency: r.currency, strategy: r.strategy }
+}
+
+/** 采集来源页面（用于 source_url 展示） */
+export const SEED_SOURCE_URLS: Record<string, string> = Object.fromEntries(
+  Object.entries(SEED_REGISTRAR_META).map(([slug, m]) => [slug, m.website]),
+)
+
+/** 快照采集时间（兜底数据展示「最后更新」用） */
+export const SEED_COLLECTED_AT: string = SEED_SNAPSHOT.collectedAt

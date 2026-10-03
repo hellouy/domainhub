@@ -11,6 +11,8 @@
  */
 import { defineAdapter, type RawPrice } from "@/packages/adapter-sdk"
 
+const API_URL = "https://www.hostinger.com/api-proxy/api/domain/tlds-pricing"
+const SEARCH_URL = "https://www.hostinger.com/domain-name-search"
 const HOSTINGER_TLDS = [
   ".com", ".net", ".org", ".info", ".biz", ".io", ".ai", ".co",
   ".app", ".dev", ".tech", ".site", ".online", ".store", ".shop", ".space",
@@ -32,6 +34,28 @@ const HOSTINGER_TLDS = [
   ".id", ".co.id", ".ph", ".com.ph",
 ]
 
+interface HostingerPriceEntry {
+  product?: {
+    price?: {
+      old?: number | null
+      purchase?: number | null
+      renew?: number | null
+      transfer?: number | null
+      first_year_price?: number | null
+    }
+  }
+}
+
+/** 把已知 TLD 集合并进候选列表（Hostinger 端点只回它支持的后缀） */
+function candidateTlds(ctx: { knownTlds: Set<string> }): string[] {
+  const set = new Set<string>(HOSTINGER_TLDS)
+  for (const tld of ctx.knownTlds ?? []) {
+    const t = tld.trim().toLowerCase()
+    if (t) set.add(t.startsWith(".") ? t : `.${t}`)
+  }
+  return Array.from(set)
+}
+
 export const hostingerAdapter = defineAdapter({
   slug: "hostinger",
   name: "Hostinger",
@@ -44,20 +68,63 @@ export const hostingerAdapter = defineAdapter({
   rateLimit: { concurrency: 1, rpm: 10, retries: 2, timeoutMs: 120_000 },
   strategies: [
     {
-      type: "playwright",
-      url: "https://www.hostinger.com/domain-name-search",
-      browser: {
-        extract: "api-fetch",
-        waitForTimeoutMs: 25_000,
-        apiFetch: {
-          url: "https://www.hostinger.com/api-proxy/api/domain/tlds-pricing",
+      // 首选：xhr 直连 hostinger 定价端点（无需浏览器会话），用已知 TLD 全集批量取价
+      type: "xhr",
+      url: API_URL,
+      async fetch(ctx) {
+        const res = await ctx.fetch(API_URL, {
           method: "POST",
           headers: {
             "content-type": "application/json",
             accept: "application/json",
             authorization: "Bearer www.hostinger.com",
             origin: "https://www.hostinger.com",
-            referer: "https://www.hostinger.com/domain-name-search",
+            referer: SEARCH_URL,
+          },
+          body: JSON.stringify({ tlds: candidateTlds(ctx), currency_code: "USD" }),
+        })
+        if (!res.ok) throw new Error(`Hostinger tlds-pricing 返回 HTTP ${res.status}`)
+        return res.text()
+      },
+      parse(raw: string): RawPrice[] {
+        const data = (JSON.parse(raw).data ?? {}) as Record<string, HostingerPriceEntry>
+        const prices: RawPrice[] = []
+        for (const [tldKey, entry] of Object.entries(data)) {
+          const price = entry.product?.price
+          if (!price) continue
+          const tld = tldKey.replace(/^\./, "").toLowerCase()
+          const register = Number(price.old ?? price.purchase)
+          const purchase = Number(price.purchase ?? 0)
+          const promotion = Number.isFinite(register) && Number.isFinite(purchase) && purchase < register
+          prices.push({
+            tld,
+            registerPrice: Number.isFinite(register) && register > 0 ? register : null,
+            renewPrice: price.renew ?? null,
+            transferPrice: price.transfer ?? null,
+            currency: "USD",
+            promotion,
+            sourceUrl: SEARCH_URL,
+          })
+        }
+        if (prices.length === 0) throw new Error("Hostinger tlds-pricing 返回为空")
+        return prices
+      },
+    },
+    {
+      type: "playwright",
+      url: SEARCH_URL,
+      browser: {
+        extract: "api-fetch",
+        waitForTimeoutMs: 25_000,
+        apiFetch: {
+          url: API_URL,
+          method: "POST",
+          headers: {
+            "content-type": "application/json",
+            accept: "application/json",
+            authorization: "Bearer www.hostinger.com",
+            origin: "https://www.hostinger.com",
+            referer: SEARCH_URL,
           },
           body: { tlds: HOSTINGER_TLDS, currency_code: "USD" },
         },

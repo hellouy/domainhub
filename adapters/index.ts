@@ -31,7 +31,6 @@ import {
   domeneshopAdapter,
   eurodnsAdapter,
   hoverAdapter,
-  infomaniakAdapter,
 internetbsAdapter,
   loopiaAdapter,
   lwsAdapter,
@@ -60,7 +59,34 @@ import { domain101Adapter } from "./101domain"
 import { cn22Adapter } from "./22cn"
 import { westcnAdapter } from "./westcn"
 import { openproviderAdapter } from "./openprovider"
-import { centralnicAdapter } from "./centralnic"
+import { krystalAdapter } from "./krystal"
+import { inwxAdapter } from "./inwx"
+import { ukrnamesAdapter, idwebhostAdapter, keliwebAdapter } from "./breadth-scan"
+import { enomAdapter } from "./enom"
+import { infomaniakAdapter } from "./infomaniak"
+import { resellerclubAdapter } from "./resellerclub"
+import { tierraAdapter } from "./tierra"
+import { connectresellerAdapter } from "./connectreseller"
+import { jokerAdapter } from "./joker"
+import { nicnamesAdapter } from "./nicnames"
+import { epikAdapter } from "./epik"
+import { oneAdapter } from "./one"
+import { interserverAdapter } from "./interserver"
+import { domaincostclubAdapter } from "./domaincostclub"
+import { regtonsAdapter } from "./regtons"
+import { osirAdapter } from "./osir"
+import { imenaAdapter } from "./imena"
+import { icdsoftAdapter } from "./icdsoft"
+import { istancoAdapter } from "./istanco"
+import { mchostAdapter } from "./mchost"
+import { hostafricaAdapter } from "./hostafrica"
+import { ultahostAdapter } from "./ultahost"
+import { iwantmynameAdapter } from "./iwantmyname"
+import { gnameAdapter } from "./gname"
+import { wpxAdapter } from "./wpx"
+import { whcAdapter } from "./whc"
+import { easyspaceAdapter } from "./easyspace"
+import { onlydomainsAdapter } from "./onlydomains"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -80,7 +106,6 @@ export const allAdapters = [
   eurodnsAdapter,
   registercomAdapter,
   metanameAdapter,
-  infomaniakAdapter,
   loopiaAdapter,
   domeneshopAdapter,
   hostpointAdapter,
@@ -98,7 +123,7 @@ export const allAdapters = [
   cn22Adapter,
   westcnAdapter,
   openproviderAdapter,
-  centralnicAdapter,
+  krystalAdapter,
   directnicAdapter,
   dreamhostAdapter,
   forpsiAdapter,
@@ -109,6 +134,38 @@ export const allAdapters = [
   networksolutionsAdapter,
   truehostAdapter,
   hostingkrAdapter,
+  inwxAdapter,
+  ukrnamesAdapter,
+  idwebhostAdapter,
+  keliwebAdapter,
+  // 需 API 凭证的注册商（后台配好 Key 后自动生效采集；无 Key 时不产数据）
+  enomAdapter,
+  infomaniakAdapter,
+  resellerclubAdapter,
+  // tldhub 索引探测命中：干净可接入（2026-09-29）
+  tierraAdapter,
+  connectresellerAdapter,
+  jokerAdapter,
+  nicnamesAdapter,
+  epikAdapter,
+  oneAdapter,
+  interserverAdapter,
+  domaincostclubAdapter,
+  regtonsAdapter,
+  osirAdapter,
+  imenaAdapter,
+  icdsoftAdapter,
+  istancoAdapter,
+  mchostAdapter,
+  hostafricaAdapter,
+  ultahostAdapter,
+  // 第二批探索新增：更广覆盖与多币种（2026-10-02）
+  iwantmynameAdapter,
+  gnameAdapter,
+  wpxAdapter,
+  whcAdapter,
+  easyspaceAdapter,
+  onlydomainsAdapter,
 ]
 
 for (const adapter of allAdapters) {

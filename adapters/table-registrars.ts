@@ -65,16 +65,6 @@ export const metanameAdapter = createTableAdapter({
   columnOrder: ["register", "renew", "transfer"],
 })
 
-export const infomaniakAdapter = createTableAdapter({
-  slug: "infomaniak",
-  name: "Infomaniak",
-  website: "https://www.infomaniak.com",
-  currency: "CHF",
-  urls: ["https://www.infomaniak.com/en/domains/prices"],
-  columnOrder: ["register", "renew", "transfer"],
-  browser: { waitFor: "table", waitForTimeoutMs: 30_000 },
-})
-
 export const loopiaAdapter = createTableAdapter({
   slug: "loopia",
   name: "Loopia",
@@ -203,7 +193,9 @@ export const forpsiAdapter = createTableAdapter({
   currency: "CZK",
   numberFormat: "eu",
   urls: ["https://www.forpsi.com/domain/"],
-  columnOrder: ["register", "renew"],
+  // 每行固定 5 列: [".TLD 类别", "1 rok(期限)", "", "注册价(不含/含DPH -)", "续费价(不含/含DPH)"]
+  // 跳过前两列(期限"1 rok"曾误当 1 CZK 注册价), 第4列=注册, 第5列=续费(ex-VAT 为首值)
+  columnOrder: ["skip", "skip", "register", "renew"],
   owner: "Data Team",
 })
 
@@ -215,6 +207,7 @@ export const jumingAdapter = createTableAdapter({
   urls: ["https://www.juming.com/price.htm"],
   columnOrder: ["register", "renew", "transfer"],
   owner: "Data Team",
+  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true },
 })
 
 export const blacknightAdapter = createTableAdapter({
@@ -243,11 +236,10 @@ export const truehostAdapter = createTableAdapter({
   slug: "truehost",
   name: "Truehost",
   website: "https://truehost.cloud",
-  currency: "USD",
-  urls: ["https://truehost.cloud/domains"],
-  columnOrder: ["register", "renew", "transfer"],
+  currency: "KES",
+  urls: ["https://truehost.co.ke/domains/"],
+  columnOrder: ["register", "renew", "transfer", "skip"],
   owner: "Data Team",
-  browser: { waitFor: "table", waitForTimeoutMs: 20_000 },
 })
 
 export const hostingkrAdapter = createTableAdapter({
@@ -266,10 +258,10 @@ export const exabytesAdapter = createTableAdapter({
   name: "Exabytes",
   website: "https://www.exabytes.my",
   currency: "MYR",
-  urls: ["https://www.exabytes.my/domain"],
+  urls: ["https://www.exabytes.my/domains/domain-name-search"],
   columnOrder: ["register"],
   owner: "Data Team",
-  browser: { waitFor: "table", waitForTimeoutMs: 20_000 },
+  browser: { waitForTimeoutMs: 30_000, scrollToBottom: true },
 })
 
 export const networksolutionsAdapter = createTableAdapter({
@@ -277,8 +269,8 @@ export const networksolutionsAdapter = createTableAdapter({
   name: "Network Solutions",
   website: "https://www.networksolutions.com",
   currency: "USD",
-  urls: ["https://www.networksolutions.com/domains/"],
-  columnOrder: ["register", "renew"],
+  urls: ["https://www.networksolutions.com/domains/domain-name-pricing"],
+  columnOrder: ["register", "renew", "transfer"],
   owner: "Data Team",
   browser: { waitFor: "table", waitForTimeoutMs: 30_000 },
 })

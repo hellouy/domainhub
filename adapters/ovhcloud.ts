@@ -93,6 +93,9 @@ export const ovhcloudAdapter = defineAdapter({
           const transferPrice = pick(plan.pricings, "transfer-default", 0)
           const restorePrice = pick(plan.pricings, "restore-default", 1)
           if (registerPrice === null && renewPrice === null && transferPrice === null) continue
+          // 注册/续费/转入 全为 0 的 TLD 是 OVH 目录里的"未提供/占位"项（如 br、gr.com、net.cn），
+          // 并非真实 €0 促销，跳过避免以"免费"误导比对
+          if ((registerPrice ?? 0) === 0 && (renewPrice ?? 0) === 0 && (transferPrice ?? 0) === 0) continue
           prices.push({
             tld,
             registerPrice,
