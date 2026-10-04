@@ -135,4 +135,16 @@ Entries discovered by the Agent during task execution should follow this format:
   - 已产出索引：ICANN 3322 家(带 IANA ID) → join IANA → 469 唯一域 → 过滤批发/中间层后 407 候选域（`/tmp/opencode/vw/candidates.json`、`probe-queue.json`）。
   - 聚合目录 tldes.com 提供 `/<tld>` 静态三列价表 + `/go/<slug>` 302→官网域，但沙箱现被 Cloudflare 403，不可用作主源。
   - 反爬现状：tld-list.com/namecheap=Cloudflare managed challenge(403)，godaddy=Akamai；clean 优先 SSR 静态表/公开 JSON/简单 XHR，反爬太狠按用户「实用主义」约定标记跳过而非过度投入。
+  - wix.com/domains/domain-pricing：Wix CMS 序列化 JSON，85 家全标 FREE_FIRST_YEAR($0 促销，无差异化)+续费价虚高($21-40)，解析复杂度高+数据质量低 → 按「实用主义」标记跳过，不接。
+  - activedomains(RU)：`https://active.domains/domains/` SSR 静态表，每行 5 td=[注册商名,.tld,注册₽,续费₽,转移₽]，RUB 千分位 &nbsp;；id=679，+91 prices 全为新写入（RU 系 .ru/.su/.com.ru 等，覆盖率 3% 不达标属正常）。
+
+[Project Knowledge Summary]
+- Date: 2026-10-04
+- Context: Discovered by Agent while 验证特价/最便宜能力全链路
+- Category: Operations & Deployment
+- Instructions:
+  - 特价/最便宜线上全链路已可用：`/api/v1/deals`(促销按促销价升序, 默认 onlyActive) + `/api/v1/tld/[tld]/cheapest`(effectivePrice=COALESCE(promotion_price, register_price) 排序)。生产验证 www.tldbi.com 通过 curl.
+  - 部署用 `npx -y vercel@latest deploy --prod --yes`（装全局 vercel 会超时，用 npx 即可），需 VERCEL_TOKEN + 项目 .vercel/project.json（team_7fiGBsOkagtxipEvpPg349yM / prj_374p5jEnrxaW1pyCiJfX4ljJErg0）。部署保护开启，验证 API 需 `vercel curl`（自动生成 bypass token）。
+  - activedomains 部署 commit 792c54d → Ready，alias www.tldbi.com。
+  - DB 现状(2026-10-04)：active 57 / prices 26618 / distinct tld 3137 / 促销行 428(hostinger 424 + keliweb 4)。
   - 用户本轮指令：扩量两遍都选「两者兼顾/实用主义/大批量」，即先批量覆盖所有可采注册商再按量分级，反爬源限次重试否则跳过。
