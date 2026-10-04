@@ -90,6 +90,9 @@ import { onlydomainsAdapter } from "./onlydomains"
 import { dotweeAdapter } from "./dotwee"
 import { dotologyAdapter } from "./dotology"
 import { activeDomainsAdapter } from "./activedomains"
+import { atakdomainAdapter } from "./atakdomain"
+import { starDomainAdapter } from "./stardomain"
+import { gatehillsAdapter } from "./gatehills"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -174,6 +177,10 @@ export const allAdapters = [
   dotologyAdapter,
   // 扩量+多币种: 俄语注册商 Active.domains (RUB)
   activeDomainsAdapter,
+  // 第四批: ICANN 候选深探命中 (2026-10-04)
+  atakdomainAdapter,
+  starDomainAdapter,
+  gatehillsAdapter,
 ]
 
 for (const adapter of allAdapters) {
