@@ -89,6 +89,7 @@ import { easyspaceAdapter } from "./easyspace"
 import { onlydomainsAdapter } from "./onlydomains"
 import { dotweeAdapter } from "./dotwee"
 import { dotologyAdapter } from "./dotology"
+import { activeDomainsAdapter } from "./activedomains"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -171,6 +172,8 @@ export const allAdapters = [
   // 第三批：ICANN 全局索引探测命中（2026-10-03）
   dotweeAdapter,
   dotologyAdapter,
+  // 扩量+多币种: 俄语注册商 Active.domains (RUB)
+  activeDomainsAdapter,
 ]
 
 for (const adapter of allAdapters) {
