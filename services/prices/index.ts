@@ -323,19 +323,37 @@ export async function queryStatistics() {
   return withFallback(
     "queryStatistics",
     async () => {
-      const [row] = await db
-        .select({
-          registrarCount: sql<number>`(SELECT count(DISTINCT ${prices.registrarId}) FROM ${prices} JOIN ${registrars} ON ${registrars.id} = ${prices.registrarId} WHERE ${registrars.isActive} = true)`,
-          tldCount: sql<number>`(SELECT count(*) FROM ${tlds})`,
-          priceCount: sql<number>`(SELECT count(*) FROM ${prices})`,
-          historyCount: sql<number>`(SELECT count(*) FROM ${priceHistory})`,
-          jobCount: sql<number>`(SELECT count(*) FROM ${crawlJobs})`,
-          successJobs: sql<number>`(SELECT count(*) FROM ${crawlJobs} WHERE status = 'success')`,
-          failedJobs: sql<number>`(SELECT count(*) FROM ${crawlJobs} WHERE status = 'failed')`,
-          lastUpdated: sql<string | null>`(SELECT max(${prices.updatedAt}) FROM ${prices})`,
-        })
-        .from(sql`(SELECT 1) AS one`)
-      return row
+      // 注意:不能对 sql 模板插值列对象,否则 Drizzle 生成未限定的 "id"/"registrar_id",
+      // 在 prices/registrars 联表时 "id" 产生歧义(column reference "id" is ambiguous)。
+      // 故此处直接用显式限定名/别名的原生 SQL。
+      const res = await db.execute(sql`
+        SELECT
+          (SELECT count(DISTINCT p.registrar_id) FROM prices p JOIN registrars r ON r.id = p.registrar_id WHERE r.is_active = true) AS registrar_count,
+          (SELECT count(*) FROM tlds WHERE is_valid = true) AS tld_count,
+          (SELECT count(*) FROM prices) AS price_count,
+          (SELECT count(*) FROM price_history) AS history_count,
+          (SELECT count(*) FROM crawl_jobs) AS job_count,
+          (SELECT count(*) FROM crawl_jobs WHERE status = 'success') AS success_jobs,
+          (SELECT count(*) FROM crawl_jobs WHERE status = 'failed') AS failed_jobs,
+          (SELECT max(updated_at) FROM prices) AS last_updated
+      `)
+      const row = (res.rows ?? [])[0] as Record<string, unknown> | undefined
+      const lu = row?.last_updated
+      let lastUpdated: string | null = null
+      if (lu != null) {
+        const d = lu instanceof Date ? lu : new Date(String(lu))
+        lastUpdated = Number.isNaN(d.getTime()) ? null : d.toISOString()
+      }
+      return {
+        registrarCount: Number(row?.registrar_count ?? 0),
+        tldCount: Number(row?.tld_count ?? 0),
+        priceCount: Number(row?.price_count ?? 0),
+        historyCount: Number(row?.history_count ?? 0),
+        jobCount: Number(row?.job_count ?? 0),
+        successJobs: Number(row?.success_jobs ?? 0),
+        failedJobs: Number(row?.failed_jobs ?? 0),
+        lastUpdated,
+      }
     },
     () => {
       const stats = seedStats()
