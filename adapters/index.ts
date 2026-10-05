@@ -93,6 +93,10 @@ import { activeDomainsAdapter } from "./activedomains"
 import { atakdomainAdapter } from "./atakdomain"
 import { starDomainAdapter } from "./stardomain"
 import { gatehillsAdapter } from "./gatehills"
+import { netzoneAdapter } from "./netzone"
+import { gzidcAdapter } from "./gzidc"
+import { namegearAdapter } from "./namegear"
+import { cciregAdapter } from "./ccireg"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -181,6 +185,11 @@ export const allAdapters = [
   atakdomainAdapter,
   starDomainAdapter,
   gatehillsAdapter,
+  // 第五批: ICANN 存活候选首页链接深挖命中 (2026-10-04)
+  netzoneAdapter,
+  gzidcAdapter,
+  namegearAdapter,
+  cciregAdapter,
 ]
 
 for (const adapter of allAdapters) {
