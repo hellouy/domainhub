@@ -97,6 +97,10 @@ import { netzoneAdapter } from "./netzone"
 import { gzidcAdapter } from "./gzidc"
 import { namegearAdapter } from "./namegear"
 import { cciregAdapter } from "./ccireg"
+import { koumingAdapter } from "./kouming"
+import { vsysAdapter } from "./vsys"
+import { alldomainsUzAdapter } from "./alldomains-uz"
+import { rumahwebAdapter } from "./rumahweb"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -190,6 +194,10 @@ export const allAdapters = [
   gzidcAdapter,
   namegearAdapter,
   cciregAdapter,
+  koumingAdapter,
+  vsysAdapter,
+  alldomainsUzAdapter,
+  rumahwebAdapter,
 ]
 
 for (const adapter of allAdapters) {

@@ -238,6 +238,12 @@ ICANN 407 候选分四批探测（标准路径多为 404，须试本地化/产�
 | gzidc | `gzidc.com/domain_new.php` 静态表 | 10 | CNY | 多级 .com.cn 修复 + 跳过 0 元促销 |
 | namegear | `namegear.co/domain/extensions/` 静态表 | 17 | JPY | |
 | ccireg | `ccireg.com/Pricing/index.html` 静态表 | 9 | USD | 指示性价目 |
+| kouming | `kouming.com/domain/price` 行级 `data-suffix` + `i.create/renewal` | 397 | CNY | 注册/续费/转入 |
+| vsys | `vsys.name/pricing` `data-price` 属性 | 385 | USD | 仅注册 |
+| alldomains-uz | `alldomains.uz/en/prices` `#domainTable` | 413 | UZS | 注册/续费/转移 |
+| rumahweb | `rumahweb.com/domain` 行级 `data-ext`/`data-price` | ~558 | IDR | 仅注册, 5MB 页 |
+
+> 候选发现：对 96 个存活域跑增强探测器 `probe2.mjs`（多语言路径 + 表行/价格计数 + 软 200 SPA 过滤），一次筛出 kouming/vsys/alldomains.uz/rumahweb。行级 `data-*` 属性比裸 td 顺序稳健。
 
 ### 证伪 / 放弃（本轮）
 - **wix.com** — CMS 序列化 JSON，85 家全 $0 FREE_FIRST_YEAR 促销 + 续费虚高，解析复杂/质量低 → 不入。

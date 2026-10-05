@@ -145,8 +145,10 @@ Entries discovered by the Agent during task execution should follow this format:
 - Instructions:
   - 特价/最便宜线上全链路：`/api/v1/deals`(促销按促销价升序, 默认 onlyActive) + `/api/v1/tld/[tld]/cheapest`(effectivePrice=COALESCE(promotion_price, register_price) 排序)。生产验证 www.tldbi.com 通过 curl。
   - 部署用 `npx -y vercel@latest deploy --prod --yes`（装全局 vercel 会超时，用 npx 即可），需 VERCEL_TOKEN + 项目 .vercel/project.json。部署保护开启，验证 API 需 `vercel curl`（自动生成 bypass token）。
-  - 扩量轮产出(2026-10-04)：AtakDomain(id=757, TR, USD, 956行)、Star Domain(id=758, JP, JPY, 52行)、GateHills(id=838, SG, USD, 435行含264促销)、netzone(id=919, CH, USD, 1019行)、gzidc(id=920, CN, CNY, 10行)、namegear(id=921, JP, JPY, 17行)、ccireg(id=1005, USD, 9行)。候选深探法：ICANN 407 候选先探标准路径(/domains/pricing 等)多为 404，需对存活域名试**本地化/产品路径**(/domain-fiyatlari 土语、/price 日语、/domain-prices-transparent-... 等)才有价表。首页链接深挖(ditigrow 式外链)亦有效，命中 netzone/gzidc/namegear。
-  - 反爬壳源处理：同 URL 状态不稳(首次 SSR 出表、再抓转 JS 壳)。对策=**同 URL 重试 3-4 次取最大响应体**(retry-shells.mjs)，pavietnam(560行 VND)重试即拿回；sawbuck/mainreg 经 browser-worker `/render` 仍 502(反爬拦 headless)按实用主义跳过。小源 Coverage 覆盖率 FAIL 属正常(仅覆盖少数冷门 TLD)。
+  - 扩量轮产出：AtakDomain(id=757, TR, USD, 956)、Star Domain(758, JP, JPY, 52)、GateHills(838, SG, USD, 435含264促销)、netzone(919, CH, USD, 1019)、gzidc(920, CN, CNY, 10)、namegear(921, JP, JPY, 17)、ccireg(1005, USD, 9)、kouming(1090, CN, CNY, 397)、vsys(1091, USD, 385)、alldomains-uz(1092, UZ, UZS, 413)、rumahweb(IDR, ~558)。
+  - 候选发现法：ICANN 407 候选标准路径多 404，须试**本地化/产品路径**(/domain-fiyatlari、/price 日语等)；对存活域跑增强探测器 `probe2.mjs`(并集 96 存活域 × 多语言路径 + 表行/价格计数 + 软 200 SPA 过滤)可一次筛出 kouming/vsys/alldomains.uz/rumahweb。首页外链深挖亦有效(netzone/gzidc/namegear)。
+  - 解析偏好：优先用行级 `data-*` 属性(`data-suffix`/`data-ext`/`data-price`)或类名(`i.create/i.renewal`)，比裸 td 顺序稳健；复合后缀(`.com.cn` 等)正则须 `(?:\.label)+`。
+  - 反爬壳源：同 URL 状态不稳(首次 SSR 出表、再抓转壳)。对策=同 URL 重试 3-4 次取最大响应体(retry-shells.mjs)；sawbuck/mainreg/webtuga 经 browser-worker `/render` 仍 502(拦 headless)按实用主义跳过。小源 Coverage FAIL 属正常。
   - **数据正确性坑**：`activedomains` 旧 tld 正则 `[a-z0-9-]*` 不含点号，把 com.ru/msk.su 等多级 RU 后缀截断成 com/msk 写入(污染 com/net/org 且丢二级行)。修复=正则加 `(?:\.[a-z0-9-]+)*`，再手术删 56 污染行 + 53 垃圾 tld 标 is_valid=false。**新增解析器务必核对多级后缀**。
   - **隐蔽生产 bug**：`queryStatistics` 在 raw sql 模板里插值列对象 → Drizzle 生成未限定 `ON "id"="registrar_id"`，prices/registrars 都有 id 故报 ambiguous；`withFallback` 吞错回退到 seed，生产长期显示陈旧统计(36/2989/16852)。修复=改写为显式限定原生 SQL + tld 只计 is_valid。**排查 withFallback 类接口须本地直连 DB 跑函数，不能只看线上 200**。
   - DB 现状(2026-10-04)：active 60 / prices 28074 / valid tld 3112 / 促销行 692(hostinger424+keliweb4+gatehills264)。
