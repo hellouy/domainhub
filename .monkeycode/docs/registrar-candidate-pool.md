@@ -224,3 +224,27 @@
 - **内存资源**：并行跑多个 `tsx` 采集进程时 apply cgroup 内存限制可防 OOM；supabase pooler 偶发断连，单适配器重试即可。
 - 终态：active 注册商 **54 家全部有价格数据（0 空壳）**；`prices` 25,731 行、distinct TLD 3,083。
 - 21 家 `is_active=0`（未激活）：aliyun/amen/aruba/domeneshop/enom/eurodns/godaddy/hover/infomaniak/internetbs/loopia/lws/metaname/namecheap/netcup/netim/onecom/registercom/resellerclub/spaceship/transip（多数需 API Key 或无官方批价页）。
+
+## 第四/五轮：ICANN 候选深探 + 首页链接深挖 — 2026-10-04/05
+
+ICANN 407 候选分四批探测（标准路径多为 404，须试本地化/产品路径），首页外链深挖命中数家。均以真实写库跑 `test-adapter`。
+
+| slug | 策略 | 行数 | 币种 | 备注 |
+|------|------|------|------|------|
+| atakdomain | 本地化 `/domain-fiyatlari` 静态表 | 956 | USD | 单轮最大 |
+| stardomain | 日语 `/price` 页 | 52 | JPY | |
+| gatehills | 静态表（含促销列） | 435 | USD | 含 264 促销 |
+| netzone | `netzone.ch/de/domainregistrierung` 静态表 | 1019 | USD | 本 sessions 单源最大 |
+| gzidc | `gzidc.com/domain_new.php` 静态表 | 10 | CNY | 多级 .com.cn 修复 + 跳过 0 元促销 |
+| namegear | `namegear.co/domain/extensions/` 静态表 | 17 | JPY | |
+| ccireg | `ccireg.com/Pricing/index.html` 静态表 | 9 | USD | 指示性价目 |
+
+### 证伪 / 放弃（本轮）
+- **wix.com** — CMS 序列化 JSON，85 家全 $0 FREE_FIRST_YEAR 促销 + 续费虚高，解析复杂/质量低 → 不入。
+- **above.com** — 全站仅 11 个 TLD，低值 → 不入。
+- **sawbuck / mainreg** — 首次 SSR 出表，再抓转 JS 壳；经 browser-worker `/render` 仍 502（反爬拦 headless）→ 按「实用主义」跳过。
+- **pavietnam.vn** — 重试可拿回 560 行 VND，但合并单元格 + 费用明细嵌套，解析成本高/风险中 → 暂缓。
+- **webtuga.pt** — 价表由 JS 模板 `"+registerPrice+"` 渲染，需 XHR → 暂缓。
+
+### 反爬壳源对策
+同 URL 状态不稳时，重试 3-4 次取最大响应体（`/tmp/opencode/vw/retry-shells.mjs`）；pavietnam 首次即用此法拿回。
