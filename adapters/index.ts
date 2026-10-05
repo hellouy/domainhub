@@ -101,6 +101,7 @@ import { koumingAdapter } from "./kouming"
 import { vsysAdapter } from "./vsys"
 import { alldomainsUzAdapter } from "./alldomains-uz"
 import { rumahwebAdapter } from "./rumahweb"
+import { cosmotownAdapter } from "./cosmotown"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -198,6 +199,7 @@ export const allAdapters = [
   vsysAdapter,
   alldomainsUzAdapter,
   rumahwebAdapter,
+  cosmotownAdapter,
 ]
 
 for (const adapter of allAdapters) {

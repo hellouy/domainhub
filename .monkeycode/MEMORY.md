@@ -145,7 +145,8 @@ Entries discovered by the Agent during task execution should follow this format:
 - Instructions:
   - 特价/最便宜线上全链路：`/api/v1/deals`(促销按促销价升序, 默认 onlyActive) + `/api/v1/tld/[tld]/cheapest`(effectivePrice=COALESCE(promotion_price, register_price) 排序)。生产验证 www.tldbi.com 通过 curl。
   - 部署用 `npx -y vercel@latest deploy --prod --yes`（装全局 vercel 会超时，用 npx 即可），需 VERCEL_TOKEN + 项目 .vercel/project.json。部署保护开启，验证 API 需 `vercel curl`（自动生成 bypass token）。
-  - 扩量轮产出：AtakDomain(id=757, TR, USD, 956)、Star Domain(758, JP, JPY, 52)、GateHills(838, SG, USD, 435含264促销)、netzone(919, CH, USD, 1019)、gzidc(920, CN, CNY, 10)、namegear(921, JP, JPY, 17)、ccireg(1005, USD, 9)、kouming(1090, CN, CNY, 397)、vsys(1091, USD, 385)、alldomains-uz(1092, UZ, UZS, 413)、rumahweb(IDR, ~558)。
+  - 扩量轮产出：AtakDomain(id=757, TR, USD, 956)、Star Domain(758, JP, JPY, 52)、GateHills(838, SG, USD, 435含264促销)、netzone(919, CH, USD, 1019)、gzidc(920, CN, CNY, 10)、namegear(921, JP, JPY, 17)、ccireg(1005, USD, 9)、kouming(1090, CN, CNY, 397)、vsys(1091, USD, 385)、alldomains-uz(1092, UZ, UZS, 413)、rumahweb(IDR, ~558→386唯一)、cosmotown(id=1269, USD, 249, AngularJS 需 playwright)。
+  - JS 渲染站：`browser-probe.mjs` 对 16 个"首页大但裸 HTML 无价表"域渲染筛选，多数低产(cosmotown 唯一有效；sav/spaceship 被 Cloudflare 502)。playwright 策略写法：`type:"playwright"` + `browser:{extract:"html",waitFor,scrollToBottom,locale}` + 自定义 parse；本地测试须传 `BROWSER_SERVICE_URL=http://127.0.0.1:8840`。
   - 候选发现法：ICANN 407 候选标准路径多 404，须试**本地化/产品路径**(/domain-fiyatlari、/price 日语等)；对存活域跑增强探测器 `probe2.mjs`(并集 96 存活域 × 多语言路径 + 表行/价格计数 + 软 200 SPA 过滤)可一次筛出 kouming/vsys/alldomains.uz/rumahweb。首页外链深挖亦有效(netzone/gzidc/namegear)。
   - 解析偏好：优先用行级 `data-*` 属性(`data-suffix`/`data-ext`/`data-price`)或类名(`i.create/i.renewal`)，比裸 td 顺序稳健；复合后缀(`.com.cn` 等)正则须 `(?:\.label)+`。
   - 反爬壳源：同 URL 状态不稳(首次 SSR 出表、再抓转壳)。对策=同 URL 重试 3-4 次取最大响应体(retry-shells.mjs)；sawbuck/mainreg/webtuga 经 browser-worker `/render` 仍 502(拦 headless)按实用主义跳过。小源 Coverage FAIL 属正常。

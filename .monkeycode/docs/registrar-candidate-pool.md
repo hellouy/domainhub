@@ -241,7 +241,10 @@ ICANN 407 候选分四批探测（标准路径多为 404，须试本地化/产�
 | kouming | `kouming.com/domain/price` 行级 `data-suffix` + `i.create/renewal` | 397 | CNY | 注册/续费/转入 |
 | vsys | `vsys.name/pricing` `data-price` 属性 | 385 | USD | 仅注册 |
 | alldomains-uz | `alldomains.uz/en/prices` `#domainTable` | 413 | UZS | 注册/续费/转移 |
-| rumahweb | `rumahweb.com/domain` 行级 `data-ext`/`data-price` | ~558 | IDR | 仅注册, 5MB 页 |
+| rumahweb | `rumahweb.com/domain` 行级 `data-ext`/`data-price` | 386 | IDR | 仅注册, 5MB 页 |
+| cosmotown | `cosmotown.com/pricing` AngularJS, playwright 渲染 | 249 | USD | 注册/续费/转移 |
+
+> JS 渲染轮：`browser-probe.mjs` 对 16 个「首页大但裸 HTML 无价表」域渲染筛选，仅 cosmotown 有效；sav.com、spaceship.com 被 Cloudflare 拦（502 / 403）。playwright 策略需部署配置 `BROWSER_SERVICE_URL`。
 
 > 候选发现：对 96 个存活域跑增强探测器 `probe2.mjs`（多语言路径 + 表行/价格计数 + 软 200 SPA 过滤），一次筛出 kouming/vsys/alldomains.uz/rumahweb。行级 `data-*` 属性比裸 td 顺序稳健。
 
