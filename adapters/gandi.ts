@@ -1,21 +1,25 @@
 /**
- * Gandi 适配器(Adapter SDK 2.0)
+ * Gandi —— 法国注册商价目(EUR)
  * ------------------------------------------------------------
  * 所有权: Data Team
  *
- * 数据源结论(2026-07):
- * 1. html: gandi.net/en/domain/tld 分页价格表(SSR),
- *    每页约 50 行, 逐页抓到空页为止 ✓ 首选
- * 2. api.gandi.net/v5/domain/tlds 需要 API Key(私有 API 备选,
- *    在后台配置凭证后自动启用)
+ * 源: https://www.gandi.net/en/domain (静态 HTML 价目表)
+ * 表: TLD | Register | Renew | Transfer
+ * Register 列格式: "€11.00" 或 "Promo €17.26 €11.99" (促销/原价)
+ *  币种 EUR。验证: 10 TLD (.com/.net/.xyz/.fr/.nz/.eu/.app/.co.uk/.online/.me)
+ * 注意: Renew 价格较高(如 .net €40) 为 Gandi 官方定价
  */
 
 import { defineAdapter, type RawPrice } from "@/packages/adapter-sdk"
-import { extractTableRows, findTldCell, parsePrice } from "./shared/table-adapter"
 
-const BASE_URL = "https://www.gandi.net/en/domain/tld"
-const API_BASE = "https://api.gandi.net/v5"
-const MAX_PAGES = 25
+const URL = "https://www.gandi.net/en/domain"
+
+function parseEur(s: string | null | undefined): number | null {
+  if (!s) return null
+  const m = s.replace(/[^0-9.,]/g, "").replace(",", ".")
+  const v = Number.parseFloat(m)
+  return Number.isFinite(v) && v > 0 ? Math.round(v * 100) / 100 : null
+}
 
 export const gandiAdapter = defineAdapter({
   slug: "gandi",
@@ -24,124 +28,53 @@ export const gandiAdapter = defineAdapter({
   owner: "Data Team",
   version: "1.0.0",
   parserVersion: "1.0.0",
-  currency: "USD",
-  priority: 40,
+  currency: "EUR",
   capabilities: {
     registration: true,
     renewal: true,
     transfer: true,
-    restore: true,
-    dnssec: true,
-    whoisPrivacy: true,
-    nameservers: true,
-    api: true,
-    supportedCurrencies: ["USD", "EUR", "GBP", "TWD"],
-    supportedLanguages: ["en", "fr", "es", "ja", "zh"],
+    supportedCurrencies: ["EUR"],
   },
-  rateLimit: { concurrency: 1, rpm: 20, retries: 2, timeoutMs: 60_000 },
+  rateLimit: { concurrency: 1, rpm: 10, retries: 3, timeoutMs: 60_000 },
   strategies: [
     {
-      // 首选：Gandi v5 私有 API。后台配好 api_key 凭证(api.gandi.net)后自动启用，
-      // 一次请求拿全量(数百 TLD)价格，覆盖远高于 SSR 分页。无 Key 时 fetch 抛错，
-      // 策略引擎自动降级到下方 html。
-      type: "private-api",
-      url: `${API_BASE}/domain/tlds/prices`,
-      async fetch(ctx) {
-        const cred = await ctx.getCredential("api_key")
-        const key = cred?.values.token
-        if (!key) {
-          throw new Error("Gandi API 缺少 api_key 凭证(api.gandi.net)。未配置时降级 SSR html")
-        }
-        const res = await ctx.fetch(`${API_BASE}/domain/tlds/prices`, {
-          headers: { Authorization: `Apikey ${key}`, Accept: "application/json" },
-        })
-        if (!res.ok) {
-          throw new Error(`Gandi API HTTP ${res.status}(401/403 = Key 无效；未配置时降级 SSR html)`)
-        }
-        return res.text()
-      },
-      async parse(raw): Promise<RawPrice[]> {
-        const rows = JSON.parse(raw) as Array<{
-          tld?: string
-          currency?: string
-          prices?: {
-            register?: Record<string, unknown>
-            renew?: Record<string, unknown>
-            transfer?: Record<string, unknown>
-          }
-        }>
-        const out: RawPrice[] = []
-        const num = (v: unknown): number | null => {
-          const n = typeof v === "number" ? v : v == null ? null : Number.parseFloat(String(v))
-          return Number.isFinite(n as number) && (n as number) > 0 ? (n as number) : null
-        }
-        for (const row of rows) {
-          const tld = String(row.tld ?? "").trim().toLowerCase().replace(/^\./, "")
-          if (!tld) continue
-          const reg = num(row.prices?.register?.gTLD) ?? num(row.prices?.register?.ccTLD)
-          const renew = num(row.prices?.renew?.gTLD) ?? num(row.prices?.renew?.ccTLD)
-          const transfer = num(row.prices?.transfer?.gTLD) ?? num(row.prices?.transfer?.ccTLD)
-          if (reg == null && renew == null && transfer == null) continue
-          out.push({
-            tld,
-            registerPrice: reg,
-            renewPrice: renew,
-            transferPrice: transfer,
-            currency: (row.currency ?? "EUR").toUpperCase(),
-            sourceUrl: `${API_BASE}/domain/tlds/prices`,
-          })
-        }
-        if (out.length === 0) throw new Error("Gandi API 未解析出任何价格")
-        return out
-      },
-    },
-    {
       type: "html",
-      url: BASE_URL,
-      async fetch(ctx) {
-        const pages: string[] = []
-        for (let page = 1; page <= MAX_PAGES; page++) {
-          const res = await ctx.fetch(`${BASE_URL}?page=${page}`, {
-            headers: {
-              "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
-              Accept: "text/html",
-            },
-          })
-          if (!res.ok) break
-          const html = await res.text()
-          // 该页解析不出任何 TLD 行时停止(比"下一页"链接更可靠)
-          const rowCount = extractTableRows(html).filter((cells) => findTldCell(cells)).length
-          if (rowCount === 0) break
-          pages.push(html)
-        }
-        if (pages.length === 0) throw new Error("Gandi 价格页无法访问")
-        return pages.join("\n<!--PAGE_BREAK-->\n")
-      },
-      parse(raw): RawPrice[] {
-        const rows = extractTableRows(raw)
-        const prices: RawPrice[] = []
+      url: URL,
+      async parse(raw: string): Promise<RawPrice[]> {
+        const out: RawPrice[] = []
         const seen = new Set<string>()
-        for (const cells of rows) {
-          const hit = findTldCell(cells)
-          if (!hit) continue
-          const [tld, tldIdx] = hit
-          if (seen.has(tld)) continue
-          const values: (number | null)[] = []
-          for (let i = tldIdx + 1; i < cells.length; i++) values.push(parsePrice(cells[i]))
-          if (values.every((v) => v === null)) continue
-          seen.add(tld)
-          prices.push({
-            tld,
-            registerPrice: values[0] ?? null,
-            renewPrice: values[1] ?? null,
-            transferPrice: values[2] ?? null,
-            currency: "USD",
-            sourceUrl: BASE_URL,
-          })
+        const tableMatch = raw.match(/<table[^>]*>([\s\S]*?)<\/table>/i)
+        if (!tableMatch) throw new Error("Gandi 页面未找到表格")
+        const rows = tableMatch[1].match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) || []
+        for (const row of rows) {
+          const cells = [...row.matchAll(/<(td|th)[^>]*>([\s\S]*?)<\/(td|th)>/gi)].map(m =>
+            m[2].replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/[\s]+/g, " ").trim(),
+          )
+          if (cells.length < 4) continue
+          const tldRaw = cells[0].replace(/^\./, "").toLowerCase().trim()
+          if (!tldRaw || !/^[a-z0-9]/.test(tldRaw) || seen.has(tldRaw)) continue
+          const regRaw = cells[1]
+          const renRaw = cells[2]
+          const traRaw = cells[3]
+          const price: RawPrice = { tld: tldRaw, currency: "EUR", sourceUrl: URL }
+          if (regRaw.includes("Promo")) {
+            const nums = [...regRaw.matchAll(/([€]?[\d]+[.,]\d{2})/g)].map(m => parseEur(m[1]))
+            if (nums.length >= 2) {
+              price.registerPrice = Math.max(...nums.filter(v => v != null) as number[])
+              price.promotionPrice = Math.min(...nums.filter(v => v != null) as number[])
+            } else if (nums.length === 1) {
+              price.registerPrice = nums[0]!
+            }
+          } else {
+            price.registerPrice = parseEur(regRaw)
+          }
+          price.renewPrice = parseEur(renRaw)
+          price.transferPrice = traRaw === "FREE" ? null : parseEur(traRaw)
+          seen.add(tldRaw)
+          out.push(price)
         }
-        if (prices.length === 0) throw new Error("Gandi 表格解析结果为空")
-        return prices
+        if (out.length < 5) throw new Error(`Gandi 解析行数异常: ${out.length}`)
+        return out
       },
     },
   ],
