@@ -59,6 +59,7 @@ internetbsAdapter,
   barberoAdapter,
 } from "./table-registrars"
 import { pskzAdapter } from "./pskz"
+import { julynameAdapter, cny59Adapter, zwcnAdapter } from "./cny-registrars"
 import { hostingerAdapter } from "./hostinger"
 import { cloudnsAdapter } from "./cloudns"
 import { domain101Adapter } from "./101domain"
@@ -221,6 +222,10 @@ export const allAdapters = [
   barberoAdapter,
   // 第十批: PS.kz(KZT, 哈萨克坚戈, 浏览器渲染)(2026-10-07)
   pskzAdapter,
+  // 第十一批: 中文注册商三件套 julyname/59.cn/zw.cn(CNY, 浏览器渲染)(2026-10-07)
+  julynameAdapter,
+  cny59Adapter,
+  zwcnAdapter,
 ]
 
 for (const adapter of allAdapters) {
