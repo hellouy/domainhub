@@ -106,9 +106,48 @@ export const lwsAdapter = createTableAdapter({
   name: "LWS",
   website: "https://www.lws.fr",
   currency: "EUR",
-  numberFormat: "fr",
-  urls: ["https://www.lws.fr/nom-de-domaine.php"],
+  // lws.net 全量价目(SSR): [Extension, Category, Top, Register, Transfer, Renewal, ""]
+  // Register 单元格可能含两值("14.59€ 1.99 €"), parsePrice 取首值=原价
+  urls: ["https://lws.net/domain-pricing"],
+  columnOrder: ["skip", "skip", "register", "transfer", "renew", "skip"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
+})
+
+export const fabulousAdapter = createTableAdapter({
+  slug: "fabulous",
+  name: "Fabulous",
+  website: "https://fabulous.com",
+  currency: "USD",
+  // 页面上部是 Tier 批量价表, 下部主表: [Tld, Register, Renewal, Transfer, Privacy]
+  urls: ["https://fabulous.com/pricing"],
+  columnOrder: ["register", "renew", "transfer", "skip"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
+  owner: "Data Team",
+})
+
+export const danescoAdapter = createTableAdapter({
+  slug: "danesco",
+  name: "Danesco",
+  website: "https://danesconames.com",
+  currency: "USD",
+  // 表头: Domain zones | Registration | Renewal | Transfer; 值形如 "$ 17.00/year"
+  urls: ["https://danesconames.com/prices"],
   columnOrder: ["register", "renew", "transfer"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
+  owner: "Data Team",
+})
+
+export const barberoAdapter = createTableAdapter({
+  slug: "barbero",
+  name: "Barbero",
+  website: "https://barbero.co.uk",
+  currency: "EUR",
+  numberFormat: "eu",
+  // 表头: TLD | New Registrations | Renewals | Transfers | Restore; 值形如 "69,00 EUR"
+  urls: ["https://barbero.co.uk/price-list"],
+  columnOrder: ["register", "renew", "transfer", "skip"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
+  owner: "Data Team",
 })
 
 export const amenAdapter = createTableAdapter({

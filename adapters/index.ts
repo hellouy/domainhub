@@ -54,6 +54,9 @@ internetbsAdapter,
   hostingkrAdapter,
   cndnsAdapter,
   lcnAdapter,
+  fabulousAdapter,
+  danescoAdapter,
+  barberoAdapter,
 } from "./table-registrars"
 import { hostingerAdapter } from "./hostinger"
 import { cloudnsAdapter } from "./cloudns"
@@ -211,6 +214,10 @@ export const allAdapters = [
   // 第八批: 新增 Active24(CZK) 与 LCN(GBP)(2026-10-07)
   active24Adapter,
   lcnAdapter,
+  // 第九批: 候选池全量扫命中 fabulous/danesco/barbero + 修复 lws(2026-10-07)
+  fabulousAdapter,
+  danescoAdapter,
+  barberoAdapter,
 ]
 
 for (const adapter of allAdapters) {
