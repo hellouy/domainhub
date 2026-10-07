@@ -60,6 +60,7 @@ internetbsAdapter,
 } from "./table-registrars"
 import { pskzAdapter } from "./pskz"
 import { julynameAdapter, cny59Adapter, zwcnAdapter } from "./cny-registrars"
+import { forpsiAdapter } from "./forpsi"
 import { hostingerAdapter } from "./hostinger"
 import { cloudnsAdapter } from "./cloudns"
 import { domain101Adapter } from "./101domain"
@@ -226,6 +227,8 @@ export const allAdapters = [
   julynameAdapter,
   cny59Adapter,
   zwcnAdapter,
+  // 第十二批: forpsi(CZK, 捷克, SSR 表格直连 + akce 促销列)(2026-10-07)
+  forpsiAdapter,
 ]
 
 for (const adapter of allAdapters) {
