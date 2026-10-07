@@ -152,5 +152,8 @@ Entries discovered by the Agent during task execution should follow this format:
   - 反爬壳源：同 URL 状态不稳(首次 SSR 出表、再抓转壳)。对策=同 URL 重试 3-4 次取最大响应体(retry-shells.mjs)；sawbuck/mainreg/webtuga 经 browser-worker `/render` 仍 502(拦 headless)按实用主义跳过。小源 Coverage FAIL 属正常。
   - **数据正确性坑**：`activedomains` 旧 tld 正则 `[a-z0-9-]*` 不含点号，把 com.ru/msk.su 等多级 RU 后缀截断成 com/msk 写入(污染 com/net/org 且丢二级行)。修复=正则加 `(?:\.[a-z0-9-]+)*`，再手术删 56 污染行 + 53 垃圾 tld 标 is_valid=false。**新增解析器务必核对多级后缀**。
   - **隐蔽生产 bug**：`queryStatistics` 在 raw sql 模板里插值列对象 → Drizzle 生成未限定 `ON "id"="registrar_id"`，prices/registrars 都有 id 故报 ambiguous；`withFallback` 吞错回退到 seed，生产长期显示陈旧统计(36/2989/16852)。修复=改写为显式限定原生 SQL + tld 只计 is_valid。**排查 withFallback 类接口须本地直连 DB 跑函数，不能只看线上 200**。
-  - DB 现状(2026-10-04)：active 60 / prices 28074 / valid tld 3112 / 促销行 692(hostinger424+keliweb4+gatehills264)。
+  - **`is_active` 陷阱**：`registrars.is_active=false` 的注册商即使 prices 表有数据，也会被 `/api/v1/registrars` 过滤掉、不进前端。修复失效适配器并写库后必须显式 `update registrars set is_active=true where slug=...`；`sync-registrars` 的 onConflictDoNothing 不改已存在行的 is_active，只有新 slug 才自动 true。（2026-10-07 用此法激活 metaname/domeneshop）
+  - 2026-10-07 修复/新增：metaname 正确价源 `/public/pricing`（NZD，按持有量分档，每格两值取首值、注册价取 0-15 档，落 92）；domeneshop 正确价源 `/pricelist`（NOK，第 3 列是赎回恢复价用 skip，落 17）；新增 cndns 配置适配器（CNY，11 列=注册1/3/5/10年+续费1/3/5/10年+转入+按钮，落 75）。三者 rowFilter 均要求首列以点开头以过滤表头/说明行。
+  - 0-price 存量适配器多为**骨架等凭证**（godaddy/namecheap/netim/enom/infomaniak/resellerclub，设计为 is_active=false 等填 Key）或**JS 渲染不可采**（eurodns/netcup/transip/aruba/onecom/hover/internetbs/loopia/lws/registercom/amen）：后者实测 SPA/403，不投入。
+  - DB 现状(2026-10-07)：prices 31208 / tlds 3171 / active 72（metaname/domeneshop/cndns 新上）/ 促销行 692(hostinger424+keliweb4+gatehills264)。
   - 用户本轮指令：扩量两遍都选「两者兼顾/实用主义/大批量」，即先批量覆盖所有可采注册商再按量分级，反爬源限次重试否则跳过。
