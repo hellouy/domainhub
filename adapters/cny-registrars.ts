@@ -22,6 +22,7 @@ export const julynameAdapter = createRenderedTableAdapter({
   url: "https://julyname.com/price.htm",
   columnOrder: ["register", "renew", "transfer", "skip", "skip"],
   rowFilter: dotStart,
+  firstYearIsPromo: true,
   owner: "Data Team",
 })
 
@@ -33,6 +34,7 @@ export const cny59Adapter = createRenderedTableAdapter({
   url: "https://ym.longming.com/pricing",
   columnOrder: ["skip", "register", "renew", "transfer", "skip"],
   rowFilter: dotStart,
+  firstYearIsPromo: true,
   owner: "Data Team",
 })
 

@@ -59,10 +59,13 @@ export const onecomAdapter = defineAdapter({
           const tld = m[1].toLowerCase()
           if (seen.has(tld)) continue
           seen.add(tld)
+          const firstYear = Number.parseFloat(m[2])
+          const renew = Number.parseFloat(m[3])
           prices.push({
             tld,
-            registerPrice: Number.parseFloat(m[2]),
-            renewPrice: Number.parseFloat(m[3]),
+            registerPrice: renew,
+            renewPrice: renew,
+            ...(firstYear < renew ? { promotionPrice: firstYear } : {}),
             currency: "USD",
             sourceUrl: PAGE_URL,
           })

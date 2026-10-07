@@ -19,6 +19,11 @@ interface RenderedTableConfig {
   columnOrder: ("register" | "renew" | "transfer" | "restore" | "skip")[]
   numberFormat?: "en" | "eu" | "fr"
   rowFilter?: (cells: string[]) => boolean
+  /**
+   * 当 registerPrice < renewPrice 时，将 registerPrice 视为首年促销价、
+   * 续费价视为标准注册价。适用于 julyname/59cn 等"首年特价"站点。
+   */
+  firstYearIsPromo?: boolean
   owner?: string
   waitForTimeoutMs?: number
   capabilities?: RegistrarCapabilities
@@ -106,6 +111,10 @@ export function createRenderedTableAdapter(config: RenderedTableConfig) {
               else if (role === "restore") price.restorePrice = value
             }
             if (price.registerPrice == null && price.renewPrice == null && price.transferPrice == null) continue
+            if (config.firstYearIsPromo && price.registerPrice != null && price.renewPrice != null && price.registerPrice < price.renewPrice) {
+              price.promotionPrice = price.registerPrice
+              price.registerPrice = price.renewPrice
+            }
             seen.add(tld)
             prices.push(price)
           }
