@@ -270,6 +270,19 @@ export const exabytesAdapter = createTableAdapter({
   browser: { waitForTimeoutMs: 30_000, scrollToBottom: true },
 })
 
+export const lcnAdapter = createTableAdapter({
+  slug: "lcn",
+  name: "LCN",
+  website: "https://www.lcn.com",
+  currency: "GBP",
+  urls: ["https://www.lcn.com/domain-names"],
+  // 表头: Domain extension | 1 year price | 2 year price
+  // 1年价格单元格含两值(原价 促销价, 如 "£22.99 £1.99"), 取首值=原价; 2年列为多年总价, 忽略
+  columnOrder: ["register", "skip"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
+  owner: "Data Team",
+})
+
 export const cndnsAdapter = createTableAdapter({
   slug: "cndns",
   name: "CNDNS（中国频道）",

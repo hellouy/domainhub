@@ -53,6 +53,7 @@ internetbsAdapter,
   truehostAdapter,
   hostingkrAdapter,
   cndnsAdapter,
+  lcnAdapter,
 } from "./table-registrars"
 import { hostingerAdapter } from "./hostinger"
 import { cloudnsAdapter } from "./cloudns"
@@ -104,6 +105,7 @@ import { alldomainsUzAdapter } from "./alldomains-uz"
 import { rumahwebAdapter } from "./rumahweb"
 import { cosmotownAdapter } from "./cosmotown"
 import { cpiAdapter } from "./cpi"
+import { active24Adapter } from "./active24"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -206,6 +208,9 @@ export const allAdapters = [
   cndnsAdapter,
   // 第七批: 类别分组价表新增 CPI(JPY, 2026-10-07)
   cpiAdapter,
+  // 第八批: 新增 Active24(CZK) 与 LCN(GBP)(2026-10-07)
+  active24Adapter,
+  lcnAdapter,
 ]
 
 for (const adapter of allAdapters) {
