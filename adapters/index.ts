@@ -52,6 +52,7 @@ internetbsAdapter,
   networksolutionsAdapter,
   truehostAdapter,
   hostingkrAdapter,
+  cndnsAdapter,
 } from "./table-registrars"
 import { hostingerAdapter } from "./hostinger"
 import { cloudnsAdapter } from "./cloudns"
@@ -200,6 +201,8 @@ export const allAdapters = [
   alldomainsUzAdapter,
   rumahwebAdapter,
   cosmotownAdapter,
+  // 第六批: 修复失效 URL + 新增 CNDNS(2026-10-07)
+  cndnsAdapter,
 ]
 
 for (const adapter of allAdapters) {

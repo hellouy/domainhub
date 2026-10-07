@@ -61,8 +61,11 @@ export const metanameAdapter = createTableAdapter({
   name: "Metaname",
   website: "https://metaname.net",
   currency: "NZD",
-  urls: ["https://metaname.net/pricing"],
-  columnOrder: ["register", "renew", "transfer"],
+  urls: ["https://metaname.net/public/pricing"],
+  // 表头: TLD | 0-15 | 16-127 | 128-511 | 512-1023 | 1024+ (按持有量分档,单位 NZD)
+  // 每个单元格含两个金额(不含GST 首值),parsePrice 取首值; 注册价取 0-15 档
+  columnOrder: ["register", "skip", "skip", "skip", "skip"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
 })
 
 export const loopiaAdapter = createTableAdapter({
@@ -81,8 +84,11 @@ export const domeneshopAdapter = createTableAdapter({
   website: "https://domene.shop",
   currency: "NOK",
   numberFormat: "eu",
-  urls: ["https://domene.shop/priser"],
-  columnOrder: ["register", "renew", "transfer"],
+  urls: ["https://domene.shop/pricelist"],
+  // 表头: Toppnivå-domene | Registrering | Fornyelse | Reaktivering fra redemption
+  // 第3列是赎回恢复价,非转入价,使用 skip
+  columnOrder: ["register", "renew", "skip"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
 })
 
 export const netcupAdapter = createTableAdapter({
@@ -262,6 +268,19 @@ export const exabytesAdapter = createTableAdapter({
   columnOrder: ["register"],
   owner: "Data Team",
   browser: { waitForTimeoutMs: 30_000, scrollToBottom: true },
+})
+
+export const cndnsAdapter = createTableAdapter({
+  slug: "cndns",
+  name: "CNDNS（中国频道）",
+  website: "https://www.cndns.com",
+  currency: "CNY",
+  urls: ["https://www.cndns.com/cn/domain/domain_price.aspx"],
+  // 表头: 域名名称 | 注册(1/3/5/10年) | 续费(1/3/5/10年) | 转入
+  // 数据 11 列: [".com", reg1,reg3,reg5,reg10, ren1,ren3,ren5,ren10, transfer, 购买按钮]
+  columnOrder: ["register", "skip", "skip", "skip", "renew", "skip", "skip", "skip", "transfer", "skip"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
+  owner: "Data Team",
 })
 
 export const networksolutionsAdapter = createTableAdapter({
