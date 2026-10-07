@@ -103,6 +103,7 @@ import { vsysAdapter } from "./vsys"
 import { alldomainsUzAdapter } from "./alldomains-uz"
 import { rumahwebAdapter } from "./rumahweb"
 import { cosmotownAdapter } from "./cosmotown"
+import { cpiAdapter } from "./cpi"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -203,6 +204,8 @@ export const allAdapters = [
   cosmotownAdapter,
   // 第六批: 修复失效 URL + 新增 CNDNS(2026-10-07)
   cndnsAdapter,
+  // 第七批: 类别分组价表新增 CPI(JPY, 2026-10-07)
+  cpiAdapter,
 ]
 
 for (const adapter of allAdapters) {
