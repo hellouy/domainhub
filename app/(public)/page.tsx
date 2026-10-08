@@ -79,7 +79,7 @@ export default async function HomePage() {
                   href={`/registrars/${r.slug}`}
                   className="group flex items-center gap-3 p-4 transition-colors hover:bg-accent"
                 >
-                  <RegistrarIcon website={r.website} name={r.name} size="compact" />
+                  <RegistrarIcon slug={r.slug} name={r.name} size="compact" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold group-hover:text-primary">{r.name}</span>
                     <span className="block truncate text-xs leading-relaxed text-muted-foreground">

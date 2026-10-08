@@ -26,8 +26,17 @@ export function RelativeTime({ date }: { date: Date | string | null | undefined 
 }
 
 /** 后缀类型标签（通用 / 国家 / 新顶级） */
-export function TldType({ type }: { type: string }) {
-  const { locale } = useLocale()
+export function TldType({ type, compact = false }: { type: string; compact?: boolean }) {
+  const { locale, t } = useLocale()
+  if (compact) {
+    const key =
+      type === "ccTLD"
+        ? "type.short.ccTLD"
+        : type === "newG"
+          ? "type.short.newG"
+          : "type.short.gTLD"
+    return <>{t(key)}</>
+  }
   return <>{tldTypeLabel(type, locale)}</>
 }
 

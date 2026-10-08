@@ -130,7 +130,71 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
           </button>
         ))}
       </div>
-      <div className="overflow-x-auto border border-border">
+      <div className="divide-y divide-border border border-border md:hidden">
+        {sorted.map((row) => {
+          const visitUrl = withRegistrarReferral(
+            normalizeUrl(row.sourceUrl, row.registrarWebsite),
+            "price_table",
+          )
+
+          return (
+            <article key={row.priceId} className="flex flex-col gap-3 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <Link href={`/registrars/${row.registrarSlug}`} className="min-w-0 truncate font-semibold hover:text-primary">
+                  {row.registrarName}
+                </Link>
+                <div className="flex shrink-0 items-center gap-3">
+                  {showUpdated && <span className="text-xs text-muted-foreground">{formatRelative(row.updatedAt, locale)}</span>}
+                  {visitUrl && (
+                    <a
+                      href={visitUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={t("pt.visitAria").replace("{name}", row.registrarName)}
+                      className="inline-flex min-h-11 min-w-11 items-center justify-center text-muted-foreground hover:text-primary"
+                    >
+                      <ExternalLink aria-hidden="true" className="size-4" />
+                    </a>
+                  )}
+                </div>
+              </div>
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+                {(["registerPrice", "renewPrice", "transferPrice"] as SortKey[]).map((key) => {
+                  const value = comparablePrice(row, key)
+                  const isMin =
+                    toUsdAmount(
+                      value,
+                      row.currency,
+                      rates ?? {},
+                      key === "registerPrice" &&
+                        getActivePromotionPrice(row.registerPrice, row.promotionPrice, row.promotionEndsAt) !== null,
+                    ) === minValues[key]
+
+                  return (
+                    <div key={key} className="min-w-0">
+                      <dt className="text-xs text-muted-foreground">{t(key === "registerPrice" ? "th.register" : key === "renewPrice" ? "th.renew" : "th.transfer")}</dt>
+                      <dd className={cn("mt-1 truncate font-mono text-sm tabular-nums", isMin ? "font-semibold text-primary" : "text-foreground")}>
+                        {key === "registerPrice" ? (
+                          <PromotionPrice
+                            price={row.registerPrice}
+                            promotionPrice={row.promotionPrice}
+                            promoCode={row.promoCode}
+                            promotionEndsAt={row.promotionEndsAt}
+                            currency={row.currency}
+                          />
+                        ) : (
+                          money(row[key], row.currency)
+                        )}
+                      </dd>
+                    </div>
+                  )
+                })}
+              </dl>
+            </article>
+          )
+        })}
+      </div>
+      <div className="hidden overflow-x-auto border border-border md:block">
         <table className="w-full min-w-[560px] border-collapse text-sm">
           <thead>
             <tr className="border-b border-border bg-secondary text-left">
