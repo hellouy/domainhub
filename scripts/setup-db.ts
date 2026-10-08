@@ -82,6 +82,8 @@ ALTER TABLE registrars ADD COLUMN IF NOT EXISTS priority integer;
 ALTER TABLE registrars ADD COLUMN IF NOT EXISTS favicon_data bytea;
 ALTER TABLE registrars ADD COLUMN IF NOT EXISTS favicon_content_type text;
 ALTER TABLE registrars ADD COLUMN IF NOT EXISTS favicon_updated_at timestamptz;
+-- favicon DB 缓存需生产连接（Vercel tldbi_POSTGRES_URL 以 postgres 角色运行）可写
+GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE registrars TO postgres;
 ALTER TABLE tlds ADD COLUMN IF NOT EXISTS is_valid boolean NOT NULL DEFAULT true;
 ALTER TABLE tlds ADD COLUMN IF NOT EXISTS popularity integer NOT NULL DEFAULT 0;
 ALTER TABLE crawl_jobs ADD COLUMN IF NOT EXISTS strategy text;
