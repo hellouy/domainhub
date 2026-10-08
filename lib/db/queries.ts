@@ -1,6 +1,7 @@
 import { and, asc, count, desc, eq, max, min, sql, type SQL } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { crawlJobs, prices, registrars, tlds } from "@/lib/db/schema"
+import { computeRegistrarScore, type RegistrarScoreBreakdown } from "@/lib/registrar-score"
 import { getUsdRates } from "@/lib/fx"
 import {
   seedActiveRegistrars,
@@ -109,8 +110,30 @@ export async function getTldsWithMinPrice(onlyPopular = false) {
   )
 }
 
-/** 启用的注册商列表 + 支持后缀数 */
-export async function getActiveRegistrars() {
+/** 启用的注册商列表 + 支持后缀数 + 推荐分（覆盖/促销/完整度/能力/健康加权） */
+export type ActiveRegistrarRow = {
+  id: number
+  slug: string
+  name: string
+  website: string
+  description: string
+  icannAccredited: boolean
+  whoisPrivacy: boolean
+  dnssec: boolean
+  tldCount: number
+  promoCount: number
+  completeCount: number
+  score: number
+  scoreBreakdown: RegistrarScoreBreakdown
+}
+
+function healthScoreOf(health: unknown): number | null {
+  if (health == null || typeof health !== "object") return null
+  const score = (health as { score?: unknown }).score
+  return typeof score === "number" && Number.isFinite(score) ? score : null
+}
+
+export async function getActiveRegistrars(): Promise<ActiveRegistrarRow[]> {
   return safeQuery(
     "getActiveRegistrars",
     async () => {
@@ -124,14 +147,35 @@ export async function getActiveRegistrars() {
           icannAccredited: registrars.icannAccredited,
           whoisPrivacy: registrars.whoisPrivacy,
           dnssec: registrars.dnssec,
+          paymentMethods: registrars.paymentMethods,
+          health: registrars.health,
           tldCount: count(prices.id),
+          promoCount: sql<number>`count(${prices.promotionPrice})`.mapWith(Number),
+          completeCount:
+            sql<number>`count(*) filter (where ${prices.registerPrice} is not null and ${prices.renewPrice} is not null)`.mapWith(
+              Number,
+            ),
         })
         .from(registrars)
         .leftJoin(prices, eq(prices.registrarId, registrars.id))
         .where(eq(registrars.isActive, true))
         .groupBy(registrars.id)
-        .orderBy(asc(registrars.name))
-      return rows
+
+      const scored = rows.map((r) => {
+        const { score, breakdown } = computeRegistrarScore({
+          tldCount: r.tldCount,
+          promoCount: r.promoCount,
+          completeCount: r.completeCount,
+          icannAccredited: r.icannAccredited,
+          whoisPrivacy: r.whoisPrivacy,
+          dnssec: r.dnssec,
+          paymentMethodCount: Array.isArray(r.paymentMethods) ? r.paymentMethods.length : 0,
+          healthScore: healthScoreOf(r.health),
+        })
+        return { ...r, score, scoreBreakdown: breakdown }
+      })
+      scored.sort((a, b) => b.score - a.score || b.tldCount - a.tldCount || a.name.localeCompare(b.name))
+      return scored
     },
     seedActiveRegistrars(),
   )
@@ -201,6 +245,7 @@ export async function getPricesForRegistrar(registrarId: number) {
           registerPrice: prices.registerPrice,
           renewPrice: prices.renewPrice,
           transferPrice: prices.transferPrice,
+          promotionPrice: prices.promotionPrice,
           currency: prices.currency,
           updatedAt: prices.updatedAt,
           tldId: tlds.id,

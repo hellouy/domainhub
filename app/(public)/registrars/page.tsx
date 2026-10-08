@@ -37,8 +37,13 @@ export default async function RegistrarsPage() {
             >
               <div className="flex items-center justify-between">
                 <span className="text-lg font-semibold group-hover:text-primary">{r.name}</span>
-                <span className="font-mono text-xs text-muted-foreground">
-                  {r.tldCount} <T k="section.tldCount" />
+                <span className="flex items-center gap-2">
+                  <span className="rounded-sm bg-primary/10 px-1.5 py-0.5 font-mono text-xs font-semibold text-primary">
+                    {r.score} <T k="registrar.score" />
+                  </span>
+                  <span className="font-mono text-xs text-muted-foreground">
+                    {r.tldCount} <T k="section.tldCount" />
+                  </span>
                 </span>
               </div>
               <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">

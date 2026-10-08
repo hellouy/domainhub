@@ -25,8 +25,15 @@ import {
   seedStats,
   seedTldsWithMinPrice,
 } from "@/lib/db/seed-fallbacks"
+import { computeRegistrarScore } from "@/lib/registrar-score"
 
 const num = (v: string | null): number | null => (v === null ? null : Number.parseFloat(v))
+
+function healthScoreOf(health: unknown): number | null {
+  if (health == null || typeof health !== "object") return null
+  const score = (health as { score?: unknown }).score
+  return typeof score === "number" && Number.isFinite(score) ? score : null
+}
 
 /**
  * 与 lib/db/queries.ts 的 safeQuery 同一策略:数据库不可用时回退到
@@ -86,7 +93,7 @@ function seedPricesRows(filter: { registrar?: string; tld?: string; limit?: numb
   return rows.slice(0, Math.min(filter.limit ?? 500, 2000))
 }
 
-/** 无 DB 时的注册商列表:seed 注册商 + 统计的 TLD 覆盖数 */
+/** 无 DB 时的注册商列表:seed 注册商 + 统计的 TLD 覆盖数 + 推荐分 */
 function seedRegistrarRows() {
   return seedActiveRegistrars().map((r) => {
     const full = seedRegistrarBySlug(r.slug)
@@ -96,12 +103,19 @@ function seedRegistrarRows() {
       website: r.website,
       isActive: true,
       icannAccredited: full?.icannAccredited ?? true,
+      whoisPrivacy: full?.whoisPrivacy ?? true,
+      dnssec: full?.dnssec ?? true,
+      paymentMethods: (Array.isArray(full?.paymentMethods) ? full?.paymentMethods : []) as string[],
       health: full?.health ?? null,
       owner: full?.owner ?? null,
       adapterVersion: full?.adapterVersion ?? null,
       priority: full?.priority ?? null,
       capabilities: null,
       supportedTlds: r.tldCount,
+      promoCount: r.promoCount,
+      completeCount: r.completeCount,
+      score: r.score,
+      scoreBreakdown: r.scoreBreakdown,
     }
   })
 }
@@ -289,7 +303,7 @@ export async function queryCheapest(tld: string, limit = 20) {
   )
 }
 
-/** 注册商列表(含健康/能力/版本) */
+/** 注册商列表(含健康/能力/版本/推荐分，按推荐分降序) */
 export async function queryRegistrars() {
   return withFallback(
     "queryRegistrars",
@@ -301,18 +315,50 @@ export async function queryRegistrars() {
           website: registrars.website,
           isActive: registrars.isActive,
           icannAccredited: registrars.icannAccredited,
+          whoisPrivacy: registrars.whoisPrivacy,
+          dnssec: registrars.dnssec,
+          paymentMethods: registrars.paymentMethods,
           health: registrars.health,
           owner: registrars.owner,
           adapterVersion: registrars.adapterVersion,
           priority: registrars.priority,
           capabilities: registrarCapabilities.capabilities,
-          supportedTlds: sql<number>`(SELECT count(*) FROM ${prices} WHERE ${prices.registrarId} = ${registrars.id})`,
+          supportedTlds: sql<number>`(SELECT count(*) FROM ${prices} WHERE ${prices.registrarId} = ${registrars.id})`.mapWith(
+            Number,
+          ),
+          promoCount:
+            sql<number>`(SELECT count(*) FROM ${prices} WHERE ${prices.registrarId} = ${registrars.id} AND ${prices.promotionPrice} IS NOT NULL)`.mapWith(
+              Number,
+            ),
+          completeCount:
+            sql<number>`(SELECT count(*) FROM ${prices} WHERE ${prices.registrarId} = ${registrars.id} AND ${prices.registerPrice} IS NOT NULL AND ${prices.renewPrice} IS NOT NULL)`.mapWith(
+              Number,
+            ),
         })
         .from(registrars)
         .leftJoin(registrarCapabilities, eq(registrarCapabilities.registrarId, registrars.id))
         .where(eq(registrars.isActive, true))
-        .orderBy(registrars.slug)
-      return rows
+
+      const scored = rows.map((r) => {
+        const { score, breakdown } = computeRegistrarScore({
+          tldCount: r.supportedTlds,
+          promoCount: r.promoCount,
+          completeCount: r.completeCount,
+          icannAccredited: r.icannAccredited,
+          whoisPrivacy: r.whoisPrivacy,
+          dnssec: r.dnssec,
+          paymentMethodCount: Array.isArray(r.paymentMethods) ? r.paymentMethods.length : 0,
+          healthScore: healthScoreOf(r.health),
+        })
+        return { ...r, score, scoreBreakdown: breakdown }
+      })
+      scored.sort(
+        (a, b) =>
+          b.score - a.score ||
+          b.supportedTlds - a.supportedTlds ||
+          a.slug.localeCompare(b.slug),
+      )
+      return scored
     },
     seedRegistrarRows,
   )
