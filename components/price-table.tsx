@@ -214,8 +214,7 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
                       )}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={`${t("pt.visitAria").replace("{name}", row.registrarName)}. ${t("outbound.attribution")}`}
-                      title={t("outbound.attribution")}
+                      aria-label={t("pt.visitAria").replace("{name}", row.registrarName)}
                       className="inline-flex min-h-11 min-w-11 items-center justify-center text-muted-foreground hover:text-primary"
                     >
                       <ExternalLink aria-hidden="true" className="size-4" />

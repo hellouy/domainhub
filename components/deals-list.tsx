@@ -2,12 +2,12 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
-import { Check, Copy, ExternalLink, Search, Tag, X } from "lucide-react"
+import { ArrowDown, Check, Copy, ExternalLink, Search, Tag, X } from "lucide-react"
 import { TCount } from "@/components/i18n-text"
 import { useCurrency, useLocale } from "@/components/providers"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { normalizeUrl, withRegistrarReferral } from "@/lib/utils"
+import { cn, normalizeUrl, withRegistrarReferral } from "@/lib/utils"
 
 type Deal = {
   registrar: string
@@ -30,6 +30,7 @@ export function DealsList({ deals }: { deals: Deal[] }) {
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [query, setQuery] = useState("")
   const [visibleCount, setVisibleCount] = useState(DEALS_PAGE_SIZE)
+  const [newlyRevealedFrom, setNewlyRevealedFrom] = useState<number | null>(null)
   const filteredDeals = useMemo(() => {
     const normalizedQuery = query.trim().toLocaleLowerCase().replace(/^\.+/, "")
     if (!normalizedQuery) return deals
@@ -51,6 +52,14 @@ export function DealsList({ deals }: { deals: Deal[] }) {
     )
   }, [deals, query])
   const visibleDeals = filteredDeals.slice(0, visibleCount)
+  const progressPercent = filteredDeals.length
+    ? Math.round((visibleDeals.length / filteredDeals.length) * 100)
+    : 0
+
+  function loadMoreDeals() {
+    setNewlyRevealedFrom(visibleDeals.length)
+    setVisibleCount((count) => Math.min(count + DEALS_PAGE_SIZE, filteredDeals.length))
+  }
 
   async function copyCode(code: string) {
     try {
@@ -81,6 +90,7 @@ export function DealsList({ deals }: { deals: Deal[] }) {
             onChange={(event) => {
               setQuery(event.target.value)
               setVisibleCount(DEALS_PAGE_SIZE)
+              setNewlyRevealedFrom(null)
             }}
             placeholder={t("deals.search")}
             aria-label={t("deals.search")}
@@ -92,6 +102,7 @@ export function DealsList({ deals }: { deals: Deal[] }) {
               onClick={() => {
                 setQuery("")
                 setVisibleCount(DEALS_PAGE_SIZE)
+                setNewlyRevealedFrom(null)
               }}
               aria-label={t("deals.clearSearch")}
               className="shrink-0 text-muted-foreground hover:text-foreground"
@@ -111,7 +122,7 @@ export function DealsList({ deals }: { deals: Deal[] }) {
         </p>
       ) : (
         <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
-      {visibleDeals.map((deal) => {
+      {visibleDeals.map((deal, index) => {
         const tld = deal.tld.toLocaleLowerCase().replace(/^\.+/, "")
         const original = deal.registerPrice ?? 0
         const offer = deal.promotionPrice ?? deal.registerPrice ?? 0
@@ -136,7 +147,15 @@ export function DealsList({ deals }: { deals: Deal[] }) {
         return (
           <li
             key={`${deal.registrar}-${tld}`}
-            className="flex flex-col gap-4 border border-border bg-card p-4 transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm active:scale-[0.99] motion-reduce:transition-none sm:p-5"
+            className={cn(
+              "flex flex-col gap-4 border border-border bg-card p-4 transition-[transform,border-color,box-shadow] duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm active:scale-[0.99] motion-reduce:transition-none sm:p-5",
+              newlyRevealedFrom !== null && index >= newlyRevealedFrom && "deal-card-enter",
+            )}
+            style={
+              newlyRevealedFrom !== null && index >= newlyRevealedFrom
+                ? { animationDelay: `${Math.min(index - newlyRevealedFrom, 10) * 28}ms` }
+                : undefined
+            }
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 flex-col gap-1.5">
@@ -208,21 +227,15 @@ export function DealsList({ deals }: { deals: Deal[] }) {
             </div>
 
             {sourceUrl && (
-              <div className="flex flex-col items-start gap-1.5">
-                <a
-                  href={sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title={t("outbound.attribution")}
-                  className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm font-medium text-primary hover:underline"
-                >
-                  {t("deals.visit")}
-                  <ExternalLink aria-hidden="true" className="size-4" />
-                </a>
-                <span className="text-xs leading-relaxed text-muted-foreground">
-                  {t("outbound.attribution")}
-                </span>
-              </div>
+              <a
+                href={sourceUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex min-h-11 w-fit items-center gap-1.5 text-sm font-medium text-primary hover:underline"
+              >
+                {t("deals.visit")}
+                <ExternalLink aria-hidden="true" className="size-4" />
+              </a>
             )}
           </li>
         )
@@ -231,14 +244,42 @@ export function DealsList({ deals }: { deals: Deal[] }) {
       )}
 
       {visibleCount < filteredDeals.length && (
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => setVisibleCount((count) => Math.min(count + DEALS_PAGE_SIZE, filteredDeals.length))}
-          className="w-full sm:mx-auto sm:w-fit"
-        >
-          <TCount k="deals.loadMore" vars={{ n: filteredDeals.length - visibleCount }} />
-        </Button>
+        <div className="flex justify-center border-t border-border pt-5">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={loadMoreDeals}
+            className="group h-auto w-full max-w-sm justify-between gap-3 border-border bg-card px-3 py-3 text-left hover:border-primary/50 hover:bg-muted/50 sm:px-4"
+          >
+            <span
+              role="progressbar"
+              aria-label={`${t("deals.loadMore")}: ${visibleDeals.length} / ${filteredDeals.length}`}
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={progressPercent}
+              className="flex size-11 shrink-0 items-center justify-center rounded-full p-0.5 transition-transform duration-300 group-hover:rotate-12 motion-reduce:transition-none"
+              style={{
+                background: `conic-gradient(var(--primary) ${progressPercent}%, var(--border) 0deg)`,
+              }}
+            >
+              <span className="flex size-full items-center justify-center rounded-full bg-card font-mono text-xs font-semibold tabular-nums text-foreground">
+                {visibleDeals.length}
+              </span>
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+              <span className="font-medium leading-tight text-foreground">
+                {t("deals.loadMore")}
+              </span>
+              <span className="text-xs leading-relaxed text-muted-foreground">
+                <TCount
+                  k="deals.showing"
+                  vars={{ shown: visibleDeals.length, total: filteredDeals.length }}
+                />
+              </span>
+            </span>
+            <ArrowDown aria-hidden="true" data-icon="inline-end" />
+          </Button>
+        </div>
       )}
     </div>
   )

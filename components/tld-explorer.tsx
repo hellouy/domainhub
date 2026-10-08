@@ -138,8 +138,7 @@ function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
                   href={withRegistrarReferral(normalizeUrl(r.sourceUrl), "tld_price_panel")}
                   target="_blank"
                   rel="noopener noreferrer"
-                  aria-label={`${t("explorer.panel.visit")} ${r.registrarName}. ${t("outbound.attribution")}`}
-                  title={t("outbound.attribution")}
+                  aria-label={`${t("explorer.panel.visit")} ${r.registrarName}`}
                   className="flex size-11 shrink-0 items-center justify-center text-muted-foreground hover:text-primary"
                 >
                   <ExternalLink aria-hidden="true" className="size-3.5" />

@@ -92,20 +92,15 @@ export default async function RegistrarPage({ params }: Props) {
           ))}
         </div>
         {registrarUrl && (
-          <div className="flex flex-col items-start gap-2">
-            <a
-              href={registrarUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex min-h-11 w-fit items-center gap-1.5 bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
-            >
-              <T k="registrar.visit" />
-              <ExternalLink aria-hidden="true" className="size-4" />
-            </a>
-            <span className="text-xs leading-relaxed text-muted-foreground">
-              <T k="outbound.attribution" />
-            </span>
-          </div>
+          <a
+            href={registrarUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex min-h-11 w-fit items-center gap-1.5 bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+          >
+            <T k="registrar.visit" />
+            <ExternalLink aria-hidden="true" className="size-4" />
+          </a>
         )}
       </header>
 
