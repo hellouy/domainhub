@@ -7,12 +7,12 @@ import type { Locale } from "@/lib/i18n"
  */
 export const REGISTRAR_CONTENT: Record<string, { zh: string; en: string }> = {
   cloudflare: {
-    zh: "以成本价销售域名，无加价，免费 WHOIS 隐私保护与 DNSSEC。",
-    en: "Sells domains at wholesale cost with zero markup, plus free WHOIS privacy and DNSSEC.",
+    zh: "以注册局批发价提供域名服务，大多数常见后缀不额外加价。域名与 Cloudflare DNS、安全及网络服务集中管理，并提供 WHOIS 隐私保护与 DNSSEC，适合已经使用 Cloudflare 的网站。",
+    en: "Domains are offered at registry wholesale pricing, with no markup on most common extensions. Registration works alongside Cloudflare DNS, security, and network services, with WHOIS privacy and DNSSEC for sites already using its platform.",
   },
   dynadot: {
-    zh: "价格稳定的注册商，支持中文界面，提供免费隐私保护。",
-    en: "Stable pricing with a Chinese-language interface and free privacy protection.",
+    zh: "价格结构清晰、续费价格相对稳定，支持中文界面与域名批量管理。多数符合条件的域名可使用免费的隐私保护，适合希望用熟悉语言管理多个域名的用户。",
+    en: "Clear pricing and relatively steady renewals, with a Chinese-language interface and bulk domain management. Free privacy protection is available for many eligible domains, making it a practical choice for managing several names.",
   },
   godaddy: {
     zh: "全球最大域名注册商，产品线丰富，续费价格偏高。",
@@ -44,5 +44,8 @@ export const REGISTRAR_CONTENT: Record<string, { zh: string; en: string }> = {
 export function registrarDescription(slug: string, dbDesc: string, locale: Locale): string {
   const entry = REGISTRAR_CONTENT[slug]
   if (locale === "en") return entry?.en ?? ""
-  return entry?.zh ?? dbDesc ?? ""
+
+  const fallbackDescription = dbDesc.trim()
+  if (/^(今日)?采集自动入库[。.]?$/.test(fallbackDescription)) return entry?.zh ?? ""
+  return entry?.zh ?? fallbackDescription
 }

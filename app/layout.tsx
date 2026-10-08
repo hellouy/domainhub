@@ -2,6 +2,7 @@ import { Analytics } from '@vercel/analytics/next'
 import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
 import { cookies } from 'next/headers'
+import { NavigationFeedback } from '@/components/navigation-feedback'
 import { Providers } from '@/components/providers'
 import { LOCALE_COOKIE, type Locale } from '@/lib/i18n'
 import { getSiteSettings, localizedTitle, localizedDescription } from '@/lib/site-settings'
@@ -85,7 +86,10 @@ export default async function RootLayout({
   return (
     <html lang={initialLocale === 'en' ? 'en' : 'zh-CN'} className="bg-background" suppressHydrationWarning>
       <body className="font-sans antialiased">
-        <Providers initialLocale={initialLocale}>{children}</Providers>
+        <Providers initialLocale={initialLocale}>
+          <NavigationFeedback />
+          {children}
+        </Providers>
         {process.env.NODE_ENV === 'production' && <Analytics />}
       </body>
     </html>

@@ -3,6 +3,7 @@ import { ArrowUpRight } from "lucide-react"
 import { HomeHero } from "@/components/home-hero"
 import { TldExplorer } from "@/components/tld-explorer"
 import { T, RegistrarDescription } from "@/components/i18n-text"
+import { RegistrarIcon } from "@/components/registrar-favicon"
 import { getActiveRegistrars, getStats, getTldsWithMinPrice } from "@/lib/db/queries"
 
 export const revalidate = 300
@@ -78,6 +79,7 @@ export default async function HomePage() {
                   href={`/registrars/${r.slug}`}
                   className="group flex items-center gap-3 p-4 transition-colors hover:bg-accent"
                 >
+                  <RegistrarIcon website={r.website} name={r.name} size="compact" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold group-hover:text-primary">{r.name}</span>
                     <span className="block truncate text-xs leading-relaxed text-muted-foreground">

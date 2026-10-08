@@ -162,4 +162,68 @@
   body {
     @apply bg-background text-foreground;
   }
+
+  :where(a, button) {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :where(a, button):active {
+    opacity: 0.78;
+  }
+
+  :where(a, button):focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+}
+
+.navigation-feedback {
+  position: fixed;
+  inset: 0 0 auto;
+  z-index: 50;
+  height: 2px;
+  overflow: hidden;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 140ms ease-out;
+}
+
+.navigation-feedback.is-visible {
+  opacity: 1;
+}
+
+.navigation-feedback__bar {
+  display: block;
+  width: 34%;
+  height: 100%;
+  background: var(--primary);
+  animation: navigation-progress 1.1s cubic-bezier(0.2, 0.75, 0.3, 1) infinite;
+}
+
+.navigation-feedback.is-settling .navigation-feedback__bar {
+  width: 100%;
+  animation: none;
+  transition: width 140ms ease-out;
+}
+
+@keyframes navigation-progress {
+  from {
+    transform: translateX(-105%);
+  }
+  to {
+    transform: translateX(305%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .navigation-feedback,
+  .navigation-feedback__bar {
+    animation: none;
+    transition: none;
+  }
+
+  .navigation-feedback__bar {
+    width: 72%;
+    transform: none;
+  }
 }

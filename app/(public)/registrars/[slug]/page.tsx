@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Money } from "@/components/money"
 import { PromotionPrice } from "@/components/promotion-price"
 import { T, RelativeTime, RegistrarDescription } from "@/components/i18n-text"
+import { RegistrarIcon } from "@/components/registrar-favicon"
 import { getPricesForRegistrar, getRegistrarBySlug } from "@/lib/db/queries"
 import { normalizeUrl } from "@/lib/utils"
 
@@ -58,10 +59,15 @@ export default async function RegistrarPage({ params }: Props) {
       </nav>
 
       <header className="flex flex-col gap-4">
-        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{row.name}</h1>
-        <p className="max-w-2xl text-pretty leading-relaxed text-muted-foreground">
-          <RegistrarDescription slug={row.slug} fallback={row.description} />
-        </p>
+        <div className="flex items-center gap-4">
+          <RegistrarIcon website={row.website} name={row.name} size="large" />
+          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{row.name}</h1>
+        </div>
+        <RegistrarDescription
+          slug={row.slug}
+          fallback={row.description}
+          className="max-w-2xl text-pretty leading-relaxed text-muted-foreground"
+        />
         <div className="flex flex-wrap items-center gap-2">
           {row.icannAccredited && (
             <Badge variant="secondary">
