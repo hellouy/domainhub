@@ -1,17 +1,23 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useSyncExternalStore } from "react"
 import { useTheme } from "next-themes"
 import { ChevronDown, Moon, Sun, Languages } from "lucide-react"
 import { CURRENCY_OPTIONS, useCurrency, useLocale, type Currency } from "@/components/providers"
 import { cn } from "@/lib/utils"
 
+function subscribeToNothing() {
+  return () => {}
+}
+
+const getMountedSnapshot = () => true
+const getServerMountedSnapshot = () => false
+
 /** 深浅色切换:挂载前渲染占位,避免水合不一致 */
 export function ThemeToggle() {
   const { resolvedTheme, setTheme } = useTheme()
   const { t } = useLocale()
-  const [mounted, setMounted] = useState(false)
-  useEffect(() => setMounted(true), [])
+  const mounted = useSyncExternalStore(subscribeToNothing, getMountedSnapshot, getServerMountedSnapshot)
 
   return (
     <button

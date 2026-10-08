@@ -24,12 +24,6 @@ export function useLocale() {
   return useContext(LocaleContext)
 }
 
-function readCookieLocale(): Locale | null {
-  if (typeof document === "undefined") return null
-  const m = document.cookie.match(new RegExp(`${LOCALE_COOKIE}=(zh|en)`))
-  return (m?.[1] as Locale) ?? null
-}
-
 function LocaleProvider({
   children,
   initialLocale,
@@ -38,12 +32,6 @@ function LocaleProvider({
   initialLocale?: Locale
 }) {
   const [locale, setLocaleState] = useState<Locale>(initialLocale ?? DEFAULT_LOCALE)
-
-  // 挂载后校正为 cookie 实际值(中间件按 IP/浏览器写入,或用户手动切换)
-  useEffect(() => {
-    const fromCookie = readCookieLocale()
-    if (fromCookie) setLocaleState(fromCookie)
-  }, [])
 
   useEffect(() => {
     document.documentElement.lang = locale === "zh" ? "zh-CN" : "en"

@@ -2,6 +2,8 @@
 
 import { TldSearch, type TldSearchOption } from "@/components/tld-search"
 import { useLocale } from "@/components/providers"
+import { ArrowUpRight, BadgePercent } from "lucide-react"
+import Link from "next/link"
 import { formatRelative } from "@/lib/format"
 
 type HeroStats = {
@@ -35,6 +37,14 @@ export function HomeHero({ stats, searchOptions }: { stats: HeroStats; searchOpt
             .replace("{t}", String(stats.tldCount))}
         </p>
         <TldSearch options={searchOptions} />
+        <Link
+          href="/deals"
+          className="inline-flex w-fit items-center gap-2 text-sm font-medium text-primary transition-colors hover:text-foreground"
+        >
+          <BadgePercent aria-hidden="true" className="size-4" />
+          {t("hero.dealsCta")}
+          <ArrowUpRight aria-hidden="true" className="size-4" />
+        </Link>
         <dl className="grid grid-cols-2 gap-x-6 gap-y-3 border-t border-border pt-4 md:flex md:flex-wrap md:gap-x-10 md:gap-y-4 md:pt-6">
           {statItems.map((item) => (
             <div key={item.label} className="flex flex-col gap-0.5">

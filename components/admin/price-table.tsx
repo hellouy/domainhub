@@ -27,6 +27,9 @@ export type PriceRow = {
   registerPrice: string | null
   renewPrice: string | null
   transferPrice: string | null
+  promotionPrice: string | null
+  promoCode: string | null
+  promotionEndsAt: Date | string | null
   currency: string
   sourceUrl: string | null
   updatedAt: Date | string | null
@@ -35,10 +38,17 @@ export type PriceRow = {
 function EditPriceDialog({ row }: { row: PriceRow }) {
   const [open, setOpen] = useState(false)
   const [pending, startTransition] = useTransition()
+  const [error, setError] = useState<string | null>(null)
   const router = useRouter()
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog
+      open={open}
+      onOpenChange={(nextOpen) => {
+        setOpen(nextOpen)
+        if (nextOpen) setError(null)
+      }}
+    >
       <DialogTrigger
         render={
           <Button variant="ghost" size="sm" aria-label={`编辑 ${row.tld} 价格`}>
@@ -58,9 +68,14 @@ function EditPriceDialog({ row }: { row: PriceRow }) {
         <form
           action={(formData) =>
             startTransition(async () => {
-              await updatePriceAction(row.priceId, formData)
-              setOpen(false)
-              router.refresh()
+              setError(null)
+              try {
+                await updatePriceAction(row.priceId, formData)
+                setOpen(false)
+                router.refresh()
+              } catch (cause) {
+                setError(cause instanceof Error ? cause.message : "保存失败，请重试。")
+              }
             })
           }
           className="flex flex-col gap-4"
@@ -103,7 +118,38 @@ function EditPriceDialog({ row }: { row: PriceRow }) {
                 defaultValue={row.transferPrice ?? ""}
               />
             </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor={`promo-${row.priceId}`}>优惠价（可留空）</Label>
+              <Input
+                id={`promo-${row.priceId}`}
+                name="promotionPrice"
+                type="number"
+                step="0.01"
+                min="0"
+                defaultValue={row.promotionPrice ?? ""}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label htmlFor={`promo-code-${row.priceId}`}>优惠码（可留空）</Label>
+              <Input
+                id={`promo-code-${row.priceId}`}
+                name="promoCode"
+                maxLength={120}
+                defaultValue={row.promoCode ?? ""}
+                autoComplete="off"
+              />
+            </div>
+            <div className="col-span-2 flex flex-col gap-2">
+              <Label htmlFor={`promo-end-${row.priceId}`}>优惠截止日期（可留空）</Label>
+              <Input
+                id={`promo-end-${row.priceId}`}
+                name="promotionEndsAt"
+                type="date"
+                defaultValue={row.promotionEndsAt ? new Date(row.promotionEndsAt).toISOString().slice(0, 10) : ""}
+              />
+            </div>
           </div>
+          {error && <p role="alert" className="text-sm text-destructive">{error}</p>}
           <DialogFooter>
             <Button type="submit" disabled={pending}>
               {pending ? "保存中…" : "保存"}
@@ -148,6 +194,7 @@ export function PriceTable({ rows }: { rows: PriceRow[] }) {
             <TableHead className="text-right">注册价</TableHead>
             <TableHead className="text-right">续费价</TableHead>
             <TableHead className="text-right">转入价</TableHead>
+            <TableHead>优惠</TableHead>
             <TableHead>更新</TableHead>
             <TableHead className="text-right">操作</TableHead>
           </TableRow>
@@ -174,6 +221,18 @@ export function PriceTable({ rows }: { rows: PriceRow[] }) {
               </TableCell>
               <TableCell className="text-right font-mono text-sm text-muted-foreground">
                 {formatPrice(r.transferPrice, r.currency)}
+              </TableCell>
+              <TableCell>
+                {r.promotionPrice !== null ? (
+                  <div className="flex flex-col gap-0.5">
+                    <span className="font-mono text-sm font-medium text-primary">
+                      {formatPrice(r.promotionPrice, r.currency)}
+                    </span>
+                    {r.promoCode && <code className="font-mono text-xs text-muted-foreground">{r.promoCode}</code>}
+                  </div>
+                ) : (
+                  <span className="text-xs text-muted-foreground">—</span>
+                )}
               </TableCell>
               <TableCell>
                 <span className="text-xs text-muted-foreground">{formatRelative(r.updatedAt)}</span>

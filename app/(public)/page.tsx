@@ -46,7 +46,6 @@ export default async function HomePage() {
       <section aria-labelledby="tld-explorer" className="border-b border-border">
         <div className="mx-auto w-full max-w-6xl px-4 py-10 md:px-6 md:py-14">
           <div className="mb-6 flex flex-col gap-2">
-            <p className="text-xs font-medium uppercase tracking-widest text-primary">01</p>
             <h2 id="tld-explorer" className="text-xl font-bold tracking-tight md:text-3xl">
               <T k="section.explorer" />
             </h2>
@@ -60,7 +59,6 @@ export default async function HomePage() {
         <div className="mx-auto w-full max-w-6xl px-4 py-10 md:px-6 md:py-14">
           <div className="mb-6 flex items-end justify-between">
             <div className="flex flex-col gap-2">
-              <p className="text-xs font-medium uppercase tracking-widest text-primary">02</p>
               <h2 id="registrars-heading" className="text-xl font-bold tracking-tight md:text-3xl">
                 <T k="section.registrars" />
               </h2>

@@ -77,9 +77,6 @@ export const prices = pgTable(
     promotionEndsAt: timestamp("promotion_ends_at", { withTimezone: true }),
     sourceUrl: text("source_url"),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
-    promotionPrice: numeric("promotion_price", { precision: 10, scale: 2 }),
-    promoCode: text("promo_code"),
-    promotionEndsAt: timestamp("promotion_ends_at", { withTimezone: true }),
   },
   (t) => [unique().on(t.registrarId, t.tldId)],
 )
@@ -97,9 +94,6 @@ export const priceHistory = pgTable("price_history", {
   promoCode: text("promo_code"),
   promotionEndsAt: timestamp("promotion_ends_at", { withTimezone: true }),
   recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull().defaultNow(),
-  promotionPrice: numeric("promotion_price", { precision: 10, scale: 2 }),
-  promoCode: text("promo_code"),
-  promotionEndsAt: timestamp("promotion_ends_at", { withTimezone: true }),
 })
 
 export const crawlJobs = pgTable("crawl_jobs", {

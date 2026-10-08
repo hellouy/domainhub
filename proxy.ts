@@ -10,7 +10,7 @@ const LOCALE_COOKIE = "tldbi_locale"
  *     2. 无地理信息时回退 Accept-Language:浏览器首选中文 → 中文,否则英文
  *     3. 港澳台或浏览器强中文偏好 → 中文(照顾华语用户)
  */
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const existing = request.cookies.get(LOCALE_COOKIE)?.value
   if (existing === "zh" || existing === "en") {
     return NextResponse.next()

@@ -130,18 +130,22 @@ async function acquireSlot(): Promise<() => void> {
 
 let browserPromise: Promise<Browser> | null = null
 function getBrowser(): Promise<Browser> {
-  if (!browserPromise) {
-    browserPromise = chromium.launch({
-      headless: true,
-      args: [
-        "--disable-blink-features=AutomationControlled",
-        "--no-sandbox",
-        "--disable-dev-shm-usage",
-        "--disable-gpu",
-      ],
-    })
-  }
-  return browserPromise
+  if (browserPromise) return browserPromise
+
+  const launchPromise = chromium.launch({
+    headless: true,
+    args: [
+      "--disable-blink-features=AutomationControlled",
+      "--no-sandbox",
+      "--disable-dev-shm-usage",
+      "--disable-gpu",
+    ],
+  })
+  browserPromise = launchPromise
+  void launchPromise.catch(() => {
+    if (browserPromise === launchPromise) browserPromise = null
+  })
+  return launchPromise
 }
 
 /** 渲染单个页面并按要求提取。所有导航/等待都带超时，失败抛错。 */

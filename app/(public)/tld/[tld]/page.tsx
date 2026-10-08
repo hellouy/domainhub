@@ -88,7 +88,6 @@ export default async function TldPage({ params }: Props) {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-12 md:px-6">
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <nav aria-label="breadcrumb" className="text-xs text-muted-foreground">

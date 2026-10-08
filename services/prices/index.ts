@@ -208,7 +208,12 @@ export async function queryDeals(filter: {
   return withFallback(
     "queryDeals",
     async () => {
-      const conditions = [sql`${prices.promotionPrice} IS NOT NULL`, eq(registrars.isActive, true)]
+      const conditions = [
+        sql`${prices.promotionPrice} IS NOT NULL`,
+        sql`${prices.registerPrice} IS NOT NULL`,
+        sql`${prices.promotionPrice} >= 0 AND ${prices.promotionPrice} < ${prices.registerPrice}`,
+        eq(registrars.isActive, true),
+      ]
       if (filter.registrar) conditions.push(eq(registrars.slug, filter.registrar))
       if (filter.tld) conditions.push(eq(tlds.tld, normalizeTld(filter.tld)))
       // 默认只看未过期促销（promotion_ends_at 为空视为长期有效）
@@ -235,7 +240,10 @@ export async function queryDeals(filter: {
         .innerJoin(registrars, eq(prices.registrarId, registrars.id))
         .innerJoin(tlds, eq(prices.tldId, tlds.id))
         .where(and(...conditions))
-        .orderBy(prices.promotionPrice)
+        .orderBy(
+          sql`(${prices.promotionPrice} / NULLIF(${prices.registerPrice}, 0)) ASC`,
+          desc(prices.updatedAt),
+        )
         .limit(Math.min(filter.limit ?? 100, 500))
 
       return rows.map((r) => ({
