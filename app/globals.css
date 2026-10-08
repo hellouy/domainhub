@@ -165,10 +165,18 @@
 
   :where(a, button) {
     -webkit-tap-highlight-color: transparent;
+    transition:
+      color 160ms ease,
+      background-color 160ms ease,
+      border-color 160ms ease,
+      opacity 160ms ease,
+      transform 160ms ease,
+      box-shadow 160ms ease;
   }
 
-  :where(a, button):active {
+  :where(a, button):active:not([aria-disabled="true"]):not(:disabled) {
     opacity: 0.78;
+    transform: scale(0.98);
   }
 
   :where(a, button):focus-visible {
@@ -255,6 +263,14 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  :where(a, button) {
+    transition-duration: 0.01ms;
+  }
+
+  :where(a, button):active:not([aria-disabled="true"]):not(:disabled) {
+    transform: none;
+  }
+
   .navigation-feedback,
   .navigation-feedback__panel,
   .navigation-feedback__spinner {

@@ -209,9 +209,8 @@ export async function queryDeals(filter: {
     "queryDeals",
     async () => {
       const conditions = [
-        sql`${prices.promotionPrice} IS NOT NULL`,
         sql`${prices.registerPrice} IS NOT NULL`,
-        sql`${prices.promotionPrice} >= 0 AND ${prices.promotionPrice} < ${prices.registerPrice}`,
+        sql`((${prices.promotionPrice} IS NOT NULL AND ${prices.promotionPrice} >= 0 AND ${prices.promotionPrice} < ${prices.registerPrice}) OR (${prices.promoCode} IS NOT NULL AND btrim(${prices.promoCode}) <> ''))`,
         eq(registrars.isActive, true),
       ]
       if (filter.registrar) conditions.push(eq(registrars.slug, filter.registrar))
@@ -221,10 +220,13 @@ export async function queryDeals(filter: {
         conditions.push(sql`(${prices.promotionEndsAt} IS NULL OR ${prices.promotionEndsAt} > now())`)
       }
 
+      const requestedLimit = Number.isFinite(filter.limit) ? Math.trunc(filter.limit!) : 5000
+      const limit = Math.max(1, Math.min(requestedLimit, 5000))
       const rows = await db
         .select({
           registrar: registrars.slug,
           registrarName: registrars.name,
+          registrarWebsite: registrars.website,
           tld: tlds.tld,
           currency: prices.currency,
           registerPrice: prices.registerPrice,
@@ -246,7 +248,7 @@ export async function queryDeals(filter: {
           sql`(${prices.promotionPrice} / NULLIF(${prices.registerPrice}, 0)) ASC`,
           desc(prices.updatedAt),
         )
-        .limit(Math.min(filter.limit ?? 100, 500))
+        .limit(limit)
 
       return rows.map((r) => ({
         ...r,

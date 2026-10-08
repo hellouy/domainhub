@@ -12,7 +12,7 @@ export const metadata: Metadata = {
 }
 
 export default async function DealsPage() {
-  const deals = await queryDeals({ onlyActive: true, limit: 200 })
+  const deals = await queryDeals({ onlyActive: true, limit: 5000 })
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-8 sm:py-12 md:px-6">

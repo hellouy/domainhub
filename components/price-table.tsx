@@ -8,7 +8,7 @@ import { useCurrency, useLocale } from "@/components/providers"
 import { PromotionPrice } from "@/components/promotion-price"
 import { getActivePromotionPrice } from "@/lib/promotion"
 import type { DictKey } from "@/lib/i18n"
-import { cn, normalizeUrl } from "@/lib/utils"
+import { cn, normalizeUrl, withRegistrarReferral } from "@/lib/utils"
 
 export type PriceRow = {
   priceId: number
@@ -203,13 +203,20 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
                   </td>
                 )}
                 <td className="px-4 py-3.5 text-right">
-                  {normalizeUrl(row.sourceUrl, row.registrarWebsite) ? (
+                  {withRegistrarReferral(
+                    normalizeUrl(row.sourceUrl, row.registrarWebsite),
+                    "price_table",
+                  ) ? (
                     <a
-                      href={normalizeUrl(row.sourceUrl, row.registrarWebsite)}
+                      href={withRegistrarReferral(
+                        normalizeUrl(row.sourceUrl, row.registrarWebsite),
+                        "price_table",
+                      )}
                       target="_blank"
                       rel="noopener noreferrer"
-                      aria-label={t("pt.visitAria").replace("{name}", row.registrarName)}
-                      className="inline-flex text-muted-foreground hover:text-primary"
+                      aria-label={`${t("pt.visitAria").replace("{name}", row.registrarName)}. ${t("outbound.attribution")}`}
+                      title={t("outbound.attribution")}
+                      className="inline-flex min-h-11 min-w-11 items-center justify-center text-muted-foreground hover:text-primary"
                     >
                       <ExternalLink aria-hidden="true" className="size-4" />
                     </a>
