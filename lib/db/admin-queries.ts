@@ -97,10 +97,14 @@ export async function searchPrices(opts: {
       registrarSlug: registrars.slug,
       tldId: tlds.id,
       tld: tlds.tld,
-      registerPrice: prices.registerPrice,
-      renewPrice: prices.renewPrice,
-      transferPrice: prices.transferPrice,
-      currency: prices.currency,
+    registerPrice: prices.registerPrice,
+    renewPrice: prices.renewPrice,
+    transferPrice: prices.transferPrice,
+    promotionPrice: prices.promotionPrice,
+    promoCode: prices.promoCode,
+    promotionEndsAt: prices.promotionEndsAt,
+    currency: prices.currency,
+
       sourceUrl: prices.sourceUrl,
       updatedAt: prices.updatedAt,
     })

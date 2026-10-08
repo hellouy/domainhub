@@ -3,6 +3,7 @@ import Link from "next/link"
 import { notFound } from "next/navigation"
 import { PriceTable } from "@/components/price-table"
 import { Money } from "@/components/money"
+import { getActivePromotionPrice } from "@/lib/promotion"
 import { T, TldType, DataUpdated } from "@/components/i18n-text"
 import { getPricesForTld, getTldByName, getTldLastUpdated } from "@/lib/db/queries"
 import { getUsdRates, toUsd, type UsdRates } from "@/lib/fx"
@@ -26,12 +27,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-/** 跨币种最低价:全部折算 USD 后比较,排除 < $1 的促销占位价 */
-function minUsdOf(values: { value: string | null; currency: string }[], rates: UsdRates) {
+/** 跨币种最低价:全部折算 USD 后比较,有效促销价可低于 $1。 */
+function minUsdOf(
+  values: { value: string | null; currency: string; isPromotion?: boolean }[],
+  rates: UsdRates,
+) {
   const nums = values
-    .filter((v): v is { value: string; currency: string } => v.value != null)
-    .map((v) => toUsd(Number.parseFloat(v.value), v.currency, rates))
-    .filter((v) => !Number.isNaN(v) && v >= 1)
+    .filter((v): v is { value: string; currency: string; isPromotion?: boolean } => v.value != null)
+    .map((v) => ({ amount: toUsd(Number.parseFloat(v.value), v.currency, rates), isPromotion: v.isPromotion }))
+    .filter((v) => !Number.isNaN(v.amount) && (v.amount >= 1 || v.isPromotion))
+    .map((v) => v.amount)
   return nums.length > 0 ? Math.min(...nums) : null
 }
 
@@ -47,7 +52,14 @@ export default async function TldPage({ params }: Props) {
   ])
 
   const minRegister = minUsdOf(
-    priceRows.map((p) => ({ value: p.registerPrice, currency: p.currency })),
+    priceRows.map((p) => {
+      const promotionPrice = getActivePromotionPrice(p.registerPrice, p.promotionPrice, p.promotionEndsAt)
+      return {
+        value: promotionPrice ?? p.registerPrice,
+        currency: p.currency,
+        isPromotion: promotionPrice !== null,
+      }
+    }),
     rates,
   )
   const minRenew = minUsdOf(
@@ -76,7 +88,6 @@ export default async function TldPage({ params }: Props) {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-12 md:px-6">
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <nav aria-label="breadcrumb" className="text-xs text-muted-foreground">

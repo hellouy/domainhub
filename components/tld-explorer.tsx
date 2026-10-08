@@ -5,7 +5,7 @@ import Link from "next/link"
 import useSWR from "swr"
 import { ArrowUpRight, ExternalLink, Search, X } from "lucide-react"
 import { convertAmount } from "@/lib/format"
-import { cn, normalizeUrl } from "@/lib/utils"
+import { cn, normalizeUrl, withRegistrarReferral } from "@/lib/utils"
 import { useCurrency, useLocale } from "@/components/providers"
 import type { DictKey } from "@/lib/i18n"
 
@@ -133,13 +133,13 @@ function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
                   {t("explorer.panel.renew")} {money(r.renewPrice, r.currency)}
                 </span>
               </span>
-              {normalizeUrl(r.sourceUrl) ? (
+              {withRegistrarReferral(normalizeUrl(r.sourceUrl), "tld_price_panel") ? (
                 <a
-                  href={normalizeUrl(r.sourceUrl)}
+                  href={withRegistrarReferral(normalizeUrl(r.sourceUrl), "tld_price_panel")}
                   target="_blank"
                   rel="noopener noreferrer"
                   aria-label={`${t("explorer.panel.visit")} ${r.registrarName}`}
-                  className="shrink-0 text-muted-foreground hover:text-primary"
+                  className="flex size-11 shrink-0 items-center justify-center text-muted-foreground hover:text-primary"
                 >
                   <ExternalLink aria-hidden="true" className="size-3.5" />
                 </a>

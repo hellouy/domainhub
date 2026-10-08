@@ -7,14 +7,21 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { queryHistory } from "@/services/prices"
 
+/** 解析正整数查询参数,非法或非正数时返回 undefined */
+function parsePositiveInt(value: string | null): number | undefined {
+  if (!value) return undefined
+  const n = Number.parseInt(value, 10)
+  return Number.isFinite(n) && n > 0 ? n : undefined
+}
+
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams
   try {
     const data = await queryHistory({
       registrar: params.get("registrar") ?? undefined,
       tld: params.get("tld") ?? undefined,
-      days: params.get("days") ? Number.parseInt(params.get("days") as string, 10) : undefined,
-      limit: params.get("limit") ? Number.parseInt(params.get("limit") as string, 10) : undefined,
+      days: parsePositiveInt(params.get("days")),
+      limit: parsePositiveInt(params.get("limit")),
     })
     return NextResponse.json({ apiVersion: "v1", count: data.length, data })
   } catch (error) {

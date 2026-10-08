@@ -16,3 +16,23 @@ export function normalizeUrl(...candidates: (string | null | undefined)[]): stri
   }
   return undefined
 }
+
+export function withRegistrarReferral(
+  value: string | null | undefined,
+  placement: string,
+): string | undefined {
+  const normalized = normalizeUrl(value)
+  if (!normalized) return undefined
+
+  try {
+    const url = new URL(normalized.includes("://") ? normalized : `https://${normalized}`)
+    if (url.protocol !== "https:" && url.protocol !== "http:") return undefined
+    url.searchParams.set("utm_source", "tldbi.com")
+    url.searchParams.set("utm_medium", "referral")
+    url.searchParams.set("utm_campaign", "domain_price_comparison")
+    url.searchParams.set("utm_content", placement)
+    return url.toString()
+  } catch {
+    return undefined
+  }
+}

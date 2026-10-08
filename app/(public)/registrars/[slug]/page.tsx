@@ -4,9 +4,11 @@ import { notFound } from "next/navigation"
 import { ExternalLink } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Money } from "@/components/money"
+import { PromotionPrice } from "@/components/promotion-price"
 import { T, RelativeTime, RegistrarDescription } from "@/components/i18n-text"
+import { RegistrarIcon } from "@/components/registrar-favicon"
 import { getPricesForRegistrar, getRegistrarBySlug } from "@/lib/db/queries"
-import { normalizeUrl } from "@/lib/utils"
+import { normalizeUrl, withRegistrarReferral } from "@/lib/utils"
 
 export const revalidate = 300
 
@@ -29,6 +31,7 @@ export default async function RegistrarPage({ params }: Props) {
   if (!row || !row.isActive) notFound()
 
   const priceRows = await getPricesForRegistrar(row.id)
+  const registrarUrl = withRegistrarReferral(normalizeUrl(row.website), "registrar_profile")
 
   const jsonLd = {
     "@context": "https://schema.org",
@@ -42,7 +45,6 @@ export default async function RegistrarPage({ params }: Props) {
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-12 md:px-6">
       <script
         type="application/ld+json"
-        // eslint-disable-next-line react/no-danger
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       <nav aria-label="breadcrumb" className="text-xs text-muted-foreground">
@@ -58,10 +60,15 @@ export default async function RegistrarPage({ params }: Props) {
       </nav>
 
       <header className="flex flex-col gap-4">
-        <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{row.name}</h1>
-        <p className="max-w-2xl text-pretty leading-relaxed text-muted-foreground">
-          <RegistrarDescription slug={row.slug} fallback={row.description} />
-        </p>
+        <div className="flex items-center gap-4">
+          <RegistrarIcon website={row.website} name={row.name} size="large" />
+          <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{row.name}</h1>
+        </div>
+        <RegistrarDescription
+          slug={row.slug}
+          fallback={row.description}
+          className="max-w-2xl text-pretty leading-relaxed text-muted-foreground"
+        />
         <div className="flex flex-wrap items-center gap-2">
           {row.icannAccredited && (
             <Badge variant="secondary">
@@ -84,12 +91,12 @@ export default async function RegistrarPage({ params }: Props) {
             </Badge>
           ))}
         </div>
-        {normalizeUrl(row.website) && (
+        {registrarUrl && (
           <a
-            href={normalizeUrl(row.website)}
+            href={registrarUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex w-fit items-center gap-1.5 bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
+            className="inline-flex min-h-11 w-fit items-center gap-1.5 bg-primary px-4 py-2 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90"
           >
             <T k="registrar.visit" />
             <ExternalLink aria-hidden="true" className="size-4" />
@@ -134,7 +141,13 @@ export default async function RegistrarPage({ params }: Props) {
                     </Link>
                   </td>
                   <td className="px-4 py-3.5 text-right font-mono tabular-nums">
-                    <Money value={p.registerPrice} from={p.currency} />
+                    <PromotionPrice
+                      price={p.registerPrice}
+                      promotionPrice={p.promotionPrice}
+                      promoCode={p.promoCode}
+                      promotionEndsAt={p.promotionEndsAt}
+                      currency={p.currency}
+                    />
                   </td>
                   <td className="px-4 py-3.5 text-right font-mono tabular-nums">
                     <Money value={p.renewPrice} from={p.currency} />

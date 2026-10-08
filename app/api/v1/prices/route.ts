@@ -7,6 +7,13 @@
 import { NextResponse, type NextRequest } from "next/server"
 import { queryPrices, queryDeals } from "@/services/prices"
 
+/** 解析正整数查询参数,非法或非正数时返回 undefined */
+function parsePositiveInt(value: string | null): number | undefined {
+  if (!value) return undefined
+  const n = Number.parseInt(value, 10)
+  return Number.isFinite(n) && n > 0 ? n : undefined
+}
+
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams
   try {
@@ -14,9 +21,8 @@ export async function GET(request: NextRequest) {
     const common = {
       registrar: params.get("registrar") ?? undefined,
       tld: params.get("tld") ?? undefined,
-      limit: params.get("limit") ? Number.parseInt(params.get("limit") as string, 10) : undefined,
+      limit: parsePositiveInt(params.get("limit")),
     }
-    // deals=true 时只返回有效促销（deals-and-coupons）
     const list = deals ? await queryDeals(common) : await queryPrices(common)
     return NextResponse.json(
       { apiVersion: "v1", count: list.length, data: list },

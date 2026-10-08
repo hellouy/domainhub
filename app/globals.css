@@ -49,25 +49,25 @@
 
 :root {
   color-scheme: light;
-  --background: oklch(0.977 0.004 85);
-  --foreground: oklch(0.18 0.005 60);
-  --card: oklch(0.99 0.002 85);
-  --card-foreground: oklch(0.18 0.005 60);
-  --popover: oklch(0.99 0.002 85);
-  --popover-foreground: oklch(0.18 0.005 60);
-  --primary: oklch(0.62 0.21 33);
-  --primary-foreground: oklch(0.985 0.005 85);
-  --secondary: oklch(0.94 0.005 85);
-  --secondary-foreground: oklch(0.22 0.005 60);
-  --muted: oklch(0.94 0.005 85);
-  --muted-foreground: oklch(0.5 0.008 60);
-  --accent: oklch(0.94 0.005 85);
-  --accent-foreground: oklch(0.22 0.005 60);
+  --background: oklch(0.985 0.004 255);
+  --foreground: oklch(0.2 0.01 255);
+  --card: oklch(0.998 0.002 255);
+  --card-foreground: oklch(0.2 0.01 255);
+  --popover: oklch(0.998 0.002 255);
+  --popover-foreground: oklch(0.2 0.01 255);
+  --primary: oklch(0.54 0.18 255);
+  --primary-foreground: oklch(0.99 0.003 255);
+  --secondary: oklch(0.955 0.008 255);
+  --secondary-foreground: oklch(0.24 0.01 255);
+  --muted: oklch(0.955 0.008 255);
+  --muted-foreground: oklch(0.48 0.015 255);
+  --accent: oklch(0.955 0.008 255);
+  --accent-foreground: oklch(0.24 0.01 255);
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.89 0.005 85);
-  --input: oklch(0.89 0.005 85);
-  --ring: oklch(0.62 0.21 33);
-  --chart-1: oklch(0.62 0.21 33);
+  --border: oklch(0.9 0.008 255);
+  --input: oklch(0.9 0.008 255);
+  --ring: oklch(0.54 0.18 255);
+  --chart-1: oklch(0.54 0.18 255);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
@@ -91,8 +91,8 @@
   --card-foreground: oklch(0.95 0.004 85);
   --popover: oklch(0.2 0.005 60);
   --popover-foreground: oklch(0.95 0.004 85);
-  --primary: oklch(0.66 0.2 33);
-  --primary-foreground: oklch(0.985 0.005 85);
+  --primary: oklch(0.68 0.17 255);
+  --primary-foreground: oklch(0.99 0.003 255);
   --secondary: oklch(0.25 0.005 60);
   --secondary-foreground: oklch(0.95 0.004 85);
   --muted: oklch(0.25 0.005 60);
@@ -102,8 +102,8 @@
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 12%);
   --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.66 0.2 33);
-  --chart-1: oklch(0.66 0.2 33);
+  --ring: oklch(0.68 0.17 255);
+  --chart-1: oklch(0.68 0.17 255);
   --chart-2: oklch(0.556 0 0);
   --chart-3: oklch(0.439 0 0);
   --chart-4: oklch(0.371 0 0);
@@ -127,8 +127,8 @@
     --card-foreground: oklch(0.95 0.004 85);
     --popover: oklch(0.2 0.005 60);
     --popover-foreground: oklch(0.95 0.004 85);
-    --primary: oklch(0.66 0.2 33);
-    --primary-foreground: oklch(0.985 0.005 85);
+    --primary: oklch(0.68 0.17 255);
+    --primary-foreground: oklch(0.99 0.003 255);
     --secondary: oklch(0.25 0.005 60);
     --secondary-foreground: oklch(0.95 0.004 85);
     --muted: oklch(0.25 0.005 60);
@@ -138,8 +138,8 @@
     --destructive: oklch(0.704 0.191 22.216);
     --border: oklch(1 0 0 / 12%);
     --input: oklch(1 0 0 / 15%);
-    --ring: oklch(0.66 0.2 33);
-    --chart-1: oklch(0.66 0.2 33);
+    --ring: oklch(0.68 0.17 255);
+    --chart-1: oklch(0.68 0.17 255);
     --chart-2: oklch(0.556 0 0);
     --chart-3: oklch(0.439 0 0);
     --chart-4: oklch(0.371 0 0);
@@ -161,5 +161,136 @@
   }
   body {
     @apply bg-background text-foreground;
+  }
+
+  :where(a, button) {
+    -webkit-tap-highlight-color: transparent;
+    transition:
+      color 160ms ease,
+      background-color 160ms ease,
+      border-color 160ms ease,
+      opacity 160ms ease,
+      transform 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  :where(a, button):active:not([aria-disabled="true"]):not(:disabled) {
+    opacity: 0.78;
+    transform: scale(0.98);
+  }
+
+  :where(a, button):focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 3px;
+  }
+}
+
+.navigation-feedback {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 160ms ease, visibility 160ms ease;
+}
+
+.navigation-feedback.is-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+.navigation-feedback__panel {
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-width: 12.5rem;
+  padding: 1rem 1.25rem;
+  border: 1px solid var(--border);
+  border-radius: 1rem;
+  background: var(--background);
+  box-shadow: 0 12px 40px color-mix(in srgb, var(--foreground) 12%, transparent);
+  animation: navigation-panel-in 180ms ease-out both;
+}
+
+.navigation-feedback__spinner {
+  display: block;
+  flex: none;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 2px solid var(--muted);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: navigation-spin 760ms linear infinite;
+}
+
+.navigation-feedback__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.navigation-feedback__label {
+  color: var(--foreground);
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+.navigation-feedback__hint {
+  color: var(--muted-foreground);
+  font-size: 0.75rem;
+  line-height: 1.4;
+}
+
+@keyframes navigation-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes navigation-panel-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+@keyframes deal-card-arrive {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.99);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.deal-card-enter {
+  animation: deal-card-arrive 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  :where(a, button) {
+    transition-duration: 0.01ms;
+  }
+
+  :where(a, button):active:not([aria-disabled="true"]):not(:disabled) {
+    transform: none;
+  }
+
+  .navigation-feedback,
+  .navigation-feedback__panel,
+  .navigation-feedback__spinner,
+  .deal-card-enter {
+    animation: none;
+    transition: none;
   }
 }

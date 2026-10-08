@@ -4,6 +4,7 @@ import { createHmac, timingSafeEqual } from "crypto"
 import { cookies } from "next/headers"
 
 const COOKIE_NAME = "admin_session"
+const SESSION_TTL_MS = 60 * 60 * 24 * 7 * 1000
 
 function getSecret() {
   const password = process.env.ADMIN_PASSWORD
@@ -51,5 +52,8 @@ export async function isAdminAuthenticated() {
   const a = Buffer.from(signature)
   const b = Buffer.from(expected)
   if (a.length !== b.length) return false
-  return timingSafeEqual(a, b)
+  if (!timingSafeEqual(a, b)) return false
+  const issuedAtMs = Number(issuedAt)
+  if (!Number.isFinite(issuedAtMs) || Date.now() - issuedAtMs > SESSION_TTL_MS) return false
+  return true
 }

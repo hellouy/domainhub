@@ -188,6 +188,9 @@ export async function queryHistory(filter: {
           registerPrice: priceHistory.registerPrice,
           renewPrice: priceHistory.renewPrice,
           transferPrice: priceHistory.transferPrice,
+          promotionPrice: priceHistory.promotionPrice,
+          promoCode: priceHistory.promoCode,
+          promotionEndsAt: priceHistory.promotionEndsAt,
           recordedAt: priceHistory.recordedAt,
         })
         .from(priceHistory)
@@ -202,6 +205,7 @@ export async function queryHistory(filter: {
         registerPrice: num(r.registerPrice),
         renewPrice: num(r.renewPrice),
         transferPrice: num(r.transferPrice),
+        promotionPrice: num(r.promotionPrice),
       }))
     },
     () => [],
@@ -218,7 +222,11 @@ export async function queryDeals(filter: {
   return withFallback(
     "queryDeals",
     async () => {
-      const conditions = [sql`${prices.promotionPrice} IS NOT NULL`, eq(registrars.isActive, true)]
+      const conditions = [
+        sql`${prices.registerPrice} IS NOT NULL`,
+        sql`((${prices.promotionPrice} IS NOT NULL AND ${prices.promotionPrice} >= 0 AND ${prices.promotionPrice} < ${prices.registerPrice}) OR (${prices.promoCode} IS NOT NULL AND btrim(${prices.promoCode}) <> ''))`,
+        eq(registrars.isActive, true),
+      ]
       if (filter.registrar) conditions.push(eq(registrars.slug, filter.registrar))
       if (filter.tld) conditions.push(eq(tlds.tld, normalizeTld(filter.tld)))
       // 默认只看未过期促销（promotion_ends_at 为空视为长期有效）
@@ -226,10 +234,13 @@ export async function queryDeals(filter: {
         conditions.push(sql`(${prices.promotionEndsAt} IS NULL OR ${prices.promotionEndsAt} > now())`)
       }
 
+      const requestedLimit = Number.isFinite(filter.limit) ? Math.trunc(filter.limit!) : 5000
+      const limit = Math.max(1, Math.min(requestedLimit, 5000))
       const rows = await db
         .select({
           registrar: registrars.slug,
           registrarName: registrars.name,
+          registrarWebsite: registrars.website,
           tld: tlds.tld,
           currency: prices.currency,
           registerPrice: prices.registerPrice,
@@ -245,8 +256,13 @@ export async function queryDeals(filter: {
         .innerJoin(registrars, eq(prices.registrarId, registrars.id))
         .innerJoin(tlds, eq(prices.tldId, tlds.id))
         .where(and(...conditions))
-        .orderBy(prices.promotionPrice)
-        .limit(Math.min(filter.limit ?? 100, 500))
+        .orderBy(
+          desc(tlds.isPopular),
+          desc(tlds.popularity),
+          sql`(${prices.promotionPrice} / NULLIF(${prices.registerPrice}, 0)) ASC`,
+          desc(prices.updatedAt),
+        )
+        .limit(limit)
 
       return rows.map((r) => ({
         ...r,

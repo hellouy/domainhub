@@ -23,18 +23,32 @@ export function TldSearch({ options }: { options: TldSearchOption[] }) {
 
   const suggestions = useMemo(() => {
     if (!normalized) return options.slice(0, 6)
-    return options.filter((o) => o.tld.startsWith(normalized)).slice(0, 6)
+
+    return options
+      .filter((option) => option.tld.startsWith(normalized))
+      .sort((a, b) => {
+        const aIsExact = a.tld === normalized
+        const bIsExact = b.tld === normalized
+        if (aIsExact !== bIsExact) return aIsExact ? -1 : 1
+        return a.tld.length - b.tld.length || a.tld.localeCompare(b.tld)
+      })
+      .slice(0, 6)
   }, [normalized, options])
 
   function go(tld: string) {
     setOpen(false)
-    router.push(`/tld/${tld}`)
+    router.push(`/tld/${encodeURIComponent(tld)}`)
   }
 
   function submit() {
-    if (suggestions.length > 0) {
+    if (!normalized) return
+
+    const exactMatch = options.find((option) => option.tld === normalized)
+    if (exactMatch) {
+      go(exactMatch.tld)
+    } else if (suggestions.length > 0) {
       go(suggestions[0].tld)
-    } else if (normalized) {
+    } else {
       go(normalized)
     }
   }

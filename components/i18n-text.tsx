@@ -41,10 +41,15 @@ export function DataUpdated({ date }: { date: Date | string | null | undefined }
 export function RegistrarDescription({
   slug,
   fallback,
+  className,
 }: {
   slug: string
   fallback: string
+  className?: string
 }) {
   const { locale } = useLocale()
-  return <>{registrarDescription(slug, fallback, locale)}</>
+  const description = registrarDescription(slug, fallback, locale)
+  if (!description) return null
+  if (className) return <p className={className}>{description}</p>
+  return <>{description}</>
 }

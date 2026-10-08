@@ -3,7 +3,7 @@
  * ------------------------------------------------------------
  * 逻辑：
  * 1. 读 data/prices-YYYYMMDD.json 最新明细（本地落盘，不依赖数据库）。
- * 2. 循环探测 DATABASE_URL：每 8s 尝试连接 + SELECT 1，失败继续等待。
+ * 2. 循环探测 Supabase 优先连接：每 8s 尝试连接 + SELECT 1，失败继续等待。
  * 3. 连接成功后停止轮询，执行幂等三表灌库：
  *    - registrars：slug 冲突则跳过（DO NOTHING），不覆盖已有品牌数据
  *    - tlds      ：tld 冲突则跳过，只补缺失后缀
@@ -11,8 +11,8 @@
  *    - crawl_jobs：追加一条完成记录（source=auto-sync）
  * 4. 写 data/sync-meta.json（lastSyncAt + 各家条数），打印统计后退出。
  *
- * 任何 Postgres 系数据库都适用（改 DATABASE_URL 即可）：Neon 恢复、
- * Supabase、本地 PG 均可直接注入，无需改代码。
+ * 优先使用 Supabase 项目连接变量；未配置时回退 DATABASE_URL，
+ * 兼容 Neon 与本地 Postgres。
  *
  * 运行：npx tsx scripts/auto-sync-prices.ts
  */
@@ -192,7 +192,9 @@ async function main() {
   }
   console.log(`明细: ${source.file}（${Object.keys(source.data.registrars).length} 家）`)
 
-  const pool = new Pool({ connectionString: process.env.DATABASE_URL, connectionTimeoutMillis: CONNECT_TIMEOUT_MS })
+  const connectionString =
+    process.env.tldbi_POSTGRES_URL ?? process.env.tldbi_POSTGRES_URL_NON_POOLING ?? process.env.DATABASE_URL
+  const pool = new Pool({ connectionString, connectionTimeoutMillis: CONNECT_TIMEOUT_MS })
   pool.on("error", () => {})
 
   process.on("SIGINT", () => {

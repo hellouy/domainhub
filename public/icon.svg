@@ -1,4 +1,7 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
-  <rect width="32" height="32" rx="6" fill="#d9502b"/>
-  <text x="16" y="22" font-family="ui-monospace, 'SF Mono', Menlo, monospace" font-size="15" font-weight="700" fill="#faf9f7" text-anchor="middle">T</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" fill="#faf9f7"/>
+  <rect x="5" y="5" width="54" height="54" rx="12" fill="#242220"/>
+  <rect x="18" y="19" width="28" height="25" rx="2" fill="#d9502b"/>
+  <path d="M21 22h22v6h-8v18h-6V28h-8z" fill="#faf9f7"/>
+  <circle cx="43" cy="45" r="3.5" fill="#faf9f7"/>
 </svg>

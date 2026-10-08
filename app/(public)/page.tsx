@@ -3,6 +3,7 @@ import { ArrowUpRight } from "lucide-react"
 import { HomeHero } from "@/components/home-hero"
 import { TldExplorer } from "@/components/tld-explorer"
 import { T, RegistrarDescription } from "@/components/i18n-text"
+import { RegistrarIcon } from "@/components/registrar-favicon"
 import { getActiveRegistrars, getStats, getTldsWithMinPrice } from "@/lib/db/queries"
 
 export const revalidate = 300
@@ -46,7 +47,6 @@ export default async function HomePage() {
       <section aria-labelledby="tld-explorer" className="border-b border-border">
         <div className="mx-auto w-full max-w-6xl px-4 py-10 md:px-6 md:py-14">
           <div className="mb-6 flex flex-col gap-2">
-            <p className="text-xs font-medium uppercase tracking-widest text-primary">01</p>
             <h2 id="tld-explorer" className="text-xl font-bold tracking-tight md:text-3xl">
               <T k="section.explorer" />
             </h2>
@@ -60,7 +60,6 @@ export default async function HomePage() {
         <div className="mx-auto w-full max-w-6xl px-4 py-10 md:px-6 md:py-14">
           <div className="mb-6 flex items-end justify-between">
             <div className="flex flex-col gap-2">
-              <p className="text-xs font-medium uppercase tracking-widest text-primary">02</p>
               <h2 id="registrars-heading" className="text-xl font-bold tracking-tight md:text-3xl">
                 <T k="section.registrars" />
               </h2>
@@ -80,6 +79,7 @@ export default async function HomePage() {
                   href={`/registrars/${r.slug}`}
                   className="group flex items-center gap-3 p-4 transition-colors hover:bg-accent"
                 >
+                  <RegistrarIcon website={r.website} name={r.name} size="compact" />
                   <span className="min-w-0 flex-1">
                     <span className="block truncate font-semibold group-hover:text-primary">{r.name}</span>
                     <span className="block truncate text-xs leading-relaxed text-muted-foreground">

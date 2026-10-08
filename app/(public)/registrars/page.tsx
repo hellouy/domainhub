@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { Badge } from "@/components/ui/badge"
 import { T, TCount, RegistrarDescription } from "@/components/i18n-text"
+import { RegistrarIcon } from "@/components/registrar-favicon"
 import { getActiveRegistrars } from "@/lib/db/queries"
 
 export const revalidate = 300
@@ -28,43 +29,53 @@ export default async function RegistrarsPage() {
           <TCount k="page.registrars.desc" vars={{ n: rows.length }} />
         </p>
       </header>
-      <ul className="grid grid-cols-1 gap-px border border-border bg-border md:grid-cols-2">
+      <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
         {rows.map((r) => (
-          <li key={r.id} className="bg-card">
+          <li key={r.id} className="min-w-0">
             <Link
               href={`/registrars/${r.slug}`}
-              className="group flex h-full flex-col gap-3 p-6 transition-colors hover:bg-accent"
+              className="group flex h-full min-h-32 items-start gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-accent/40 focus-visible:outline-offset-4 sm:p-5"
             >
-              <div className="flex items-center justify-between">
-                <span className="text-lg font-semibold group-hover:text-primary">{r.name}</span>
-                <span className="flex items-center gap-2">
-                  <span className="rounded-sm bg-primary/10 px-1.5 py-0.5 font-mono text-xs font-semibold text-primary">
-                    {r.score} <T k="registrar.score" />
+              <RegistrarIcon website={r.website} name={r.name} />
+              <div className="flex min-w-0 flex-1 flex-col gap-3 self-stretch">
+                <div className="flex items-start justify-between gap-3">
+                  <span className="min-w-0 truncate text-lg font-semibold tracking-tight transition-colors group-hover:text-primary">
+                    {r.name}
                   </span>
-                  <span className="font-mono text-xs text-muted-foreground">
-                    {r.tldCount} <T k="section.tldCount" />
+                  <span className="flex shrink-0 items-center gap-2">
+                    <span className="rounded-sm bg-primary/10 px-1.5 py-0.5 font-mono text-xs font-semibold text-primary">
+                      {r.score} <T k="registrar.score" />
+                    </span>
+                    <span className="text-right font-mono text-sm tabular-nums text-foreground">
+                      {r.tldCount}
+                      <span className="block text-xs font-sans font-normal text-muted-foreground">
+                        <T k="section.tldCount" />
+                      </span>
+                    </span>
                   </span>
-                </span>
-              </div>
-              <p className="line-clamp-2 text-sm leading-relaxed text-muted-foreground">
-                <RegistrarDescription slug={r.slug} fallback={r.description} />
-              </p>
-              <div className="mt-auto flex flex-wrap gap-1.5 pt-2">
-                {r.icannAccredited && (
-                  <Badge variant="secondary">
-                    <T k="badge.icann" />
-                  </Badge>
-                )}
-                {r.whoisPrivacy && (
-                  <Badge variant="secondary">
-                    <T k="badge.whois" />
-                  </Badge>
-                )}
-                {r.dnssec && (
-                  <Badge variant="secondary">
-                    <T k="badge.dnssec" />
-                  </Badge>
-                )}
+                </div>
+                <RegistrarDescription
+                  slug={r.slug}
+                  fallback={r.description}
+                  className="line-clamp-3 text-sm leading-relaxed text-muted-foreground"
+                />
+                <div className="mt-auto flex flex-wrap gap-1.5 pt-1">
+                  {r.icannAccredited && (
+                    <Badge variant="secondary">
+                      <T k="badge.icann" />
+                    </Badge>
+                  )}
+                  {r.whoisPrivacy && (
+                    <Badge variant="secondary">
+                      <T k="badge.whois" />
+                    </Badge>
+                  )}
+                  {r.dnssec && (
+                    <Badge variant="secondary">
+                      <T k="badge.dnssec" />
+                    </Badge>
+                  )}
+                </div>
               </div>
             </Link>
           </li>

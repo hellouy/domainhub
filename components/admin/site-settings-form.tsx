@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState, useEffect, useRef, useState } from "react"
+import { useActionState, useRef, useState } from "react"
 import Image from "next/image"
 import { Upload, Loader2, X, Check } from "lucide-react"
 import { updateSiteSettings } from "@/app/actions/admin"
@@ -110,15 +110,7 @@ export function SiteSettingsForm({ settings }: { settings: SiteSettings }) {
   const [brandMain, setBrandMain] = useState(settings.brandTextMain)
   const [brandAccent, setBrandAccent] = useState(settings.brandTextAccent)
   const [brandSuffix, setBrandSuffix] = useState(settings.brandSuffix)
-  const [saved, setSaved] = useState(false)
-
-  useEffect(() => {
-    if (state?.ok) {
-      setSaved(true)
-      const id = setTimeout(() => setSaved(false), 2500)
-      return () => clearTimeout(id)
-    }
-  }, [state])
+  const saved = state?.ok === true && !pending
 
   return (
     <form action={formAction} className="flex flex-col gap-8">

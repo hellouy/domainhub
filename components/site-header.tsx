@@ -1,5 +1,6 @@
 import Link from "next/link"
 import { CurrencyToggle, LocaleToggle, ThemeToggle } from "@/components/header-toggles"
+import { SiteNavigation } from "@/components/site-navigation"
 import { getSiteSettings } from "@/lib/site-settings"
 
 export async function SiteHeader() {
@@ -29,7 +30,9 @@ export async function SiteHeader() {
             </>
           )}
         </Link>
-        <div className="flex items-center gap-0.5">
+        <div className="flex items-center gap-1">
+          <SiteNavigation />
+          <span aria-hidden="true" className="mx-1 hidden h-5 border-l border-border sm:block" />
           <CurrencyToggle />
           <LocaleToggle />
           <ThemeToggle />

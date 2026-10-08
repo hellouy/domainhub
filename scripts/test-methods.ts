@@ -10,10 +10,10 @@
  *
  * 运行：npx tsx scripts/test-methods.ts   （需 BROWSER_SERVICE_URL=http://127.0.0.1:8840）
  */
-import { executeStrategies } from "/workspace/packages/adapter-sdk/strategy-engine"
-import { xserverAdapter, valueDomainAdapter, muumuuDomainAdapter } from "/workspace/adapters/table-registrars"
-import { hostingerAdapter } from "/workspace/adapters/hostinger"
-import { dynadotAdapter } from "/workspace/adapters/dynadot"
+import { executeStrategies } from "../packages/adapter-sdk/strategy-engine"
+import { xserverAdapter, valueDomainAdapter, muumuuDomainAdapter } from "../adapters/table-registrars"
+import { hostingerAdapter } from "../adapters/hostinger"
+import { dynadotAdapter } from "../adapters/dynadot"
 
 function makeCtx(slug: string) {
   return {

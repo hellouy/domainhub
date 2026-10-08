@@ -5,14 +5,19 @@ import Link from "next/link"
 import { ArrowUpDown, ExternalLink } from "lucide-react"
 import { formatRelative } from "@/lib/format"
 import { useCurrency, useLocale } from "@/components/providers"
+import { PromotionPrice } from "@/components/promotion-price"
+import { getActivePromotionPrice } from "@/lib/promotion"
 import type { DictKey } from "@/lib/i18n"
-import { cn, normalizeUrl } from "@/lib/utils"
+import { cn, normalizeUrl, withRegistrarReferral } from "@/lib/utils"
 
 export type PriceRow = {
   priceId: number
   registerPrice: string | null
   renewPrice: string | null
   transferPrice: string | null
+  promotionPrice?: string | null
+  promoCode?: string | null
+  promotionEndsAt?: Date | string | null
   currency: string
   sourceUrl?: string | null
   updatedAt: Date | string
@@ -22,6 +27,12 @@ export type PriceRow = {
 }
 
 type SortKey = "registerPrice" | "renewPrice" | "transferPrice"
+
+function comparablePrice(row: PriceRow, key: SortKey) {
+  return key === "registerPrice"
+    ? getActivePromotionPrice(row.registerPrice, row.promotionPrice, row.promotionEndsAt) ?? row.registerPrice
+    : row[key]
+}
 
 const SORT_LABEL_KEYS: Record<SortKey, DictKey> = {
   registerPrice: "pt.byRegister",
@@ -35,14 +46,14 @@ function toNum(v: string | null) {
   return Number.isNaN(n) ? Number.POSITIVE_INFINITY : n
 }
 
-/** 单元格 → USD 基准比较值。非空且折算后 >= $1 才参与"最低价"竞争,排除促销占位价。 */
-function toUsdAmount(v: string | null, currency: string, rates: Record<string, number>) {
+/** 单元格 → USD 基准比较值。非促销占位价低于 $1 时不参与最低价竞争。 */
+function toUsdAmount(v: string | null, currency: string, rates: Record<string, number>, allowSubDollar = false) {
   if (v == null) return Number.POSITIVE_INFINITY
   const n = Number.parseFloat(v)
   if (Number.isNaN(n)) return Number.POSITIVE_INFINITY
   const r = rates[currency]
   const usd = r && r > 0 ? n / r : n
-  return usd >= 1 ? usd : Number.POSITIVE_INFINITY
+  return usd >= 1 || allowSubDollar ? usd : Number.POSITIVE_INFINITY
 }
 
 export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; showUpdated?: boolean }) {
@@ -52,7 +63,23 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
 
   const sorted = useMemo(() => {
     const normalized = rates ?? {}
-    return [...rows].sort((a, b) => toUsdAmount(a[sortKey] as string, a.currency, normalized) - toUsdAmount(b[sortKey] as string, b.currency, normalized))
+    return [...rows].sort(
+      (a, b) =>
+        toUsdAmount(
+          comparablePrice(a, sortKey),
+          a.currency,
+          normalized,
+          sortKey === "registerPrice" &&
+            getActivePromotionPrice(a.registerPrice, a.promotionPrice, a.promotionEndsAt) !== null,
+        ) -
+        toUsdAmount(
+          comparablePrice(b, sortKey),
+          b.currency,
+          normalized,
+          sortKey === "registerPrice" &&
+            getActivePromotionPrice(b.registerPrice, b.promotionPrice, b.promotionEndsAt) !== null,
+        ),
+    )
   }, [rows, sortKey, rates])
 
   const minValues = useMemo(() => {
@@ -60,9 +87,17 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
     const mins: Partial<Record<SortKey, number>> = {}
     const normalized = rates ?? {}
     for (const key of keys) {
-      const vals = rows.map((r) => toUsdAmount(r[key] as string, r.currency, normalized)).filter((v) =>
-        Number.isFinite(v),
-      )
+      const vals = rows
+        .map((r) =>
+          toUsdAmount(
+            comparablePrice(r, key),
+            r.currency,
+            normalized,
+            key === "registerPrice" &&
+              getActivePromotionPrice(r.registerPrice, r.promotionPrice, r.promotionEndsAt) !== null,
+          ),
+        )
+        .filter((v) => Number.isFinite(v))
       if (vals.length > 0) mins[key] = Math.min(...vals)
     }
     return mins
@@ -130,7 +165,15 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
                   </Link>
                 </td>
                 {(["registerPrice", "renewPrice", "transferPrice"] as SortKey[]).map((key) => {
-                  const isMin = toUsdAmount(row[key] as string, row.currency, rates ?? {}) === minValues[key]
+                  const value = comparablePrice(row, key)
+                  const isMin =
+                    toUsdAmount(
+                      value,
+                      row.currency,
+                      rates ?? {},
+                      key === "registerPrice" &&
+                        getActivePromotionPrice(row.registerPrice, row.promotionPrice, row.promotionEndsAt) !== null,
+                    ) === minValues[key]
                   return (
                     <td
                       key={key}
@@ -139,7 +182,17 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
                         isMin ? "font-semibold text-primary" : "text-foreground",
                       )}
                     >
-                      {money(row[key], row.currency)}
+                      {key === "registerPrice" ? (
+                        <PromotionPrice
+                          price={row.registerPrice}
+                          promotionPrice={row.promotionPrice}
+                          promoCode={row.promoCode}
+                          promotionEndsAt={row.promotionEndsAt}
+                          currency={row.currency}
+                        />
+                      ) : (
+                        money(row[key], row.currency)
+                      )}
                       {isMin && <span className="sr-only">{t("pt.lowest")}</span>}
                     </td>
                   )
@@ -150,13 +203,19 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
                   </td>
                 )}
                 <td className="px-4 py-3.5 text-right">
-                  {normalizeUrl(row.sourceUrl, row.registrarWebsite) ? (
+                  {withRegistrarReferral(
+                    normalizeUrl(row.sourceUrl, row.registrarWebsite),
+                    "price_table",
+                  ) ? (
                     <a
-                      href={normalizeUrl(row.sourceUrl, row.registrarWebsite)}
+                      href={withRegistrarReferral(
+                        normalizeUrl(row.sourceUrl, row.registrarWebsite),
+                        "price_table",
+                      )}
                       target="_blank"
                       rel="noopener noreferrer"
                       aria-label={t("pt.visitAria").replace("{name}", row.registrarName)}
-                      className="inline-flex text-muted-foreground hover:text-primary"
+                      className="inline-flex min-h-11 min-w-11 items-center justify-center text-muted-foreground hover:text-primary"
                     >
                       <ExternalLink aria-hidden="true" className="size-4" />
                     </a>
