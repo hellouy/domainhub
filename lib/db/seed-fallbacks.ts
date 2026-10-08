@@ -106,6 +106,9 @@ export interface RegistrarRow {
   owner: string | null
   adapterVersion: string | null
   priority: number | null
+  faviconData: Buffer | null
+  faviconContentType: string | null
+  faviconUpdatedAt: Date | null
 }
 
 export interface TldRow {
@@ -246,6 +249,9 @@ export function seedRegistrarBySlug(slug: string): RegistrarRow | null {
     owner: null,
     adapterVersion: null,
     priority: null,
+    faviconData: null,
+    faviconContentType: null,
+    faviconUpdatedAt: null,
   }
 }
 
