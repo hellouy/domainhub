@@ -24,9 +24,11 @@
  * （表格优先、div 网格兜底），输出规范化为 RawPrice 形状。
  */
 
-import express, { type Request, type Response } from "express"
+import express, { type NextFunction, type Request, type Response } from "express"
+import { timingSafeEqual } from "node:crypto"
 import { readFileSync } from "node:fs"
 import { chromium, type Browser } from "playwright"
+import { assertPublicHttpUrl } from "./security.ts"
 
 const PORT = Number(process.env.PORT ?? 8840)
 /** 同时最多并发渲染的任务数（内存受限） */
@@ -37,7 +39,12 @@ const TASK_TIMEOUT_MS = Number(process.env.BROWSER_WORKER_TIMEOUT_MS ?? 90_000)
 const NAV_TIMEOUT_MS = 60_000
 /** 等待 networkidle 的宽松超时（毫秒） */
 const NETWORK_IDLE_TIMEOUT_MS = 15_000
-const VERSION = "1.0.0"
+const VERSION = "1.1.0"
+const WORKER_TOKEN = process.env.BROWSER_WORKER_TOKEN ?? ""
+
+if (WORKER_TOKEN.length < 32) {
+  throw new Error("BROWSER_WORKER_TOKEN 必须配置且至少 32 个字符")
+}
 
 // 默认提取脚本（IIFE，evaluate 后返回价格 JSON 字符串）
 const EXTRACT_SCRIPT = readFileSync(
@@ -106,9 +113,23 @@ interface RenderResponse {
 const XHR_BODY_CAP = 200 * 1024
 /** xhr-json 单次任务最多捕获的响应条数 */
 const XHR_RESP_CAP = 100
+const MAX_WAITING_REQUESTS = 32
+
+function requireWorkerToken(req: Request, res: Response, next: NextFunction) {
+  const authorization = req.header("authorization") ?? ""
+  const supplied = authorization.startsWith("Bearer ") ? authorization.slice(7) : ""
+  const expected = Buffer.from(WORKER_TOKEN)
+  const actual = Buffer.from(supplied)
+  if (actual.length !== expected.length || !timingSafeEqual(actual, expected)) {
+    res.status(401).json({ ok: false, error: "未授权", durationMs: 0 })
+    return
+  }
+  next()
+}
 
 const app = express()
 app.use(express.json({ limit: "1mb" }))
+app.use("/render", requireWorkerToken)
 
 // ---- 并发闸门：超过配额的任务排队等待，防止内存超载 ----
 let active = 0
@@ -123,6 +144,9 @@ async function acquireSlot(): Promise<() => void> {
       active--
       waitQueue.shift()?.()
     }
+  }
+  if (waitQueue.length >= MAX_WAITING_REQUESTS) {
+    throw new Error("浏览器服务队列已满")
   }
   await new Promise<void>((resolve) => waitQueue.push(resolve))
   return acquireSlot()
@@ -149,15 +173,56 @@ function getBrowser(): Promise<Browser> {
 }
 
 /** 渲染单个页面并按要求提取。所有导航/等待都带超时，失败抛错。 */
-async function render(input: RenderRequest): Promise<RenderResponse> {
+async function render(input: RenderRequest, signal: AbortSignal): Promise<RenderResponse> {
   const started = Date.now()
-  const browser = await getBrowser()
-  const context = await browser.newContext({
+  let abortHandler: (() => void) | undefined
+  const abortPromise = new Promise<never>((_, reject) => {
+    abortHandler = () => reject(new Error("浏览器任务已取消"))
+    if (signal.aborted) abortHandler()
+    else signal.addEventListener("abort", abortHandler, { once: true })
+  })
+  let browser: Browser
+  try {
+    browser = await Promise.race([getBrowser(), abortPromise])
+  } finally {
+    if (abortHandler) signal.removeEventListener("abort", abortHandler)
+  }
+  if (signal.aborted) throw new Error("浏览器任务已取消")
+
+  const contextPromise = browser.newContext({
     userAgent: REAL_UA,
     locale: input.locale ?? "en-US",
     viewport: { width: 1440, height: 900 },
     extraHTTPHeaders: input.headers ?? {},
   })
+  void contextPromise.then((createdContext) => {
+    if (signal.aborted) return createdContext.close().catch(() => {})
+  }).catch(() => {})
+  const context = await Promise.race([contextPromise, abortPromise])
+  const closeContextOnAbort = () => {
+    void context.close().catch(() => {})
+  }
+  signal.addEventListener("abort", closeContextOnAbort, { once: true })
+  if (signal.aborted) closeContextOnAbort()
+
+  await context.route("**/*", async (route) => {
+    if (signal.aborted) {
+      await route.abort("aborted").catch(() => {})
+      return
+    }
+    const target = route.request().url()
+    if (/^(data|blob|about):/i.test(target)) {
+      await route.continue().catch(() => {})
+      return
+    }
+    try {
+      await assertPublicHttpUrl(target)
+      await route.continue()
+    } catch {
+      await route.abort("blockedbyclient").catch(() => {})
+    }
+  })
+
   const page = await context.newPage()
 
   // 提前挂载 XHR/fetch 响应捕获（须在 goto 之前，否则页面加载期发出的请求会漏掉）
@@ -310,37 +375,64 @@ async function render(input: RenderRequest): Promise<RenderResponse> {
       extracted,
     }
   } finally {
+    signal.removeEventListener("abort", closeContextOnAbort)
     await page.close().catch(() => {})
     await context.close().catch(() => {})
   }
 }
 
 app.post("/render", async (req: Request, res: Response) => {
-  const input = (req.body ?? {}) as RenderRequest
-  if (!input.url || !/^https?:\/\//i.test(input.url)) {
-    res.status(400).json({ ok: false, error: "url 缺失或不是 http(s) 地址", durationMs: 0 })
+  const body = req.body
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    res.status(400).json({ ok: false, error: "请求体必须是 JSON 对象", durationMs: 0 })
     return
   }
-  const release = await acquireSlot()
+  const input = body as RenderRequest
+  if (typeof input.url !== "string" || input.url.length > 2048) {
+    res.status(400).json({ ok: false, error: "url 缺失或超过长度限制", durationMs: 0 })
+    return
+  }
+  if (input.script && input.script.length > 32_000) {
+    res.status(400).json({ ok: false, error: "提取脚本超过 32KB 限制", durationMs: 0 })
+    return
+  }
   try {
-    const result = await Promise.race([
-      render(input),
-      new Promise<RenderResponse>((resolve) =>
-        setTimeout(
-          () => resolve({ ok: false, error: `浏览器任务超时（>${TASK_TIMEOUT_MS}ms）`, durationMs: TASK_TIMEOUT_MS }),
-          TASK_TIMEOUT_MS,
-        ),
-      ),
-    ])
-    res.status(result.ok ? 200 : 502).json(result)
+    await assertPublicHttpUrl(input.url)
+    if (input.apiFetch?.url) await assertPublicHttpUrl(input.apiFetch.url)
   } catch (err) {
-    res.status(502).json({
-      ok: false,
-      error: err instanceof Error ? err.message : String(err),
-      durationMs: 0,
+    res.status(400).json({ ok: false, error: err instanceof Error ? err.message : "目标 URL 无效", durationMs: 0 })
+    return
+  }
+
+  let release: (() => void) | undefined
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  try {
+    release = await acquireSlot()
+    const controller = new AbortController()
+    let didTimeout = false
+    const renderTask = render(input, controller.signal)
+    const timeoutTask = new Promise<RenderResponse>((resolve) => {
+      timeout = setTimeout(() => {
+        didTimeout = true
+        controller.abort()
+        resolve({ ok: false, error: `浏览器任务超时（>${TASK_TIMEOUT_MS}ms）`, durationMs: TASK_TIMEOUT_MS })
+      }, TASK_TIMEOUT_MS)
     })
+
+    const result = await Promise.race([renderTask, timeoutTask])
+    if (didTimeout) await renderTask.catch(() => {})
+    if (!res.headersSent) res.status(result.ok ? 200 : 502).json(result)
+  } catch (err) {
+    if (!res.headersSent) {
+      res.status(502).json({
+        ok: false,
+        error: err instanceof Error ? err.message : String(err),
+        durationMs: 0,
+      })
+    }
   } finally {
-    release()
+    if (timeout) clearTimeout(timeout)
+    release?.()
   }
 })
 

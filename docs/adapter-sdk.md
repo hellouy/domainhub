@@ -165,9 +165,13 @@ HTML 解析拿不到价格时,工厂自动追加一个指向同一价格页的 p
 ### 环境变量
 
 - `BROWSER_SERVICE_URL`(主站点):playwright 策略转发地址。未配置时 playwright 策略直接抛错,适配器按降级链继续,不会影响其他策略。
+- `BROWSER_SERVICE_TOKEN`(主站点):至少 32 字符的 Bearer 令牌，必须与 worker 的 `BROWSER_WORKER_TOKEN` 完全一致。
+- `BROWSER_WORKER_TOKEN`(worker):必填且至少 32 字符；worker 启动时缺失或长度不足会拒绝启动。
 - `PORT`(默认 8840):browser-worker 监听端口。
-- `BROWSER_WORKER_CONCURRENCY`(默认 2):并发渲染闸门(内存受限)。
-- `BROWSER_WORKER_TIMEOUT_MS`(默认 90_000):单任务渲染超时。
+- `BROWSER_WORKER_CONCURRENCY`(默认 2):并发渲染闸门(内存受限)。等待队列上限 32。
+- `BROWSER_WORKER_TIMEOUT_MS`(默认 90_000):单任务渲染超时；超时会中止并关闭 Playwright context，清理结束后才释放并发槽位。
+
+Worker 在每次导航/子请求时检查 URL 协议、端口、DNS 解析及私有/保留 IP，重定向也会重新检查。该 DNS 检查不能替代网络层隔离：部署时还应配置出站防火墙，禁止访问 loopback、RFC1918、link-local 与云元数据地址，以阻止 DNS rebinding 绕过。
 
 ### 浏览器服务契约(`browser-worker/`)
 

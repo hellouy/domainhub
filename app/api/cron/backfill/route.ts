@@ -8,14 +8,13 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server"
+import { hasValidCronAuthorization } from "@/lib/cron-auth"
 import { listRunningBackfills, runNextBatch } from "@/services/crawl/backfill"
 
 export const maxDuration = 300
 
 export async function GET(request: NextRequest) {
-  const secret = process.env.CRON_SECRET
-  const auth = request.headers.get("authorization")
-  if (!secret || auth !== `Bearer ${secret}`) {
+  if (!hasValidCronAuthorization(request)) {
     return NextResponse.json({ error: "未授权" }, { status: 401 })
   }
 

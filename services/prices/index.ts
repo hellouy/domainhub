@@ -29,6 +29,13 @@ import { computeRegistrarScore } from "@/lib/registrar-score"
 
 const num = (v: string | null): number | null => (v === null ? null : Number.parseFloat(v))
 
+type QueryDataSourceState = { source: "database" | "seed"; checkedAt: string | null }
+let queryDataSourceState: QueryDataSourceState = { source: "database", checkedAt: null }
+
+export function getQueryDataSourceState(): QueryDataSourceState {
+  return { ...queryDataSourceState }
+}
+
 function healthScoreOf(health: unknown): number | null {
   if (health == null || typeof health !== "object") return null
   const score = (health as { score?: unknown }).score
@@ -41,8 +48,11 @@ function healthScoreOf(health: unknown): number | null {
  */
 async function withFallback<T>(label: string, run: () => Promise<T>, fallback: () => T): Promise<T> {
   try {
-    return await run()
+    const result = await run()
+    queryDataSourceState = { source: "database", checkedAt: new Date().toISOString() }
+    return result
   } catch (err) {
+    queryDataSourceState = { source: "seed", checkedAt: new Date().toISOString() }
     console.error(`[db] ${label} failed, returning fallback:`, err)
     return fallback()
   }

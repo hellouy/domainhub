@@ -9,6 +9,7 @@
 import { eq } from "drizzle-orm"
 import { NextResponse, type NextRequest } from "next/server"
 import { isAdminAuthenticated } from "@/lib/admin-auth"
+import { isSameOriginRequest } from "@/lib/request-origin"
 import { db } from "@/lib/db"
 import { discoveryMetadata, registrars } from "@/lib/db/schema"
 import { repairAdapter } from "@/packages/ai-repair"
@@ -25,6 +26,9 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ apiVersion: "v1", error: "禁止跨站请求" }, { status: 403 })
+  }
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ apiVersion: "v1", error: "未授权" }, { status: 401 })
   }

@@ -1,6 +1,7 @@
 import { put } from "@vercel/blob"
 import { type NextRequest, NextResponse } from "next/server"
 import { isAdminAuthenticated } from "@/lib/admin-auth"
+import { isSameOriginRequest } from "@/lib/request-origin"
 
 export const runtime = "nodejs"
 
@@ -8,6 +9,9 @@ const MAX_BYTES = 2 * 1024 * 1024 // 2MB
 const ALLOWED = ["image/png", "image/jpeg", "image/svg+xml", "image/webp", "image/x-icon", "image/vnd.microsoft.icon"]
 
 export async function POST(request: NextRequest) {
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ error: "禁止跨站请求" }, { status: 403 })
+  }
   // 仅登录后台管理员可上传
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ error: "未授权" }, { status: 401 })

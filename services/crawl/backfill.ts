@@ -15,10 +15,11 @@
  * - 幂等: 每批调用既有 runCrawlWithSdk(带 tldScope.tlds 白名单)
  */
 
-import { asc, desc, eq } from "drizzle-orm"
+import { and, asc, desc, eq, isNull } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { crawlBackfill, tlds } from "@/lib/db/schema"
 import { runCrawlWithSdk } from "./index"
+import { shouldAdvanceBackfillCursor } from "./backfill-policy"
 
 /** 批次间最小间隔(略小于 5 分钟，容忍 cron 抖动) */
 export const MIN_INTERVAL_MS = 4.5 * 60_000
@@ -127,46 +128,95 @@ export async function runNextBatch(
   }
 
   const valid = await getValidRankedTlds()
-  // total 以启动快照为准；若后缀集变化导致越界，按当前长度收敛
-  const total = state.total > 0 ? state.total : valid.length
+  // total 以启动快照为准；若有效后缀集缩小则收敛到当前长度。
+  const total = state.total > 0 ? Math.min(state.total, valid.length) : valid.length
   const start = state.cursor
-  if (start >= valid.length) {
+  if (start >= total) {
     await db
       .update(crawlBackfill)
       .set({ status: "completed", updatedAt: new Date() })
-      .where(eq(crawlBackfill.registrarId, registrarId))
+      .where(and(eq(crawlBackfill.registrarId, registrarId), eq(crawlBackfill.status, "running"), eq(crawlBackfill.cursor, start)))
     return { ran: false, reason: "已到末尾，标记完成", registrarId, completed: true, cursor: start, total }
   }
+  if (state.batchSize < 1) {
+    return { ran: false, reason: "批次大小无效", registrarId, cursor: start, total }
+  }
 
-  const batch = valid.slice(start, start + state.batchSize)
-  const result = await runCrawlWithSdk(registrarId, {
-    tldScope: { tlds: batch },
-    trigger: "backfill",
-  })
-
-  const updated = result?.updated ?? 0
-  const nextCursor = start + batch.length
-  const completed = nextCursor >= valid.length
-  await db
+  // 用 lastBatchAt 原子认领批次，避免 Cron 重入时两个实例消费同一游标。
+  const claimedAt = new Date()
+  const claimConditions = [
+    eq(crawlBackfill.registrarId, registrarId),
+    eq(crawlBackfill.status, "running"),
+    eq(crawlBackfill.cursor, start),
+    state.lastBatchAt ? eq(crawlBackfill.lastBatchAt, state.lastBatchAt) : isNull(crawlBackfill.lastBatchAt),
+  ]
+  const [claim] = await db
     .update(crawlBackfill)
-    .set({
-      cursor: nextCursor,
-      batchesDone: state.batchesDone + 1,
-      pricesUpdated: state.pricesUpdated + updated,
-      lastBatchAt: new Date(),
-      status: completed ? "completed" : "running",
-      updatedAt: new Date(),
-    })
-    .where(eq(crawlBackfill.registrarId, registrarId))
+    .set({ lastBatchAt: claimedAt, updatedAt: claimedAt })
+    .where(and(...claimConditions))
+    .returning({ id: crawlBackfill.id })
+  if (!claim) {
+    return { ran: false, reason: "回填批次已被其他任务认领", registrarId, cursor: start, total }
+  }
 
-  return {
-    ran: true,
-    registrarId,
-    batchTlds: batch,
-    updated,
-    cursor: nextCursor,
-    total: valid.length,
-    completed,
+  const batch = valid.slice(start, Math.min(start + state.batchSize, total))
+  try {
+    const result = await runCrawlWithSdk(registrarId, {
+      tldScope: { tlds: batch },
+      trigger: "backfill",
+    })
+    if (!result) {
+      await db
+        .update(crawlBackfill)
+        .set({ status: "stopped", updatedAt: new Date() })
+        .where(and(eq(crawlBackfill.registrarId, registrarId), eq(crawlBackfill.cursor, start), eq(crawlBackfill.lastBatchAt, claimedAt)))
+      return { ran: false, reason: "此注册商尚无 SDK 适配器，已停止以避免静默跳过价格", registrarId, cursor: start, total }
+    }
+    if (!shouldAdvanceBackfillCursor(result)) {
+      return { ran: false, reason: result.error ?? result.message ?? "采集失败；游标未推进，可稍后重试", registrarId, batchTlds: batch, cursor: start, total }
+    }
+
+    const updated = result.updated
+    const nextCursor = start + batch.length
+    const completed = nextCursor >= total
+    const [advanced] = await db
+      .update(crawlBackfill)
+      .set({
+        cursor: nextCursor,
+        batchesDone: state.batchesDone + 1,
+        pricesUpdated: state.pricesUpdated + updated,
+        status: completed ? "completed" : "running",
+        updatedAt: new Date(),
+      })
+      .where(and(
+        eq(crawlBackfill.registrarId, registrarId),
+        eq(crawlBackfill.status, "running"),
+        eq(crawlBackfill.cursor, start),
+        eq(crawlBackfill.lastBatchAt, claimedAt),
+      ))
+      .returning({ id: crawlBackfill.id })
+    if (!advanced) {
+      return { ran: false, reason: "采集成功但游标状态已被其他操作更改；需要人工核对本批结果", registrarId, batchTlds: batch, cursor: start, total }
+    }
+
+    return {
+      ran: true,
+      registrarId,
+      batchTlds: batch,
+      updated,
+      cursor: nextCursor,
+      total,
+      completed,
+    }
+  } catch (error) {
+    return {
+      ran: false,
+      registrarId,
+      batchTlds: batch,
+      cursor: start,
+      total,
+      reason: error instanceof Error ? error.message : String(error),
+    }
   }
 }
 
