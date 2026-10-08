@@ -28,20 +28,26 @@ export default async function TldsPage() {
           <TCount k="page.tlds.desc" vars={{ n: rows.length }} />
         </p>
       </header>
-      <div className="overflow-x-auto border border-border">
-        <table className="w-full min-w-[480px] border-collapse text-sm">
+      <div className="border border-border">
+        <table className="w-full table-fixed border-collapse text-sm">
+          <colgroup>
+            <col className="w-[23%]" />
+            <col className="w-[19%]" />
+            <col className="w-[36%]" />
+            <col className="w-[22%]" />
+          </colgroup>
           <thead>
             <tr className="border-b border-border bg-secondary text-left">
-              <th scope="col" className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              <th scope="col" className="whitespace-nowrap px-2 py-3 text-[10px] font-medium text-muted-foreground sm:px-4 sm:text-xs sm:uppercase sm:tracking-widest">
                 <T k="th.tld" />
               </th>
-              <th scope="col" className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              <th scope="col" className="whitespace-nowrap px-2 py-3 text-[10px] font-medium text-muted-foreground sm:px-4 sm:text-xs sm:uppercase sm:tracking-widest">
                 <T k="th.type" />
               </th>
-              <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              <th scope="col" className="whitespace-nowrap px-2 py-3 text-right text-[10px] font-medium text-muted-foreground sm:px-4 sm:text-xs sm:uppercase sm:tracking-widest">
                 <T k="th.minRegister" />
               </th>
-              <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
+              <th scope="col" className="whitespace-nowrap px-2 py-3 text-right text-[10px] font-medium text-muted-foreground sm:px-4 sm:text-xs sm:uppercase sm:tracking-widest">
                 <T k="th.registrarCount" />
               </th>
             </tr>
@@ -49,18 +55,18 @@ export default async function TldsPage() {
           <tbody>
             {rows.map((t) => (
               <tr key={t.id} className="border-b border-border last:border-b-0 hover:bg-accent/50">
-                <td className="px-4 py-3.5">
+                <td className="truncate px-2 py-3.5 sm:px-4">
                   <Link href={`/tld/${t.tld}`} className="font-mono font-semibold hover:text-primary">
                     .{t.tld}
                   </Link>
                 </td>
-                <td className="px-4 py-3.5 text-muted-foreground">
-                  <TldType type={t.type} />
+                <td className="whitespace-nowrap px-2 py-3.5 text-xs text-muted-foreground sm:px-4 sm:text-sm">
+                  <TldType type={t.type} compact />
                 </td>
-                <td className="px-4 py-3.5 text-right font-mono tabular-nums text-primary">
+                <td className="whitespace-nowrap px-2 py-3.5 text-right font-mono text-xs tabular-nums text-primary sm:px-4 sm:text-sm">
                   <Money value={t.minRegister} from="USD" />
                 </td>
-                <td className="px-4 py-3.5 text-right font-mono tabular-nums text-muted-foreground">
+                <td className="whitespace-nowrap px-2 py-3.5 text-right font-mono text-xs tabular-nums text-muted-foreground sm:px-4 sm:text-sm">
                   {t.registrarCount}
                 </td>
               </tr>

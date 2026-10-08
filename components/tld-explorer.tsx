@@ -104,7 +104,7 @@ function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
           {rows.map((r, i) => (
             <li
               key={r.registrar}
-              className="flex items-center gap-2 border-b border-border px-4 py-2.5 last:border-b-0"
+              className="grid grid-cols-[1.25rem_minmax(0,1fr)_6.5rem_2.75rem] items-center gap-2 border-b border-border px-2 py-2.5 last:border-b-0 sm:px-4"
             >
               <span
                 className={cn(
