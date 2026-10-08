@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 import { DealsList } from "@/components/deals-list"
-import { T, TCount } from "@/components/i18n-text"
+import { T } from "@/components/i18n-text"
 import { queryDeals } from "@/services/prices"
 
 export const revalidate = 300
@@ -23,9 +23,6 @@ export default async function DealsPage() {
         </h1>
         <p className="max-w-2xl text-pretty text-sm leading-relaxed text-muted-foreground sm:text-base">
           <T k="deals.description" />
-        </p>
-        <p className="text-xs text-muted-foreground" aria-live="polite">
-          <TCount k="deals.count" vars={{ n: deals.length }} />
         </p>
       </header>
       <DealsList deals={deals} />

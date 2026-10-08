@@ -241,6 +241,8 @@ export async function queryDeals(filter: {
         .innerJoin(tlds, eq(prices.tldId, tlds.id))
         .where(and(...conditions))
         .orderBy(
+          desc(tlds.isPopular),
+          desc(tlds.popularity),
           sql`(${prices.promotionPrice} / NULLIF(${prices.registerPrice}, 0)) ASC`,
           desc(prices.updatedAt),
         )
