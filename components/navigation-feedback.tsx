@@ -11,6 +11,7 @@ export function NavigationFeedback() {
   const [isVisible, setIsVisible] = useState(false)
   const [isSettling, setIsSettling] = useState(false)
   const [statusLabel, setStatusLabel] = useState("正在打开页面")
+  const [statusHint, setStatusHint] = useState("请稍候")
   const startedAt = useRef(0)
   const hideTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
@@ -38,7 +39,9 @@ export function NavigationFeedback() {
 
       if (hideTimer.current) clearTimeout(hideTimer.current)
       startedAt.current = Date.now()
-      setStatusLabel(document.documentElement.lang.startsWith("en") ? "Opening page" : "正在打开页面")
+      const isEnglish = document.documentElement.lang.startsWith("en")
+      setStatusLabel(isEnglish ? "Opening page" : "正在打开页面")
+      setStatusHint(isEnglish ? "Just a moment" : "请稍候")
       setIsSettling(false)
       setIsVisible(true)
       hideTimer.current = setTimeout(() => {
@@ -75,10 +78,18 @@ export function NavigationFeedback() {
 
   return (
     <div
+      aria-hidden={!isVisible}
       className={`navigation-feedback${isVisible ? " is-visible" : ""}${isSettling ? " is-settling" : ""}`}
     >
-      {isVisible && <span role="status" aria-live="polite" className="sr-only">{statusLabel}</span>}
-      <span className="navigation-feedback__bar" />
+      {isVisible && (
+        <div className="navigation-feedback__panel" role="status" aria-live="polite">
+          <span className="navigation-feedback__spinner" aria-hidden="true" />
+          <span className="navigation-feedback__copy">
+            <span className="navigation-feedback__label">{statusLabel}</span>
+            <span className="navigation-feedback__hint">{statusHint}</span>
+          </span>
+        </div>
+      )}
     </div>
   )
 }
