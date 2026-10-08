@@ -271,7 +271,9 @@ export const truehostAdapter = createTableAdapter({
   website: "https://truehost.cloud",
   currency: "KES",
   urls: ["https://truehost.co.ke/domains/"],
-  columnOrder: ["register", "renew", "transfer", "skip"],
+  // 表头: Domain extension | Category | Register | Renew | Transfer | term | term
+  // Category 为文字分类(无价格), 须 skip 跳过
+  columnOrder: ["skip", "register", "renew", "transfer"],
   owner: "Data Team",
 })
 
