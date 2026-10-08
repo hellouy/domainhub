@@ -100,6 +100,7 @@ export interface RegistrarRow {
   tldCount: number
   paymentMethods: string[]
   logoUrl: string | null
+  faviconUrl: string | null
   isActive: boolean
   createdAt: Date
   health: Record<string, unknown> | null
@@ -240,6 +241,7 @@ export function seedRegistrarBySlug(slug: string): RegistrarRow | null {
     tldCount: Object.keys(SEED_PRICES[s]).length,
     paymentMethods: ["Credit Card", "PayPal", "Alipay"],
     logoUrl: null,
+    faviconUrl: null,
     isActive: true,
     createdAt: nowDate(),
     health: null,

@@ -61,7 +61,7 @@ export default async function RegistrarPage({ params }: Props) {
 
       <header className="flex flex-col gap-4">
         <div className="flex items-center gap-4">
-          <RegistrarIcon website={row.website} name={row.name} size="large" />
+          <RegistrarIcon slug={row.slug} name={row.name} size="large" />
           <h1 className="text-3xl font-bold tracking-tight md:text-4xl">{row.name}</h1>
         </div>
         <RegistrarDescription
@@ -108,8 +108,54 @@ export default async function RegistrarPage({ params }: Props) {
         <h2 id="registrar-prices" className="text-xl font-bold tracking-tight">
           <T k="registrar.allPrices" /> ({priceRows.length})
         </h2>
-        <div className="overflow-x-auto border border-border">
-          <table className="w-full min-w-[520px] border-collapse text-sm">
+        <div className="divide-y divide-border border border-border md:hidden">
+          {priceRows.map((p) => (
+            <article key={p.priceId} className="flex flex-col gap-3 p-3">
+              <div className="flex items-center justify-between gap-3">
+                <Link href={`/tld/${p.tld}`} className="font-mono font-semibold hover:text-primary">
+                  .{p.tld}
+                </Link>
+                <span className="shrink-0 text-xs text-muted-foreground">
+                  <T k="th.updated" /> <RelativeTime date={p.updatedAt} />
+                </span>
+              </div>
+              <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+                <div className="min-w-0">
+                  <dt className="text-xs text-muted-foreground"><T k="th.register" /></dt>
+                  <dd className="mt-1 truncate font-mono text-sm tabular-nums">
+                    <PromotionPrice
+                      price={p.registerPrice}
+                      promotionPrice={p.promotionPrice}
+                      promoCode={p.promoCode}
+                      promotionEndsAt={p.promotionEndsAt}
+                      currency={p.currency}
+                    />
+                  </dd>
+                </div>
+                <div className="min-w-0">
+                  <dt className="text-xs text-muted-foreground"><T k="th.renew" /></dt>
+                  <dd className="mt-1 truncate font-mono text-sm tabular-nums"><Money value={p.renewPrice} from={p.currency} /></dd>
+                </div>
+                <div className="min-w-0">
+                  <dt className="text-xs text-muted-foreground"><T k="th.transfer" /></dt>
+                  <dd className="mt-1 truncate font-mono text-sm tabular-nums"><Money value={p.transferPrice} from={p.currency} /></dd>
+                </div>
+                <div className="min-w-0">
+                  <dt className="text-xs text-muted-foreground"><T k="th.promo" /></dt>
+                  <dd className="mt-1 truncate font-mono text-sm tabular-nums">
+                    {p.promotionPrice != null ? (
+                      <span className="font-semibold text-primary"><Money value={p.promotionPrice} from={p.currency} /></span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </dd>
+                </div>
+              </dl>
+            </article>
+          ))}
+        </div>
+        <div className="hidden overflow-x-auto border border-border md:block">
+          <table className="w-full min-w-[720px] border-collapse text-sm">
             <thead>
               <tr className="border-b border-border bg-secondary text-left">
                 <th scope="col" className="px-4 py-3 text-xs font-medium uppercase tracking-widest text-muted-foreground">

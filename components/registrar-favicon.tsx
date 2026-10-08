@@ -4,32 +4,17 @@ import Image from "next/image"
 import { useState } from "react"
 import { Globe2 } from "lucide-react"
 
-function getFaviconUrl(website: string): string | null {
-  try {
-    const normalizedWebsite = /^https?:\/\//i.test(website) ? website : `https://${website}`
-    const url = new URL(normalizedWebsite)
-    if (url.protocol !== "https:" && url.protocol !== "http:") return null
-
-    const faviconUrl = new URL("https://www.google.com/s2/favicons")
-    faviconUrl.searchParams.set("domain", url.hostname)
-    faviconUrl.searchParams.set("sz", "64")
-    return faviconUrl.toString()
-  } catch {
-    return null
-  }
-}
-
 export function RegistrarIcon({
-  website,
+  slug,
   name,
   size = "default",
 }: {
-  website: string
+  slug: string
   name: string
   size?: "compact" | "default" | "large"
 }) {
   const [hasError, setHasError] = useState(false)
-  const faviconUrl = getFaviconUrl(website)
+  const faviconUrl = `/api/registrars/${encodeURIComponent(slug)}/favicon`
   const iconSize = size === "large" ? "size-14" : size === "compact" ? "size-10" : "size-12"
 
   return (

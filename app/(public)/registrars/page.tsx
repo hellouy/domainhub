@@ -36,7 +36,7 @@ export default async function RegistrarsPage() {
               href={`/registrars/${r.slug}`}
               className="group flex h-full min-h-32 items-start gap-4 rounded-xl border border-border bg-card p-4 transition-colors hover:border-primary/40 hover:bg-accent/40 focus-visible:outline-offset-4 sm:p-5"
             >
-              <RegistrarIcon website={r.website} name={r.name} />
+              <RegistrarIcon slug={r.slug} name={r.name} />
               <div className="flex min-w-0 flex-1 flex-col gap-3 self-stretch">
                 <div className="flex items-start justify-between gap-3">
                   <span className="min-w-0 truncate text-lg font-semibold tracking-tight transition-colors group-hover:text-primary">
