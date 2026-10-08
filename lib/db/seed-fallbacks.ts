@@ -133,6 +133,9 @@ export interface PriceForTldRow {
   registerPrice: string | null
   renewPrice: string | null
   transferPrice: string | null
+  promotionPrice?: string | null
+  promoCode?: string | null
+  promotionEndsAt?: Date | null
   currency: string
   sourceUrl: string | null
   updatedAt: Date
@@ -147,6 +150,9 @@ export interface PriceForRegistrarRow {
   registerPrice: string | null
   renewPrice: string | null
   transferPrice: string | null
+  promotionPrice?: string | null
+  promoCode?: string | null
+  promotionEndsAt?: Date | null
   currency: string
   updatedAt: Date
   tldId: number

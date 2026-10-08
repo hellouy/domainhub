@@ -115,6 +115,9 @@ const zh = {
   "pt.lowest": "（最低价）",
   "pt.visit": "官网",
   "pt.visitAria": "访问 {name} 官网",
+  "promo.label": "优惠价",
+  "promo.code": "优惠码",
+  "promo.ends": "截止",
 } as const
 
 export type DictKey = keyof typeof zh
@@ -211,6 +214,9 @@ const en: Record<DictKey, string> = {
   "pt.lowest": " (lowest)",
   "pt.visit": "Website",
   "pt.visitAria": "Visit {name} website",
+  "promo.label": "Deal",
+  "promo.code": "Code",
+  "promo.ends": "Ends",
 }
 
 const DICTS: Record<Locale, Record<DictKey, string>> = { zh, en }

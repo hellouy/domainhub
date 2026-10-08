@@ -56,6 +56,9 @@ function seedPricesRows(filter: { registrar?: string; tld?: string; limit?: numb
     registerPrice: number | null
     renewPrice: number | null
     transferPrice: number | null
+    promotionPrice: number | null
+    promoCode: string | null
+    promotionEndsAt: Date | null
     sourceUrl: string | null
     updatedAt: Date
   }[] = []
@@ -71,6 +74,9 @@ function seedPricesRows(filter: { registrar?: string; tld?: string; limit?: numb
         registerPrice: num(p.registerPrice),
         renewPrice: num(p.renewPrice),
         transferPrice: num(p.transferPrice),
+        promotionPrice: null,
+        promoCode: null,
+        promotionEndsAt: null,
         sourceUrl: p.sourceUrl,
         updatedAt: p.updatedAt,
       })
@@ -118,6 +124,9 @@ export async function queryPrices(filter: { registrar?: string; tld?: string; li
           registerPrice: prices.registerPrice,
           renewPrice: prices.renewPrice,
           transferPrice: prices.transferPrice,
+          promotionPrice: prices.promotionPrice,
+          promoCode: prices.promoCode,
+          promotionEndsAt: prices.promotionEndsAt,
           sourceUrl: prices.sourceUrl,
           updatedAt: prices.updatedAt,
         })
@@ -133,6 +142,7 @@ export async function queryPrices(filter: { registrar?: string; tld?: string; li
         registerPrice: num(r.registerPrice),
         renewPrice: num(r.renewPrice),
         transferPrice: num(r.transferPrice),
+        promotionPrice: num(r.promotionPrice),
       }))
     },
     () => seedPricesRows(filter),
@@ -164,6 +174,9 @@ export async function queryHistory(filter: {
           registerPrice: priceHistory.registerPrice,
           renewPrice: priceHistory.renewPrice,
           transferPrice: priceHistory.transferPrice,
+          promotionPrice: priceHistory.promotionPrice,
+          promoCode: priceHistory.promoCode,
+          promotionEndsAt: priceHistory.promotionEndsAt,
           recordedAt: priceHistory.recordedAt,
         })
         .from(priceHistory)
@@ -178,6 +191,7 @@ export async function queryHistory(filter: {
         registerPrice: num(r.registerPrice),
         renewPrice: num(r.renewPrice),
         transferPrice: num(r.transferPrice),
+        promotionPrice: num(r.promotionPrice),
       }))
     },
     () => [],

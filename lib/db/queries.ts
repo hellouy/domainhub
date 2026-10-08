@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, max, min, sql, type SQL } from "drizzle-orm"
+import { and, asc, count, desc, eq, max, min, sql, type SQL, type SQLWrapper } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { crawlJobs, prices, registrars, tlds } from "@/lib/db/schema"
 import { getUsdRates } from "@/lib/fx"
@@ -56,7 +56,7 @@ export async function getStats(): Promise<StatsRow> {
  * 用实时汇率(exchangerate-api.com,DB 智能缓存)动态生成折算 USD 的 SQL 表达式。
  * 汇率为 1 USD = rates[X],故 X 货币金额 → USD 需除以 rates[X]。
  */
-async function usdEquivalentExpr(): Promise<SQL<string>> {
+async function usdEquivalentExpr(price: SQLWrapper = prices.registerPrice): Promise<SQL<string>> {
   const rates = await getUsdRates()
   const currencies = ["EUR", "CHF", "GBP", "JPY", "SEK", "NOK", "NZD", "CAD", "CNY", "AUD", "HKD", "SGD"]
   const cases: SQL[] = []
@@ -64,7 +64,7 @@ async function usdEquivalentExpr(): Promise<SQL<string>> {
     const r = rates[c]
     if (r && r > 0) cases.push(sql`WHEN ${c} THEN ${sql.raw((1 / r).toFixed(6))}`)
   }
-  return sql<string>`${prices.registerPrice} * (CASE ${prices.currency}
+  return sql<string>`${price} * (CASE ${prices.currency}
   WHEN 'USD' THEN 1
   ${sql.join(cases, sql` `)}
   ELSE 1 END)`
@@ -79,15 +79,26 @@ export async function getTldsWithMinPrice(onlyPopular = false) {
   return safeQuery(
     "getTldsWithMinPrice",
     async () => {
-      const usdEquivalent = await usdEquivalentExpr()
-      const rows = await db
+    const hasActivePromotion = sql<boolean>`
+      ${prices.promotionPrice} IS NOT NULL
+      AND (${prices.promotionEndsAt} IS NULL OR ${prices.promotionEndsAt} >= now())
+      AND ${prices.registerPrice} IS NOT NULL
+      AND ${prices.promotionPrice} < ${prices.registerPrice}`
+    const effectiveRegisterPrice = sql<string>`CASE
+      WHEN ${hasActivePromotion} THEN ${prices.promotionPrice}
+      ELSE ${prices.registerPrice}
+    END`
+    const usdEquivalent = await usdEquivalentExpr(effectiveRegisterPrice)
+    const rows = await db
         .select({
           id: tlds.id,
           tld: tlds.tld,
           type: tlds.type,
           isPopular: tlds.isPopular,
           popularity: tlds.popularity,
-          minRegister: min(sql<string>`CASE WHEN ${usdEquivalent} >= 1 THEN ${usdEquivalent} ELSE NULL END`),
+          minRegister: min(
+            sql<string>`CASE WHEN ${usdEquivalent} >= 1 OR ${hasActivePromotion} THEN ${usdEquivalent} ELSE NULL END`,
+          ),
           registrarCount: count(prices.id),
         })
         .from(tlds)
@@ -160,6 +171,9 @@ export async function getPricesForTld(tldId: number) {
           registerPrice: prices.registerPrice,
           renewPrice: prices.renewPrice,
           transferPrice: prices.transferPrice,
+          promotionPrice: prices.promotionPrice,
+          promoCode: prices.promoCode,
+          promotionEndsAt: prices.promotionEndsAt,
           currency: prices.currency,
           sourceUrl: prices.sourceUrl,
           updatedAt: prices.updatedAt,
@@ -201,6 +215,9 @@ export async function getPricesForRegistrar(registrarId: number) {
           registerPrice: prices.registerPrice,
           renewPrice: prices.renewPrice,
           transferPrice: prices.transferPrice,
+          promotionPrice: prices.promotionPrice,
+          promoCode: prices.promoCode,
+          promotionEndsAt: prices.promotionEndsAt,
           currency: prices.currency,
           updatedAt: prices.updatedAt,
           tldId: tlds.id,

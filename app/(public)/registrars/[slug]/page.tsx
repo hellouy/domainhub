@@ -4,6 +4,7 @@ import { notFound } from "next/navigation"
 import { ExternalLink } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Money } from "@/components/money"
+import { PromotionPrice } from "@/components/promotion-price"
 import { T, RelativeTime, RegistrarDescription } from "@/components/i18n-text"
 import { getPricesForRegistrar, getRegistrarBySlug } from "@/lib/db/queries"
 import { normalizeUrl } from "@/lib/utils"
@@ -131,7 +132,13 @@ export default async function RegistrarPage({ params }: Props) {
                     </Link>
                   </td>
                   <td className="px-4 py-3.5 text-right font-mono tabular-nums">
-                    <Money value={p.registerPrice} from={p.currency} />
+                    <PromotionPrice
+                      price={p.registerPrice}
+                      promotionPrice={p.promotionPrice}
+                      promoCode={p.promoCode}
+                      promotionEndsAt={p.promotionEndsAt}
+                      currency={p.currency}
+                    />
                   </td>
                   <td className="px-4 py-3.5 text-right font-mono tabular-nums">
                     <Money value={p.renewPrice} from={p.currency} />
