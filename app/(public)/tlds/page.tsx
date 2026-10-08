@@ -16,8 +16,8 @@ export default async function TldsPage() {
   const rows = await getTldsWithMinPrice()
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-12 md:px-6">
-      <header className="flex flex-col gap-3">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-8 sm:gap-8 sm:py-12 md:px-6">
+      <header className="flex flex-col gap-2 sm:gap-3">
         <p className="text-xs font-medium uppercase tracking-widest text-primary">
           <T k="page.tlds.eyebrow" />
         </p>
@@ -31,10 +31,10 @@ export default async function TldsPage() {
       <div className="border border-border">
         <table className="w-full table-fixed border-collapse text-sm">
           <colgroup>
-            <col className="w-[23%]" />
-            <col className="w-[19%]" />
-            <col className="w-[36%]" />
-            <col className="w-[22%]" />
+            <col className="w-[16%]" />
+            <col className="w-[16%]" />
+            <col className="w-[40%]" />
+            <col className="w-[28%]" />
           </colgroup>
           <thead>
             <tr className="border-b border-border bg-secondary text-left">
