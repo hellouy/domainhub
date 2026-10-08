@@ -21,7 +21,6 @@ export const registrars = pgTable("registrars", {
   dnssec: boolean("dnssec").notNull().default(false),
   paymentMethods: text("payment_methods").array().notNull().default([]),
   logoUrl: text("logo_url"),
-  faviconUrl: text("favicon_url"),
   isActive: boolean("is_active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   // ---- Sprint 5 平台化新增列（可空，向后兼容） ----

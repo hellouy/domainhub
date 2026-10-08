@@ -14,7 +14,7 @@ export function RegistrarIcon({
   size?: "compact" | "default" | "large"
 }) {
   const [hasError, setHasError] = useState(false)
-  const faviconUrl = `/api/registrars/${encodeURIComponent(slug)}/favicon`
+  const faviconUrl = `/api/registrars/${encodeURIComponent(slug)}/favicon?v=2`
   const iconSize = size === "large" ? "size-14" : size === "compact" ? "size-10" : "size-12"
 
   return (

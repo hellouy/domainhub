@@ -1,4 +1,4 @@
-import { put } from "@vercel/blob"
+import { get, list, put } from "@vercel/blob"
 import { and, eq } from "drizzle-orm"
 import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
@@ -17,10 +17,13 @@ const CONTENT_TYPES: Record<string, string> = {
   "image/vnd.microsoft.icon": "ico",
 }
 
-function redirectToBlob(url: string) {
-  return NextResponse.redirect(url, {
-    status: 307,
-    headers: { "Cache-Control": LONG_CACHE },
+function imageResponse(body: BodyInit, contentType: string) {
+  return new NextResponse(body, {
+    headers: {
+      "Cache-Control": LONG_CACHE,
+      "Content-Type": contentType,
+      "X-Content-Type-Options": "nosniff",
+    },
   })
 }
 
@@ -56,13 +59,19 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
 
   try {
     const [registrar] = await db
-      .select({ website: registrars.website, faviconUrl: registrars.faviconUrl })
+      .select({ website: registrars.website })
       .from(registrars)
       .where(and(eq(registrars.slug, slug), eq(registrars.isActive, true)))
       .limit(1)
 
     if (!registrar) return notFound()
-    if (registrar.faviconUrl) return redirectToBlob(registrar.faviconUrl)
+
+    const cachedBlobs = await list({ prefix: `registrar-favicons/${slug}.`, limit: 10 })
+    const cachedIcon = cachedBlobs.blobs.find((blob) => blob.pathname.startsWith(`registrar-favicons/${slug}.`))
+    if (cachedIcon) {
+      const cachedFile = await get(cachedIcon.pathname, { access: "public" })
+      if (cachedFile?.stream) return imageResponse(cachedFile.stream, cachedFile.blob.contentType)
+    }
 
     const hostname = getHostname(registrar.website)
     if (!hostname) return notFound()
@@ -73,7 +82,6 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
 
     const response = await fetch(faviconRequest, {
       cache: "no-store",
-      redirect: "error",
       signal: AbortSignal.timeout(6000),
     })
     if (!response.ok) return notFound()
@@ -94,9 +102,7 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
       contentType,
     })
 
-    await db.update(registrars).set({ faviconUrl: blob.url }).where(eq(registrars.slug, slug))
-
-    return redirectToBlob(blob.url)
+    return imageResponse(new Uint8Array(icon), contentType)
   } catch (error) {
     console.error(`[registrar-favicon] Failed to resolve icon for ${slug}:`, error)
     return new NextResponse(null, {
