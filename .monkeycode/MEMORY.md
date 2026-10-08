@@ -32,6 +32,17 @@ Entries discovered by the Agent during task execution should follow this format:
 ## Entries
 
 [Project Knowledge Summary]
+- Date: 2026-10-08
+- Context: Discovered by Agent while 本轮重爬（juming/onamae/westcn）与促销价落库
+- Category: Operations & Deployment
+- Instructions:
+  - 沙箱内 `*.vercel.app` 被 DNS 污染（解析到 Facebook IP 段，HTTP=000），生产验证必须走 `https://tldbi.com`（裸域，308 重定向须 `curl -sL` 跟随）。
+  - 后台终端管道 `cmd | tee log` 输出被缓冲，日志迟迟不出；须 `stdbuf -oL -eL` 双侧行缓冲。
+  - `npx tsx -e '<inline>'` 不支持 top-level await import pg，DB 快查脚本落 scripts/*.ts 文件跑。
+  - Supabase 偶发 `getaddrinfo ENOTFOUND ...pooler.supabase.com` 为瞬时 DNS 抖动，稍候重试即可，勿当配置错误。
+  - browser-worker extract-json 短字段映射只认 tld/register/renew/transfer/promotionPrice/promotion；自定义脚本返回其他键名会被静默丢弃（排查促销价丢失时先查这条链路）。
+
+[Project Knowledge Summary]
 - Date: 2026-08-29
 - Context: Discovered by Agent while debugging browser-worker 渲染失败 + 实现 api-fetch 采集形态
 - Category: Troubleshooting & Debugging
