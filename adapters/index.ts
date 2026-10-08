@@ -111,6 +111,7 @@ import { rumahwebAdapter } from "./rumahweb"
 import { cosmotownAdapter } from "./cosmotown"
 import { cpiAdapter } from "./cpi"
 import { active24Adapter } from "./active24"
+import { spaceshipAdapter } from "./spaceship"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -227,6 +228,8 @@ export const allAdapters = [
   zwcnAdapter,
   // 第十二批: forpsi(CZK, 捷克, SSR 表格直连 + akce 促销列)(2026-10-07)
   forpsiAdapter,
+  // 第十三批: Spaceship(USD, 定价 BFF API 批量重放)(2026-10-08)
+  spaceshipAdapter,
 ]
 
 for (const adapter of allAdapters) {
