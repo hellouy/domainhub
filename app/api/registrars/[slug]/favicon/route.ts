@@ -113,8 +113,13 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
     return imageResponse(new Uint8Array(icon), contentType)
   } catch (error) {
     console.error(`[registrar-favicon] Failed to resolve icon for ${slug}:`, error)
+    const cause = (error as { cause?: unknown })?.cause
+    const causeMsg = cause instanceof Error ? `${cause.name}: ${cause.message}` : cause ? String(cause) : null
     return new NextResponse(
-      JSON.stringify({ error: error instanceof Error ? error.message : String(error) }),
+      JSON.stringify({
+        error: error instanceof Error ? error.message : String(error),
+        cause: causeMsg,
+      }),
       {
         status: 503,
         headers: { "Cache-Control": SHORT_CACHE, "Content-Type": "application/json" },
