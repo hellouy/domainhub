@@ -44,16 +44,16 @@ async function main() {
       pmCount: Array.isArray(r.payment_methods) ? r.payment_methods.length : 0,
       health: r.health && typeof r.health.score === "number" ? r.health.score : null,
     })
-    return { slug: r.slug, tld: r.tld_count, promo: r.promo_count, ...s }
+    return { slug: r.slug, tld: r.tld_count, promoCount: r.promo_count, ...s }
   })
   rows.sort((a, b) => b.score - a.score || b.tld - a.tld)
   console.log("TOP 12:")
   rows.slice(0, 12).forEach((r, i) =>
-    console.log(`${String(i + 1).padStart(2)} ${r.slug.padEnd(18)} score=${r.score} tld=${String(r.tld).padEnd(4)} promo=${String(r.promo).padEnd(4)} cov=${r.coverage.toFixed(2)} pr=${r.promo.toFixed(2)} comp=${r.completeness.toFixed(2)} cap=${r.capability.toFixed(2)} hlt=${r.health.toFixed(2)}`),
+    console.log(`${String(i + 1).padStart(2)} ${r.slug.padEnd(18)} score=${r.score} tld=${String(r.tld).padEnd(4)} promo=${String(r.promoCount).padEnd(4)} cov=${r.coverage.toFixed(2)} pr=${r.promo.toFixed(2)} comp=${r.completeness.toFixed(2)} cap=${r.capability.toFixed(2)} hlt=${r.health.toFixed(2)}`),
   )
   console.log("BOTTOM 8:")
   rows.slice(-8).forEach((r) =>
-    console.log(`   ${r.slug.padEnd(18)} score=${r.score} tld=${String(r.tld).padEnd(4)} promo=${r.promo}`),
+    console.log(`   ${r.slug.padEnd(18)} score=${r.score} tld=${String(r.tld).padEnd(4)} promo=${r.promoCount}`),
   )
   await pool.end()
 }
