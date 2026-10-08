@@ -42,6 +42,12 @@ export interface TableAdapterConfig {
   /** 自定义行过滤(返回 false 跳过该行) */
   rowFilter?: (cells: string[]) => boolean
   /**
+   * 单元格含"原价 促销价"双值时,将第二个更小的值提取为促销价。
+   * 适用于 lws("14.59€ 1.99 €"→register=14.59,promotion=1.99)等
+   * 在单个单元格同时展示标准价与促销价的站点。列按 columnOrder 角色指定。
+   */
+  dualValuePromoColumns?: ("register" | "renew" | "transfer")[]
+  /**
    * 行内单元格清洗(在 TLD 识别前执行)。用于处理
    * ". com Sale"、".COM Register | Learn More"、".com 促销" 等
    * 后缀/大小写不规整的价格表。
@@ -87,6 +93,23 @@ export function parsePrice(text: string, format: "en" | "eu" | "fr" = "en"): num
   const v = Number.parseFloat(t)
   if (!Number.isFinite(v) || v <= 0 || v >= 100_000) return null
   return Math.round(v * 100) / 100
+}
+
+/**
+ * 解析"原价 促销价"双值单元格(如 "14.59€ 1.99 €"、"$22.99 $1.99")。
+ * 返回 [标准价, 促销价]；单值或无有效数字返回 [首值, null]。
+ * 用 parsePrice 分别解析空格分隔的两个数字串。
+ */
+export function parseDualPrice(text: string, format: "en" | "eu" | "fr" = "en"): [number | null, number | null] {
+  const first = parsePrice(text, format)
+  // 提取第二个数字段(跳过货币符号与首个价格), 仅当确实存在第二个数字时解析
+  const parts = text.split(/\s+/).filter(Boolean)
+  let second: number | null = null
+  if (parts.length > 1) {
+    const afterFirst = parts.slice(1).join(" ")
+    if (/[0-9]/.test(afterFirst)) second = parsePrice(afterFirst, format)
+  }
+  return [first, second]
 }
 
 /**
@@ -157,7 +180,12 @@ export function findTldCell(cells: string[]): [string, number] | null {
  */
 export function createTableAdapter(config: TableAdapterConfig) {
   /** 本次采集生效的配置(fetch 时解析,parse 复用;适配器并发为 1) */
-  let effective: Pick<TableAdapterConfig, "urls" | "columnOrder" | "numberFormat" | "currency"> = config
+  let effective: Pick<
+    TableAdapterConfig,
+    "urls" | "columnOrder" | "numberFormat" | "currency" | "dualValuePromoColumns"
+  > = config
+  /** 双值促销列集合(parse 复用,避免每行都做 Set 构造) */
+  let dualColumns = new Set<string>(config.dualValuePromoColumns ?? [])
 
   const definition: AdapterDefinition = {
     slug: config.slug,
@@ -182,6 +210,7 @@ export function createTableAdapter(config: TableAdapterConfig) {
         async fetch(ctx) {
           // 加载 LLM 修复代理产出的动态规则(如有);动态导入避免客户端打包
           effective = config
+          dualColumns = new Set(config.dualValuePromoColumns ?? [])
           try {
             const { getActiveRuleBySlug } = await import("@/packages/ai-repair")
             const rule = await getActiveRuleBySlug(config.slug)
@@ -191,7 +220,9 @@ export function createTableAdapter(config: TableAdapterConfig) {
                 columnOrder: rule.columnOrder,
                 numberFormat: rule.numberFormat,
                 currency: rule.currency,
+                dualValuePromoColumns: config.dualValuePromoColumns,
               }
+              dualColumns = new Set(config.dualValuePromoColumns ?? [])
               ctx.log?.("info", `应用动态规则: ${rule.urls[0]} (${rule.columnOrder.join(",")})`)
             }
           } catch {
@@ -223,11 +254,20 @@ export function createTableAdapter(config: TableAdapterConfig) {
             if (!tldHit) continue
             const [tld, tldIdx] = tldHit
             if (seen.has(tld)) continue
-            // 收集 TLD 列之后的数字单元格
+            // 收集 TLD 列之后的数字单元格(双值列同时取标准价与促销价)
             const priceValues: (number | null)[] = []
+            const promoValues: (number | null)[] = []
             for (let i = tldIdx + 1; i < cells.length; i++) {
-              const v = parsePrice(cells[i], effective.numberFormat)
-              priceValues.push(v)
+              const idx = i - (tldIdx + 1)
+              const role = effective.columnOrder[idx]
+              if (role && dualColumns.has(role)) {
+                const [main, promo] = parseDualPrice(cells[i], effective.numberFormat)
+                priceValues.push(main)
+                promoValues.push(promo)
+              } else {
+                priceValues.push(parsePrice(cells[i], effective.numberFormat))
+                promoValues.push(null)
+              }
             }
             if (priceValues.every((v) => v === null)) continue
             const price: RawPrice = { tld, currency: effective.currency, sourceUrl: effective.urls[0] }
@@ -235,12 +275,17 @@ export function createTableAdapter(config: TableAdapterConfig) {
             for (const role of effective.columnOrder) {
               if (vi >= priceValues.length) break
               const value = priceValues[vi]
+              const promo = promoValues[vi]
               vi++
               if (role === "skip") continue
               if (role === "register") price.registerPrice = value
               else if (role === "renew") price.renewPrice = value
               else if (role === "transfer") price.transferPrice = value
               else if (role === "restore") price.restorePrice = value
+              // 双值列: 标准价已被上面的 role 承接, 促销价(第二个,更小)进 promotionPrice
+              if (promo != null && (value == null || promo < value) && price.promotionPrice == null) {
+                price.promotionPrice = promo
+              }
             }
             if (price.registerPrice == null && price.renewPrice == null && price.transferPrice == null) continue
             seen.add(tld)

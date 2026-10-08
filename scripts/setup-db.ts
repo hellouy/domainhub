@@ -83,6 +83,13 @@ ALTER TABLE tlds ADD COLUMN IF NOT EXISTS is_valid boolean NOT NULL DEFAULT true
 ALTER TABLE tlds ADD COLUMN IF NOT EXISTS popularity integer NOT NULL DEFAULT 0;
 ALTER TABLE crawl_jobs ADD COLUMN IF NOT EXISTS strategy text;
 ALTER TABLE crawl_jobs ADD COLUMN IF NOT EXISTS metrics jsonb;
+-- ---- deals-and-coupons：促销/优惠券维度（幂等加列）----
+ALTER TABLE prices ADD COLUMN IF NOT EXISTS promotion_price numeric(10,2);
+ALTER TABLE prices ADD COLUMN IF NOT EXISTS promo_code text;
+ALTER TABLE prices ADD COLUMN IF NOT EXISTS promotion_ends_at timestamptz;
+ALTER TABLE price_history ADD COLUMN IF NOT EXISTS promotion_price numeric(10,2);
+ALTER TABLE price_history ADD COLUMN IF NOT EXISTS promo_code text;
+ALTER TABLE price_history ADD COLUMN IF NOT EXISTS promotion_ends_at timestamptz;
 
 -- ---- Sprint 5 平台化新表（与 lib/db/schema.ts 对齐）----
 CREATE TABLE IF NOT EXISTS exchange_rates (

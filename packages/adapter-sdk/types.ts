@@ -57,6 +57,10 @@ export interface RawPrice {
   premium?: boolean
   promotion?: boolean
   promoCode?: string | null
+  /** 促销价（首年实际支付价），须低于 registerPrice；空=无促销 */
+  promotionPrice?: number | string | null
+  /** 促销截止时间（ISO 8601 UTC）；空=长期/未知 */
+  promotionEndsAt?: string | null
   region?: string | null
   billingPeriod?: string
   sourceUrl?: string
@@ -80,6 +84,10 @@ export interface NormalizedPrice {
   premium: boolean
   promotion: boolean
   promoCode: string | null
+  /** 促销价（首年实际支付价），须低于 registerPrice；空=无促销 */
+  promotionPrice: number | null
+  /** 促销截止时间（ISO 8601 UTC）；空=长期/未知 */
+  promotionEndsAt: string | null
   /** 区域定价（如按国家/地区），默认 null 表示全球 */
   region: string | null
   /** 计费周期，默认 "1y" */

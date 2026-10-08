@@ -61,8 +61,11 @@ export const metanameAdapter = createTableAdapter({
   name: "Metaname",
   website: "https://metaname.net",
   currency: "NZD",
-  urls: ["https://metaname.net/pricing"],
-  columnOrder: ["register", "renew", "transfer"],
+  urls: ["https://metaname.net/public/pricing"],
+  // 表头: TLD | 0-15 | 16-127 | 128-511 | 512-1023 | 1024+ (按持有量分档,单位 NZD)
+  // 每个单元格含两个金额(不含GST 首值),parsePrice 取首值; 注册价取 0-15 档
+  columnOrder: ["register", "skip", "skip", "skip", "skip"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
 })
 
 export const loopiaAdapter = createTableAdapter({
@@ -81,8 +84,11 @@ export const domeneshopAdapter = createTableAdapter({
   website: "https://domene.shop",
   currency: "NOK",
   numberFormat: "eu",
-  urls: ["https://domene.shop/priser"],
-  columnOrder: ["register", "renew", "transfer"],
+  urls: ["https://domene.shop/pricelist"],
+  // 表头: Toppnivå-domene | Registrering | Fornyelse | Reaktivering fra redemption
+  // 第3列是赎回恢复价,非转入价,使用 skip
+  columnOrder: ["register", "renew", "skip"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
 })
 
 export const netcupAdapter = createTableAdapter({
@@ -100,9 +106,49 @@ export const lwsAdapter = createTableAdapter({
   name: "LWS",
   website: "https://www.lws.fr",
   currency: "EUR",
-  numberFormat: "fr",
-  urls: ["https://www.lws.fr/nom-de-domaine.php"],
+  // lws.net 全量价目(SSR): [Extension, Category, Top, Register, Transfer, Renewal, ""]
+  // Register 单元格可能含两值("14.59€ 1.99 €"), 标准价=首值, 促销价=第二个更小值
+  urls: ["https://lws.net/domain-pricing"],
+  columnOrder: ["skip", "skip", "register", "transfer", "renew", "skip"],
+  dualValuePromoColumns: ["register"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
+})
+
+export const fabulousAdapter = createTableAdapter({
+  slug: "fabulous",
+  name: "Fabulous",
+  website: "https://fabulous.com",
+  currency: "USD",
+  // 页面上部是 Tier 批量价表, 下部主表: [Tld, Register, Renewal, Transfer, Privacy]
+  urls: ["https://fabulous.com/pricing"],
+  columnOrder: ["register", "renew", "transfer", "skip"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
+  owner: "Data Team",
+})
+
+export const danescoAdapter = createTableAdapter({
+  slug: "danesco",
+  name: "Danesco",
+  website: "https://danesconames.com",
+  currency: "USD",
+  // 表头: Domain zones | Registration | Renewal | Transfer; 值形如 "$ 17.00/year"
+  urls: ["https://danesconames.com/prices"],
   columnOrder: ["register", "renew", "transfer"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
+  owner: "Data Team",
+})
+
+export const barberoAdapter = createTableAdapter({
+  slug: "barbero",
+  name: "Barbero",
+  website: "https://barbero.co.uk",
+  currency: "EUR",
+  numberFormat: "eu",
+  // 表头: TLD | New Registrations | Renewals | Transfers | Restore; 值形如 "69,00 EUR"
+  urls: ["https://barbero.co.uk/price-list"],
+  columnOrder: ["register", "renew", "transfer", "skip"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
+  owner: "Data Team",
 })
 
 export const amenAdapter = createTableAdapter({
@@ -186,19 +232,6 @@ export const dreamhostAdapter = createTableAdapter({
   owner: "Data Team",
 })
 
-export const forpsiAdapter = createTableAdapter({
-  slug: "forpsi",
-  name: "Forpsi",
-  website: "https://www.forpsi.com",
-  currency: "CZK",
-  numberFormat: "eu",
-  urls: ["https://www.forpsi.com/domain/"],
-  // 每行固定 5 列: [".TLD 类别", "1 rok(期限)", "", "注册价(不含/含DPH -)", "续费价(不含/含DPH)"]
-  // 跳过前两列(期限"1 rok"曾误当 1 CZK 注册价), 第4列=注册, 第5列=续费(ex-VAT 为首值)
-  columnOrder: ["skip", "skip", "register", "renew"],
-  owner: "Data Team",
-})
-
 export const jumingAdapter = createTableAdapter({
   slug: "juming",
   name: "\u805a\u540d\u7f51 Juming",
@@ -238,7 +271,9 @@ export const truehostAdapter = createTableAdapter({
   website: "https://truehost.cloud",
   currency: "KES",
   urls: ["https://truehost.co.ke/domains/"],
-  columnOrder: ["register", "renew", "transfer", "skip"],
+  // 表头: Domain extension | Category | Register | Renew | Transfer | term | term
+  // Category 为文字分类(无价格), 须 skip 跳过
+  columnOrder: ["skip", "register", "renew", "transfer"],
   owner: "Data Team",
 })
 
@@ -262,6 +297,32 @@ export const exabytesAdapter = createTableAdapter({
   columnOrder: ["register"],
   owner: "Data Team",
   browser: { waitForTimeoutMs: 30_000, scrollToBottom: true },
+})
+
+export const lcnAdapter = createTableAdapter({
+  slug: "lcn",
+  name: "LCN",
+  website: "https://www.lcn.com",
+  currency: "GBP",
+  urls: ["https://www.lcn.com/domain-names"],
+  // 表头: Domain extension | 1 year price | 2 year price
+  // 1年价格单元格含两值(原价 促销价, 如 "£22.99 £1.99"), 取首值=原价; 2年列为多年总价, 忽略
+  columnOrder: ["register", "skip"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
+  owner: "Data Team",
+})
+
+export const cndnsAdapter = createTableAdapter({
+  slug: "cndns",
+  name: "CNDNS（中国频道）",
+  website: "https://www.cndns.com",
+  currency: "CNY",
+  urls: ["https://www.cndns.com/cn/domain/domain_price.aspx"],
+  // 表头: 域名名称 | 注册(1/3/5/10年) | 续费(1/3/5/10年) | 转入
+  // 数据 11 列: [".com", reg1,reg3,reg5,reg10, ren1,ren3,ren5,ren10, transfer, 购买按钮]
+  columnOrder: ["register", "skip", "skip", "skip", "renew", "skip", "skip", "skip", "transfer", "skip"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
+  owner: "Data Team",
 })
 
 export const networksolutionsAdapter = createTableAdapter({

@@ -68,6 +68,13 @@ export const prices = pgTable(
     renewPrice: numeric("renew_price", { precision: 10, scale: 2 }),
     transferPrice: numeric("transfer_price", { precision: 10, scale: 2 }),
     currency: text("currency").notNull().default("USD"),
+    // ---- 特价/优惠券维度（deals-and-coupons）----
+    /** 促销价（首年实际支付价），须低于 register_price；空=无促销 */
+    promotionPrice: numeric("promotion_price", { precision: 10, scale: 2 }),
+    /** 优惠码（公开来源），空=无 */
+    promoCode: text("promo_code"),
+    /** 促销截止时间（UTC），空=长期/未知 */
+    promotionEndsAt: timestamp("promotion_ends_at", { withTimezone: true }),
     sourceUrl: text("source_url"),
     updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
     promotionPrice: numeric("promotion_price", { precision: 10, scale: 2 }),
@@ -85,6 +92,10 @@ export const priceHistory = pgTable("price_history", {
   renewPrice: numeric("renew_price", { precision: 10, scale: 2 }),
   transferPrice: numeric("transfer_price", { precision: 10, scale: 2 }),
   currency: text("currency").notNull().default("USD"),
+  // ---- 特价/优惠券维度（deals-and-coupons）----
+  promotionPrice: numeric("promotion_price", { precision: 10, scale: 2 }),
+  promoCode: text("promo_code"),
+  promotionEndsAt: timestamp("promotion_ends_at", { withTimezone: true }),
   recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull().defaultNow(),
   promotionPrice: numeric("promotion_price", { precision: 10, scale: 2 }),
   promoCode: text("promo_code"),

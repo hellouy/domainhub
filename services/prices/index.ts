@@ -198,6 +198,101 @@ export async function queryHistory(filter: {
   )
 }
 
+/** 有效促销列表（deals-and-coupons） */
+export async function queryDeals(filter: {
+  registrar?: string
+  tld?: string
+  onlyActive?: boolean
+  limit?: number
+}) {
+  return withFallback(
+    "queryDeals",
+    async () => {
+      const conditions = [sql`${prices.promotionPrice} IS NOT NULL`, eq(registrars.isActive, true)]
+      if (filter.registrar) conditions.push(eq(registrars.slug, filter.registrar))
+      if (filter.tld) conditions.push(eq(tlds.tld, normalizeTld(filter.tld)))
+      // 默认只看未过期促销（promotion_ends_at 为空视为长期有效）
+      if (filter.onlyActive !== false) {
+        conditions.push(sql`(${prices.promotionEndsAt} IS NULL OR ${prices.promotionEndsAt} > now())`)
+      }
+
+      const rows = await db
+        .select({
+          registrar: registrars.slug,
+          registrarName: registrars.name,
+          tld: tlds.tld,
+          currency: prices.currency,
+          registerPrice: prices.registerPrice,
+          renewPrice: prices.renewPrice,
+          transferPrice: prices.transferPrice,
+          promotionPrice: prices.promotionPrice,
+          promoCode: prices.promoCode,
+          promotionEndsAt: prices.promotionEndsAt,
+          sourceUrl: prices.sourceUrl,
+          updatedAt: prices.updatedAt,
+        })
+        .from(prices)
+        .innerJoin(registrars, eq(prices.registrarId, registrars.id))
+        .innerJoin(tlds, eq(prices.tldId, tlds.id))
+        .where(and(...conditions))
+        .orderBy(prices.promotionPrice)
+        .limit(Math.min(filter.limit ?? 100, 500))
+
+      return rows.map((r) => ({
+        ...r,
+        registerPrice: num(r.registerPrice),
+        renewPrice: num(r.renewPrice),
+        transferPrice: num(r.transferPrice),
+        promotionPrice: num(r.promotionPrice),
+      }))
+    },
+    () => [],
+  )
+}
+
+/** 某后缀最便宜排名（有促销取促销价，无则标准注册价） */
+export async function queryCheapest(tld: string, limit = 20) {
+  return withFallback(
+    "queryCheapest",
+    async () => {
+      const t = normalizeTld(tld)
+      const rows = await db
+        .select({
+          registrar: registrars.slug,
+          registrarName: registrars.name,
+          currency: prices.currency,
+          registerPrice: prices.registerPrice,
+          renewPrice: prices.renewPrice,
+          transferPrice: prices.transferPrice,
+          promotionPrice: prices.promotionPrice,
+          promoCode: prices.promoCode,
+          promotionEndsAt: prices.promotionEndsAt,
+          effectivePrice: sql<string>`CASE WHEN ${prices.promotionPrice} IS NOT NULL AND ${prices.promotionPrice} < ${prices.registerPrice} THEN ${prices.promotionPrice} ELSE ${prices.registerPrice} END`,
+        })
+        .from(prices)
+        .innerJoin(registrars, eq(prices.registrarId, registrars.id))
+        .innerJoin(tlds, eq(prices.tldId, tlds.id))
+        .where(and(eq(registrars.isActive, true), eq(tlds.tld, t)))
+        .orderBy(sql`CASE WHEN ${prices.promotionPrice} IS NOT NULL AND ${prices.promotionPrice} < ${prices.registerPrice} THEN ${prices.promotionPrice} ELSE COALESCE(${prices.registerPrice}, 0) END`)
+        .limit(Math.min(limit, 50))
+
+      return {
+        tld: t,
+        count: rows.length,
+        data: rows.map((r) => ({
+          ...r,
+          registerPrice: num(r.registerPrice),
+          renewPrice: num(r.renewPrice),
+          transferPrice: num(r.transferPrice),
+          promotionPrice: num(r.promotionPrice),
+          effectivePrice: num(r.effectivePrice),
+        })),
+      }
+    },
+    () => ({ tld: normalizeTld(tld), count: 0, data: [] }),
+  )
+}
+
 /** 注册商列表(含健康/能力/版本) */
 export async function queryRegistrars() {
   return withFallback(
@@ -232,19 +327,37 @@ export async function queryStatistics() {
   return withFallback(
     "queryStatistics",
     async () => {
-      const [row] = await db
-        .select({
-          registrarCount: sql<number>`(SELECT count(DISTINCT ${prices.registrarId}) FROM ${prices} JOIN ${registrars} ON ${registrars.id} = ${prices.registrarId} WHERE ${registrars.isActive} = true)`,
-          tldCount: sql<number>`(SELECT count(*) FROM ${tlds})`,
-          priceCount: sql<number>`(SELECT count(*) FROM ${prices})`,
-          historyCount: sql<number>`(SELECT count(*) FROM ${priceHistory})`,
-          jobCount: sql<number>`(SELECT count(*) FROM ${crawlJobs})`,
-          successJobs: sql<number>`(SELECT count(*) FROM ${crawlJobs} WHERE status = 'success')`,
-          failedJobs: sql<number>`(SELECT count(*) FROM ${crawlJobs} WHERE status = 'failed')`,
-          lastUpdated: sql<string | null>`(SELECT max(${prices.updatedAt}) FROM ${prices})`,
-        })
-        .from(sql`(SELECT 1) AS one`)
-      return row
+      // 注意:不能对 sql 模板插值列对象,否则 Drizzle 生成未限定的 "id"/"registrar_id",
+      // 在 prices/registrars 联表时 "id" 产生歧义(column reference "id" is ambiguous)。
+      // 故此处直接用显式限定名/别名的原生 SQL。
+      const res = await db.execute(sql`
+        SELECT
+          (SELECT count(DISTINCT p.registrar_id) FROM prices p JOIN registrars r ON r.id = p.registrar_id WHERE r.is_active = true) AS registrar_count,
+          (SELECT count(*) FROM tlds WHERE is_valid = true) AS tld_count,
+          (SELECT count(*) FROM prices) AS price_count,
+          (SELECT count(*) FROM price_history) AS history_count,
+          (SELECT count(*) FROM crawl_jobs) AS job_count,
+          (SELECT count(*) FROM crawl_jobs WHERE status = 'success') AS success_jobs,
+          (SELECT count(*) FROM crawl_jobs WHERE status = 'failed') AS failed_jobs,
+          (SELECT max(updated_at) FROM prices) AS last_updated
+      `)
+      const row = (res.rows ?? [])[0] as Record<string, unknown> | undefined
+      const lu = row?.last_updated
+      let lastUpdated: string | null = null
+      if (lu != null) {
+        const d = lu instanceof Date ? lu : new Date(String(lu))
+        lastUpdated = Number.isNaN(d.getTime()) ? null : d.toISOString()
+      }
+      return {
+        registrarCount: Number(row?.registrar_count ?? 0),
+        tldCount: Number(row?.tld_count ?? 0),
+        priceCount: Number(row?.price_count ?? 0),
+        historyCount: Number(row?.history_count ?? 0),
+        jobCount: Number(row?.job_count ?? 0),
+        successJobs: Number(row?.success_jobs ?? 0),
+        failedJobs: Number(row?.failed_jobs ?? 0),
+        lastUpdated,
+      }
     },
     () => {
       const stats = seedStats()

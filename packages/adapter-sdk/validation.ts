@@ -18,7 +18,14 @@ import type {
 /** 现有价格查询（用于价格突变检测），由调用方注入避免循环依赖 */
 export type ExistingPriceLookup = (
   tld: string,
-) => { registerPrice: number | null; renewPrice: number | null } | undefined
+) => {
+  registerPrice: number | null
+  renewPrice: number | null
+  /** 促销价（deals-and-coupons，可选） */
+  promotionPrice?: number | null
+  /** 优惠码（deals-and-coupons，可选） */
+  promoCode?: string | null
+} | undefined
 
 /** 单价超过该倍数中位数视为离群（警告） */
 const OUTLIER_MULTIPLIER = 50
@@ -130,6 +137,23 @@ export function validatePrices(
           `注册价从 ${prev.registerPrice} 变为 ${price.registerPrice}（变化 ${(ratio * 100).toFixed(0)}%）`,
         )
       }
+    }
+
+    // 8. 促销价低于标准价才有意义（deals-and-coupons）
+    if (
+      price.promotionPrice !== null &&
+      price.registerPrice !== null &&
+      price.promotionPrice >= price.registerPrice
+    ) {
+      warn(
+        "promotion-not-below-standard",
+        `促销价 ${price.promotionPrice} 不低于标准注册价 ${price.registerPrice}，促销价将被清空`,
+      )
+    }
+    // 9. 促销价近零/为零视为占位 → 置空
+    if (typeof price.promotionPrice === "number" && price.promotionPrice <= 0.5) {
+      warn("zero-promotion", `促销价 ${price.promotionPrice} 视为未公布并置空`)
+      ;(price as unknown as Record<string, unknown>).promotionPrice = null
     }
 
     return { price, status, issues }

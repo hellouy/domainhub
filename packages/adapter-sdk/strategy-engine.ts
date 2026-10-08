@@ -104,6 +104,8 @@ function defaultParse(raw: string): RawPrice[] {
       registerPrice: parsePriceString(row.registerPrice as string),
       renewPrice: parsePriceString(row.renewPrice as string),
       transferPrice: parsePriceString(row.transferPrice as string),
+      promotionPrice: row.promotionPrice != null ? parsePriceString(row.promotionPrice as string) : null,
+      promotion: Boolean(row.promotion),
     }))
   }
   throw new Error(

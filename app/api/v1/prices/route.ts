@@ -5,7 +5,7 @@
  */
 
 import { NextResponse, type NextRequest } from "next/server"
-import { queryPrices } from "@/services/prices"
+import { queryPrices, queryDeals } from "@/services/prices"
 
 /** 解析正整数查询参数,非法或非正数时返回 undefined */
 function parsePositiveInt(value: string | null): number | undefined {
@@ -17,13 +17,15 @@ function parsePositiveInt(value: string | null): number | undefined {
 export async function GET(request: NextRequest) {
   const params = request.nextUrl.searchParams
   try {
-    const data = await queryPrices({
+    const deals = params.get("deals") === "true"
+    const common = {
       registrar: params.get("registrar") ?? undefined,
       tld: params.get("tld") ?? undefined,
       limit: parsePositiveInt(params.get("limit")),
-    })
+    }
+    const list = deals ? await queryDeals(common) : await queryPrices(common)
     return NextResponse.json(
-      { apiVersion: "v1", count: data.length, data },
+      { apiVersion: "v1", count: list.length, data: list },
       {
         headers: {
           // CDN 缓存 5 分钟 + 过期后 1 小时内先返回旧值再后台刷新，展开面板近乎即时

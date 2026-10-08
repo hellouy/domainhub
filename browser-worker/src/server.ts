@@ -272,6 +272,8 @@ async function render(input: RenderRequest): Promise<RenderResponse> {
       register?: number | null
       renew?: number | null
       transfer?: number | null
+      promotionPrice?: number | null
+      promotion?: boolean
     }> = []
     try {
       list = JSON.parse(raw) as typeof list
@@ -286,6 +288,8 @@ async function render(input: RenderRequest): Promise<RenderResponse> {
         registerPrice: r.register ?? null,
         renewPrice: r.renew ?? null,
         transferPrice: r.transfer ?? null,
+        promotionPrice: r.promotionPrice ?? null,
+        promotion: r.promotion ?? false,
         sourceUrl: finalUrl,
       }))
 

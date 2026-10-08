@@ -48,6 +48,8 @@ async function main() {
       premium: false,
       promotion: false,
       promoCode: null,
+      promotionPrice: null,
+      promotionEndsAt: null,
       region: null,
       billingPeriod: "1y",
       source: "浏览器捕获",
