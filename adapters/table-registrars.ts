@@ -107,9 +107,10 @@ export const lwsAdapter = createTableAdapter({
   website: "https://www.lws.fr",
   currency: "EUR",
   // lws.net 全量价目(SSR): [Extension, Category, Top, Register, Transfer, Renewal, ""]
-  // Register 单元格可能含两值("14.59€ 1.99 €"), parsePrice 取首值=原价
+  // Register 单元格可能含两值("14.59€ 1.99 €"), 标准价=首值, 促销价=第二个更小值
   urls: ["https://lws.net/domain-pricing"],
   columnOrder: ["skip", "skip", "register", "transfer", "renew", "skip"],
+  dualValuePromoColumns: ["register"],
   rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
 })
 
