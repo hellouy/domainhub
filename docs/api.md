@@ -19,7 +19,19 @@
 
 ### GET /api/v1/registrars
 
-注册商列表,含能力(capabilities)与健康快照(health)。参数:`active=true|false`。
+注册商列表,含能力(capabilities)、健康快照(health)与推荐分(score)。按推荐分降序排列。参数:`active=true|false`。
+
+推荐分(0-100)加权模型,基于 DB 实有数据:
+
+| 维度 | 权重 | 说明 |
+|------|------|------|
+| `scoreBreakdown.coverage` | 35% | 支持后缀数,对数刻度,500+ 满分 |
+| `scoreBreakdown.promo` | 25% | 促销密度(promotionPrice 非空占比),67%+ 满分 |
+| `scoreBreakdown.completeness` | 15% | 注册+续费价齐全的行占比 |
+| `scoreBreakdown.capability` | 15% | ICANN 认证/WHOIS 隐私/DNSSEC/支付方式各占 1/4 |
+| `scoreBreakdown.health` | 10% | 采集健康分(jsonb health.score),缺失时取中性 0.5 |
+
+响应字段新增:`whoisPrivacy`、`dnssec`、`paymentMethods`、`promoCount`、`completeCount`、`score`、`scoreBreakdown`。
 
 ### GET /api/v1/history
 

@@ -12,6 +12,7 @@
 import { SEED_COLLECTED_AT, SEED_PRICES, SEED_REGISTRAR_META, SEED_SOURCE_URLS } from "@/lib/crawler/seed-data"
 import { FALLBACK_RATES, toUsd } from "@/lib/fx"
 import type { StatsRow } from "@/lib/db/queries"
+import { computeRegistrarScore } from "@/lib/registrar-score"
 
 type PriceTuple = [number | null, number | null, number | null]
 
@@ -150,7 +151,7 @@ export interface PriceForRegistrarRow {
   registerPrice: string | null
   renewPrice: string | null
   transferPrice: string | null
-  promotionPrice?: string | null
+  promotionPrice: string | null
   promoCode?: string | null
   promotionEndsAt?: Date | null
   currency: string
@@ -190,20 +191,37 @@ export function seedTldsWithMinPrice(onlyPopular = false): TldMinPriceRow[] {
 }
 
 export function seedActiveRegistrars() {
-  return registrarSlugs.map((slug) => {
-    const meta = metaFor(slug)
-    return {
-      id: slugToId.get(slug)!,
-      slug,
-      name: meta.name,
-      website: meta.website,
-      description: meta.description,
-      icannAccredited: true,
-      whoisPrivacy: true,
-      dnssec: true,
-      tldCount: Object.keys(SEED_PRICES[slug]).length,
-    }
-  })
+  return registrarSlugs
+    .map((slug) => {
+      const meta = metaFor(slug)
+      const tldCount = Object.keys(SEED_PRICES[slug]).length
+      const { score, breakdown } = computeRegistrarScore({
+        tldCount,
+        promoCount: 0,
+        completeCount: tldCount,
+        icannAccredited: true,
+        whoisPrivacy: true,
+        dnssec: true,
+        paymentMethodCount: 0,
+        healthScore: null,
+      })
+      return {
+        id: slugToId.get(slug)!,
+        slug,
+        name: meta.name,
+        website: meta.website,
+        description: meta.description,
+        icannAccredited: true,
+        whoisPrivacy: true,
+        dnssec: true,
+        tldCount,
+        promoCount: 0,
+        completeCount: tldCount,
+        score,
+        scoreBreakdown: breakdown,
+      }
+    })
+    .sort((a, b) => b.score - a.score || b.tldCount - a.tldCount || a.name.localeCompare(b.name))
 }
 
 export function seedRegistrarBySlug(slug: string): RegistrarRow | null {
@@ -287,6 +305,7 @@ export function seedPricesForRegistrar(registrarId: number): PriceForRegistrarRo
       registerPrice: usd(prices[0]),
       renewPrice: usd(prices[1]),
       transferPrice: usd(prices[2]),
+      promotionPrice: null,
       currency: currencyFor(target),
       updatedAt: nowDate(),
       tldId: tldToId.get(tld)!,

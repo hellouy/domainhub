@@ -42,10 +42,15 @@ export default async function RegistrarsPage() {
                   <span className="min-w-0 truncate text-lg font-semibold tracking-tight transition-colors group-hover:text-primary">
                     {r.name}
                   </span>
-                  <span className="shrink-0 text-right font-mono text-sm tabular-nums text-foreground">
-                    {r.tldCount}
-                    <span className="block text-xs font-sans font-normal text-muted-foreground">
-                      <T k="section.tldCount" />
+                  <span className="flex shrink-0 items-center gap-2">
+                    <span className="rounded-sm bg-primary/10 px-1.5 py-0.5 font-mono text-xs font-semibold text-primary">
+                      {r.score} <T k="registrar.score" />
+                    </span>
+                    <span className="text-right font-mono text-sm tabular-nums text-foreground">
+                      {r.tldCount}
+                      <span className="block text-xs font-sans font-normal text-muted-foreground">
+                        <T k="section.tldCount" />
+                      </span>
                     </span>
                   </span>
                 </div>

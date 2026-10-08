@@ -87,6 +87,7 @@ export default async function HomePage() {
                     </span>
                   </span>
                   <span className="shrink-0 font-mono text-xs text-muted-foreground">
+                    <span className="mr-2 font-semibold text-primary">{r.score}</span>
                     {r.tldCount} <T k="section.tldCount" />
                   </span>
                 </Link>

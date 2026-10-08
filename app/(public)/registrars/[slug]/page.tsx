@@ -125,6 +125,9 @@ export default async function RegistrarPage({ params }: Props) {
                   <T k="th.transfer" />
                 </th>
                 <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
+                  <T k="th.promo" />
+                </th>
+                <th scope="col" className="px-4 py-3 text-right text-xs font-medium uppercase tracking-widest text-muted-foreground">
                   <T k="th.updated" />
                 </th>
               </tr>
@@ -151,6 +154,15 @@ export default async function RegistrarPage({ params }: Props) {
                   </td>
                   <td className="px-4 py-3.5 text-right font-mono tabular-nums">
                     <Money value={p.transferPrice} from={p.currency} />
+                  </td>
+                  <td className="px-4 py-3.5 text-right font-mono tabular-nums">
+                    {p.promotionPrice != null ? (
+                      <span className="rounded-sm bg-primary/10 px-1.5 py-0.5 font-semibold text-primary">
+                        <Money value={p.promotionPrice} from={p.currency} />
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
                   </td>
                   <td className="px-4 py-3.5 text-right text-xs text-muted-foreground">
                     <RelativeTime date={p.updatedAt} />
