@@ -149,16 +149,6 @@ export const amenAdapter = createTableAdapter({
   columnOrder: ["register", "renew", "transfer"],
 })
 
-export const arubaAdapter = createTableAdapter({
-  slug: "aruba",
-  name: "Aruba Domains",
-  website: "https://www.aruba.it",
-  currency: "EUR",
-  numberFormat: "eu",
-  urls: ["https://www.aruba.it/listino-domini.aspx"],
-  columnOrder: ["register", "renew", "transfer"],
-})
-
 export const transipAdapter = createTableAdapter({
   slug: "transip",
   name: "TransIP",

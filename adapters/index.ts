@@ -26,9 +26,9 @@ import { onecomAdapter } from "./onecom"
 import { porkbunAdapter } from "./porkbun"
 import { ovhcloudAdapter } from "./ovhcloud"
 import { hostpointAdapter } from "./hostpoint"
+import { arubaAdapter } from "./aruba"
 import {
   amenAdapter,
-  arubaAdapter,
   domeneshopAdapter,
   eurodnsAdapter,
   hoverAdapter,
