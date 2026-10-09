@@ -3,9 +3,12 @@
 import { db } from "@/lib/db"
 import { registrars, siteSettings } from "@/lib/db/schema"
 import {
+  clearAdminLoginFailures,
   createAdminSession,
   destroyAdminSession,
   isAdminAuthenticated,
+  isAdminLoginBlocked,
+  recordAdminLoginFailure,
   verifyPassword,
 } from "@/lib/admin-auth"
 import { runCrawlJob } from "@/lib/crawler/runner"
@@ -13,6 +16,7 @@ import { invalidateSiteSettings } from "@/lib/site-settings"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
+import { headers } from "next/headers"
 
 async function requireAdmin() {
   if (!(await isAdminAuthenticated())) throw new Error("未授权")
@@ -20,9 +24,28 @@ async function requireAdmin() {
 
 export async function adminLogin(_prevState: { error?: string } | null, formData: FormData) {
   const password = String(formData.get("password") ?? "")
-  if (!password || !verifyPassword(password)) {
-    return { error: "密码错误，请重试" }
+  let clientIp = "unknown"
+  try {
+    const requestHeaders = await headers()
+    const forwardedFor =
+      requestHeaders.get("x-vercel-forwarded-for") ??
+      requestHeaders.get("x-real-ip") ??
+      requestHeaders.get("x-forwarded-for")
+    clientIp = forwardedFor?.split(",")[0]?.trim().slice(0, 128) || "unknown"
+
+    if (await isAdminLoginBlocked(clientIp)) {
+      return { error: "登录失败次数过多，请 15 分钟后重试" }
+    }
+    if (!password || !verifyPassword(password)) {
+      await recordAdminLoginFailure(clientIp)
+      return { error: "密码错误，请重试" }
+    }
+    await clearAdminLoginFailures(clientIp)
+  } catch (error) {
+    console.error("[auth] 管理员登录验证失败:", error)
+    return { error: "登录服务暂时不可用，请稍后重试" }
   }
+
   await createAdminSession()
   redirect("/admin")
 }

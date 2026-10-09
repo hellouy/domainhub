@@ -24,6 +24,14 @@ export const bytea = customType<{ data: Buffer; driverData: Buffer }>({
   },
 })
 
+export const adminLoginAttempts = pgTable("admin_login_attempts", {
+  ipHash: text("ip_hash").primaryKey(),
+  failedAttempts: integer("failed_attempts").notNull().default(0),
+  windowStartedAt: timestamp("window_started_at", { withTimezone: true }).notNull().defaultNow(),
+  lockedUntil: timestamp("locked_until", { withTimezone: true }),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
 export const registrars = pgTable("registrars", {
   id: serial("id").primaryKey(),
   slug: text("slug").notNull().unique(),

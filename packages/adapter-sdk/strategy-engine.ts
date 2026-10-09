@@ -39,6 +39,7 @@ async function defaultFetch(def: StrategyDefinition, ctx: AdapterContext): Promi
 
 /** 浏览器渲染服务地址（独立部署的 Playwright worker）；未配置时 playwright 策略直接降级 */
 const BROWSER_SERVICE_URL = process.env.BROWSER_SERVICE_URL ?? ""
+const BROWSER_SERVICE_TOKEN = process.env.BROWSER_SERVICE_TOKEN ?? ""
 
 /**
  * playwright 策略的浏览器 fetch：
@@ -50,8 +51,8 @@ const BROWSER_SERVICE_URL = process.env.BROWSER_SERVICE_URL ?? ""
  * 因此该形态下可以省略自定义 parse，直接走 defaultParse。
  */
 async function browserStrategyFetch(def: StrategyDefinition, ctx: AdapterContext): Promise<string> {
-  if (!BROWSER_SERVICE_URL) {
-    throw new Error("playwright 策略需要配置环境变量 BROWSER_SERVICE_URL（浏览器渲染服务地址）")
+  if (!BROWSER_SERVICE_URL || !BROWSER_SERVICE_TOKEN) {
+    throw new Error("playwright 策略需要配置 BROWSER_SERVICE_URL 和 BROWSER_SERVICE_TOKEN")
   }
   const opts = def.browser ?? {}
   const payload = {
@@ -68,7 +69,11 @@ async function browserStrategyFetch(def: StrategyDefinition, ctx: AdapterContext
   }
   const res = await ctx.fetch(`${BROWSER_SERVICE_URL}/render`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", Accept: "application/json" },
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      Authorization: `Bearer ${BROWSER_SERVICE_TOKEN}`,
+    },
     body: JSON.stringify(payload),
   })
   if (!res.ok) throw new Error(`浏览器服务返回 HTTP ${res.status}`)

@@ -7,6 +7,7 @@
 import { eq } from "drizzle-orm"
 import { NextResponse, type NextRequest } from "next/server"
 import { isAdminAuthenticated } from "@/lib/admin-auth"
+import { isSameOriginRequest } from "@/lib/request-origin"
 import { runCrawlJob } from "@/lib/crawler/runner"
 import { db } from "@/lib/db"
 import { registrars } from "@/lib/db/schema"
@@ -16,6 +17,9 @@ import { drainQueue, scheduleAll } from "@/packages/scheduler"
 export const maxDuration = 300
 
 export async function POST(request: NextRequest) {
+  if (!isSameOriginRequest(request)) {
+    return NextResponse.json({ apiVersion: "v1", error: "禁止跨站请求" }, { status: 403 })
+  }
   if (!(await isAdminAuthenticated())) {
     return NextResponse.json({ apiVersion: "v1", error: "未授权" }, { status: 401 })
   }

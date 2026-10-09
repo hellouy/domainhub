@@ -197,6 +197,14 @@ CREATE TABLE IF NOT EXISTS crawl_backfill (
   created_at timestamptz NOT NULL DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS admin_login_attempts (
+  ip_hash text PRIMARY KEY,
+  failed_attempts integer NOT NULL DEFAULT 0,
+  window_started_at timestamptz NOT NULL DEFAULT now(),
+  locked_until timestamptz,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
 CREATE UNIQUE INDEX IF NOT EXISTS uq_registrar_capabilities_registrar ON registrar_capabilities (registrar_id);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_discovery_metadata_registrar ON discovery_metadata (registrar_id);
 CREATE UNIQUE INDEX IF NOT EXISTS uq_prices_registrar_tld ON prices (registrar_id, tld_id);
