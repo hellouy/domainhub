@@ -87,6 +87,7 @@ export const spaceshipAdapter = defineAdapter({
       url: PRICING_URL,
       async fetch(ctx) {
         const base = process.env.BROWSER_SERVICE_URL ?? "http://127.0.0.1:8840"
+        const token = process.env.BROWSER_SERVICE_TOKEN ?? ""
         const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
         let extracted: unknown[] | null = null
         let lastErr = ""
@@ -95,7 +96,7 @@ export const spaceshipAdapter = defineAdapter({
           if (attempt > 0) await sleep(8_000)
           const res = await ctx.fetch(`${base}/render`, {
             method: "POST",
-            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            headers: { "Content-Type": "application/json", Accept: "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
             body: JSON.stringify({
               url: PRICING_URL,
               extract: "extract-json",

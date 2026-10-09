@@ -44,6 +44,7 @@ export const pskzAdapter = defineAdapter({
       url: PAGE_URL,
       async fetch(ctx) {
         const base = process.env.BROWSER_SERVICE_URL ?? "http://127.0.0.1:8840"
+        const token = process.env.BROWSER_SERVICE_TOKEN ?? ""
         const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
         let html: string | null = null
         let lastErr = ""
@@ -51,7 +52,7 @@ export const pskzAdapter = defineAdapter({
           if (attempt > 0) await sleep(5_000)
           const res = await ctx.fetch(`${base}/render`, {
             method: "POST",
-            headers: { "Content-Type": "application/json", Accept: "application/json" },
+            headers: { "Content-Type": "application/json", Accept: "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
             body: JSON.stringify({ url: PAGE_URL, extract: "html", scrollToBottom: true, waitForTimeoutMs: 12_000 }),
           })
           try {
