@@ -6,11 +6,13 @@
  *
  * 职责: 对“逐 TLD 拉取”型注册商(如 Netim)按 IANA 有效后缀分批全量回填。
  * 单次 serverless 调用只跑“一批”(默认 50 个后缀)，进度游标持久化在
- * crawl_backfill 表；由 cron 每 5 分钟推进下一批，直到采完自动 completed。
+ * crawl_backfill 表；由 cron 以 Drain 模式推进，直到采完自动 completed。
  *
  * 设计要点:
  * - 跨调用游标: cron 无状态，进度全靠 crawl_backfill.cursor
  * - 间隔保护: 距上批不足 MIN_INTERVAL_MS 则本次 tick 跳过(防重入/超频)
+ * - Drain 模式: 每日一次 cron 内循环推进多批(force=true 绕过间隔)，
+ *   兼容 Vercel Hobby 每日一次 Cron 的限制
  * - 有效后缀快照: 启动时记录 total，批次按 isValid 排序集切片
  * - 幂等: 每批调用既有 runCrawlWithSdk(带 tldScope.tlds 白名单)
  */
@@ -227,4 +229,42 @@ export async function listRunningBackfills(): Promise<number[]> {
     .from(crawlBackfill)
     .where(eq(crawlBackfill.status, "running"))
   return rows.map((r) => r.registrarId)
+}
+
+/**
+ * Drain 模式：在单次调用内循环推进所有 running 回填，直到全部完成或达到时间预算。
+ * 用于 Vercel Hobby(仅每日一次 Cron)时，在一次 tick 内尽量多推进批次，
+ * 避免"每日仅一批"导致的回填耗时过长。
+ * - force=true 绕过批次间隔保护，实现背靠背推进(单次调用内无重入风险)。
+ * - 失败的注册商本 tick 内不再重试，防止反复打击同一失败批次。
+ */
+export async function drainRunningBackfills(
+  timeBudgetMs = 240_000,
+): Promise<{ batchesRan: number; outcomes: BatchOutcome[] }> {
+  const startedAt = Date.now()
+  const outcomes: BatchOutcome[] = []
+  let batchesRan = 0
+  const failedRegistrars = new Set<number>()
+
+  while (Date.now() - startedAt < timeBudgetMs) {
+    const running = await listRunningBackfills()
+    const pending = running.filter((id) => !failedRegistrars.has(id))
+    if (pending.length === 0) break
+
+    let progressed = false
+    for (const registrarId of pending) {
+      const outcome = await runNextBatch(registrarId, { force: true })
+      outcomes.push(outcome)
+      if (outcome.ran) {
+        batchesRan += 1
+        progressed = true
+      }
+      if (outcome.completed) progressed = true
+      if (!outcome.ran && !outcome.completed) failedRegistrars.add(registrarId)
+      if (Date.now() - startedAt >= timeBudgetMs) break
+    }
+    if (!progressed) break
+  }
+
+  return { batchesRan, outcomes }
 }
