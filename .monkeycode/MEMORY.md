@@ -139,6 +139,16 @@ Entries discovered by the Agent during task execution should follow this format:
   - 适配器 URL 失效排查：curl 目标站首页后深挖 /domains、/pricing、/pricelist、本地化路径（如 loopia /domannamn/detaljerad_prislista/、aruba /listino-domini.aspx）；403/JS 渲染的用 browser-worker playwright 策略测试。
 
 [Project Knowledge Summary]
+- Date: 2026-10-09
+- Context: Discovered by Agent while 接入远程 Playwright Server
+- Category: Operations & Deployment
+- Instructions:
+  - 平台提供远程 Playwright Browser Server：`wss://pachong.china.tn`（Bearer token `b79b8155af569e66f29afd077a669ea89956aed95a22a89b`，服务端 playwright 1.62.1 / Chromium 151，自签名证书）。browser-worker 配置 `REMOTE_PLAYWRIGHT_URL=wss://...` + `REMOTE_PLAYWRIGHT_TOKEN=...` 即用 `chromium.connect()` 连远程而非本地 launch，SDK 的 HTTP `/render` 协议不变；远程模式下自动 `NODE_TLS_REJECT_UNAUTHORIZED=0`。
+  - playwright `chromium.connect()` 客户端版本必须与服务端精确一致（不匹配返回 428 Precondition Required）；已把 browser-worker 的 playwright 固定为 `1.62.1`。
+  - 远程 Playwright 服务器数据中心 IP 会被 Cloudflare 拦截（namesilo 返回 "Just a moment..."），反爬严的站点仍走本地 browser-worker；常规 JS 渲染站点（cosmotown 249 行 26s、aruba 360 行 16s）远程模式验证正常。
+  - browser-worker 常驻服务启动必须用 background_terminal 且 `timeout_ms` 设 0，否则会被按超时杀掉。
+
+[Project Knowledge Summary]
 - Date: 2026-10-08
 - Context: Discovered by Agent while favicon DB 缓存接入 + 生产权限诊断
 - Category: Operations & Deployment
