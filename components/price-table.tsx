@@ -56,6 +56,41 @@ function toUsdAmount(v: string | null, currency: string, rates: Record<string, n
   return usd >= 1 || allowSubDollar ? usd : Number.POSITIVE_INFINITY
 }
 
+function MobilePromoStrip({ row }: { row: PriceRow }) {
+  const { money } = useCurrency()
+  const { t, locale } = useLocale()
+  const active = getActivePromotionPrice(row.registerPrice, row.promotionPrice, row.promotionEndsAt)
+  if (active === null) return null
+
+  const endDate = row.promotionEndsAt
+    ? new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
+        month: "short",
+        day: "numeric",
+        timeZone: "UTC",
+      }).format(new Date(row.promotionEndsAt))
+    : null
+
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 bg-primary/5 px-3 py-2 text-xs">
+      <span className="font-medium text-primary">{t("promo.label")}</span>
+      <span className="font-mono text-muted-foreground line-through tabular-nums">
+        {money(row.registerPrice, row.currency)}
+      </span>
+      {row.promoCode && (
+        <span className="inline-flex items-center gap-1 border border-dashed border-primary/50 px-1.5 py-0.5 font-mono font-semibold text-foreground">
+          <span className="sr-only">{t("promo.code")}: </span>
+          {row.promoCode}
+        </span>
+      )}
+      {endDate && (
+        <span className="ml-auto text-muted-foreground">
+          {t("promo.ends")} {endDate}
+        </span>
+      )}
+    </div>
+  )
+}
+
 export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; showUpdated?: boolean }) {
   const { money, rates } = useCurrency()
   const { t, locale } = useLocale()
@@ -158,7 +193,7 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
                   )}
                 </div>
               </div>
-              <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
+              <dl className="grid grid-cols-3 divide-x divide-border border-t border-border pt-3">
                 {(["registerPrice", "renewPrice", "transferPrice"] as SortKey[]).map((key) => {
                   const value = comparablePrice(row, key)
                   const isMin =
@@ -171,25 +206,28 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
                     ) === minValues[key]
 
                   return (
-                    <div key={key} className="min-w-0">
-                      <dt className="text-xs text-muted-foreground">{t(key === "registerPrice" ? "th.register" : key === "renewPrice" ? "th.renew" : "th.transfer")}</dt>
-                      <dd className={cn("mt-1 truncate font-mono text-sm tabular-nums", isMin ? "font-semibold text-primary" : "text-foreground")}>
-                        {key === "registerPrice" ? (
-                          <PromotionPrice
-                            price={row.registerPrice}
-                            promotionPrice={row.promotionPrice}
-                            promoCode={row.promoCode}
-                            promotionEndsAt={row.promotionEndsAt}
-                            currency={row.currency}
-                          />
-                        ) : (
-                          money(row[key], row.currency)
+                    <div key={key} className="flex min-w-0 flex-col gap-1 px-3 first:pl-0 last:pr-0">
+                      <dt className="text-xs text-muted-foreground">
+                        {t(key === "registerPrice" ? "th.register" : key === "renewPrice" ? "th.renew" : "th.transfer")}
+                      </dt>
+                      <dd
+                        className={cn(
+                          "truncate font-mono text-sm tabular-nums",
+                          value == null
+                            ? "text-muted-foreground"
+                            : isMin
+                              ? "font-semibold text-primary"
+                              : "text-foreground",
                         )}
+                      >
+                        {value == null ? "—" : money(value, row.currency)}
+                        {isMin && <span className="sr-only">{t("pt.lowest")}</span>}
                       </dd>
                     </div>
                   )
                 })}
               </dl>
+              <MobilePromoStrip row={row} />
             </article>
           )
         })}
