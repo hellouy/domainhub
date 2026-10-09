@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react"
 import Link from "next/link"
 import useSWR from "swr"
-import { ArrowUpRight, ExternalLink, Search, X } from "lucide-react"
+import { ArrowUpRight, Check, Copy, ExternalLink, Search, Ticket, X } from "lucide-react"
 import { convertAmount } from "@/lib/format"
 import { getActivePromotionPrice } from "@/lib/promotion"
 import { cn, normalizeUrl, withRegistrarReferral } from "@/lib/utils"
@@ -26,8 +26,70 @@ type ApiPrice = {
   renewPrice: number | null
   transferPrice: number | null
   promotionPrice: number | null
+  promoCode: string | null
   promotionEndsAt: string | null
   sourceUrl: string | null
+}
+
+/** 优惠码与促销同生命周期：促销已过期则不再展示优惠码 */
+function activePromoCode(p: ApiPrice) {
+  const code = p.promoCode?.trim()
+  if (!code) return null
+  if (p.promotionEndsAt != null) {
+    const end = new Date(p.promotionEndsAt).getTime()
+    if (!Number.isFinite(end) || end < Date.now()) return null
+  }
+  return code
+}
+
+function formatEndDate(value: string | null) {
+  if (!value) return null
+  const d = new Date(value)
+  if (!Number.isFinite(d.getTime())) return null
+  return `${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+}
+
+function CouponChip({
+  code,
+  copied,
+  onCopy,
+  copyLabel,
+  copiedLabel,
+}: {
+  code: string
+  copied: boolean
+  onCopy: () => void
+  copyLabel: string
+  copiedLabel: string
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onCopy}
+      aria-label={`${copyLabel} ${code}`}
+      className={cn(
+        "group inline-flex min-h-8 max-w-full items-center gap-1.5 border border-dashed px-2 py-1 font-mono text-xs font-semibold transition-colors",
+        copied
+          ? "border-primary bg-primary text-primary-foreground"
+          : "border-primary/60 bg-primary/5 text-primary hover:bg-primary/10",
+      )}
+    >
+      <Ticket aria-hidden="true" className="size-3.5 shrink-0" />
+      <span className="truncate tracking-wide">{code}</span>
+      <span aria-hidden="true" className="h-3.5 w-px shrink-0 bg-current opacity-30" />
+      {copied ? (
+        <span className="flex shrink-0 items-center gap-0.5 font-sans text-[11px] font-medium">
+          <Check aria-hidden="true" className="size-3" />
+          {copiedLabel}
+        </span>
+      ) : (
+        <Copy aria-hidden="true" className="size-3 shrink-0 opacity-70 group-hover:opacity-100" />
+      )}
+      <span className="sr-only" aria-live="polite">
+        {copied ? copiedLabel : ""}
+      </span>
+    </button>
+  )
 }
 
 /** 与卡片最低价（getTldsWithMinPrice）同口径：生效中的促销价优先 */
@@ -64,6 +126,18 @@ const fetcher = (url: string) => fetch(url).then((r) => r.json())
 function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
   const { t } = useLocale()
   const { money, rates } = useCurrency()
+  const [copiedKey, setCopiedKey] = useState<string | null>(null)
+
+  async function copyCode(key: string, code: string) {
+    try {
+      await navigator.clipboard.writeText(code)
+      setCopiedKey(key)
+      window.setTimeout(() => setCopiedKey((k) => (k === key ? null : k)), 1800)
+    } catch {
+      setCopiedKey(null)
+    }
+  }
+
   const { data, isLoading } = useSWR<{ data: ApiPrice[] }>(
     `/api/v1/prices?tld=${encodeURIComponent(tld)}&limit=50`,
     fetcher,
@@ -113,41 +187,80 @@ function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
         <p className="p-4 text-sm text-muted-foreground">{t("explorer.panel.noData")}</p>
       ) : (
         <ul className="flex flex-col">
-          {rows.map((r, i) => (
+          {rows.map((r, i) => {
+            const eff = effectiveRegister(r)
+            const code = activePromoCode(r)
+            const hasDeal = eff.isPromo || code != null
+            const savingPct =
+              eff.isPromo && r.registerPrice && eff.value != null
+                ? Math.round((1 - eff.value / r.registerPrice) * 100)
+                : null
+            const endDate = hasDeal ? formatEndDate(r.promotionEndsAt) : null
+            return (
             <li
               key={r.registrar}
-              className="grid grid-cols-[1.25rem_minmax(0,1fr)_6.5rem_2.75rem] items-center gap-2 border-b border-border px-2 py-2.5 last:border-b-0 sm:px-4"
+              className={cn(
+                "grid grid-cols-[1.25rem_minmax(0,1fr)_auto_2.75rem] items-start gap-2 border-b border-border px-2 py-3 last:border-b-0 sm:px-4",
+                hasDeal && "bg-primary/[0.03]",
+              )}
             >
               <span
                 className={cn(
-                  "w-5 shrink-0 font-mono text-xs",
+                  "w-5 shrink-0 pt-0.5 font-mono text-xs",
                   i === 0 ? "font-bold text-primary" : "text-muted-foreground",
                 )}
               >
                 {i + 1}
               </span>
-              <Link
-                href={`/registrars/${r.registrar}`}
-                className="min-w-0 flex-1 truncate text-sm font-medium hover:text-primary"
-              >
-                {r.registrarName}
-              </Link>
-              <span className="flex shrink-0 flex-col items-end">
-                <span
-                  className={cn(
-                    "font-mono text-sm font-semibold tabular-nums",
-                    i === 0 && "text-primary",
-                  )}
+              <div className="flex min-w-0 flex-col items-start gap-1.5">
+                <Link
+                  href={`/registrars/${r.registrar}`}
+                  className="max-w-full truncate text-sm font-medium hover:text-primary"
                 >
-                  {money(effectiveRegister(r).value, r.currency)}
-                </span>
-                {effectiveRegister(r).isPromo && (
-                  <span className="text-[10px] text-muted-foreground">
-                    <span className="sr-only">原价 </span>
-                    <s>{money(r.registerPrice, r.currency)}</s>
+                  {r.registrarName}
+                </Link>
+                {code && (
+                  <CouponChip
+                    code={code}
+                    copied={copiedKey === r.registrar}
+                    onCopy={() => void copyCode(r.registrar, code)}
+                    copyLabel={t("deals.copyCode")}
+                    copiedLabel={t("deals.copied")}
+                  />
+                )}
+                {endDate && (
+                  <span className="text-[11px] text-muted-foreground">
+                    {t("promo.ends")} {endDate}
                   </span>
                 )}
-                <span className="text-[10px] text-muted-foreground">
+              </div>
+              <span className="flex shrink-0 flex-col items-end gap-0.5">
+                {eff.isPromo && (
+                  <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
+                    <span className="sr-only">{t("deals.regularPrice")} </span>
+                    <s className="font-mono tabular-nums">{money(r.registerPrice, r.currency)}</s>
+                    {savingPct != null && savingPct > 0 && (
+                      <span className="bg-primary px-1 font-mono text-[10px] font-semibold leading-4 text-primary-foreground">
+                        -{savingPct}%
+                      </span>
+                    )}
+                  </span>
+                )}
+                <span
+                  className={cn(
+                    "font-mono text-base font-semibold tabular-nums",
+                    (i === 0 || eff.isPromo) && "text-primary",
+                  )}
+                >
+                  {eff.isPromo && <span className="sr-only">{t("promo.label")} </span>}
+                  {money(eff.value, r.currency)}
+                </span>
+                {code && !eff.isPromo && (
+                  <span className="max-w-32 text-right text-[10px] leading-tight text-muted-foreground">
+                    {t("deals.codeOnlyPrice")}
+                  </span>
+                )}
+                <span className="text-[11px] text-muted-foreground">
                   {t("explorer.panel.renew")} {money(r.renewPrice, r.currency)}
                 </span>
               </span>
@@ -165,7 +278,8 @@ function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
                 <ExternalLink aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground/30" />
               )}
             </li>
-          ))}
+            )
+          })}
         </ul>
       )}
     </div>
