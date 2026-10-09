@@ -147,6 +147,7 @@ Entries discovered by the Agent during task execution should follow this format:
   - playwright `chromium.connect()` 客户端版本必须与服务端精确一致（不匹配返回 428 Precondition Required）；已把 browser-worker 的 playwright 固定为 `1.62.1`。
   - 远程 Playwright 服务器数据中心 IP 会被 Cloudflare 拦截（namesilo 返回 "Just a moment..."），反爬严的站点仍走本地 browser-worker；常规 JS 渲染站点（cosmotown 249 行 26s、aruba 360 行 16s）远程模式验证正常。
   - browser-worker 常驻服务启动必须用 background_terminal 且 `timeout_ms` 设 0，否则会被按超时杀掉。
+  - 全量 86 注册商首页促销码探测结论：官方页面只有 Namecheap 促销页有真实结算码（99SPECIAL/NETDEAL1168/NCSIREG26，已入库 21 行）；其余注册商（porkbun/namesilo/gandi/hostinger/onlydomains 等）首页/促销页只有折扣营销文案，无 code token。首页候选 token（如 osir SAMPLES、gname EXCHANGE、wpx SAVE79）均为页面噪音。反爬分布：Cloudflare-challenge 拦 namecheap/namecom/onamae/lws/exabytes，captcha 拦 cloudns/westcn/connectreseller/regtons/vsys/cosmotown/lcn/blacknight/easyspace；本地 Chromium 对 Cloudflare 挑战仍无解，captcha 站点后续走第三方聚合渠道。探测脚本输出用 fs.writeFileSync 逐行 append（createWriteStream+process.exit(0) 会丢尾部数据），报告路径由 `PROBE_OUT` 环境变量控制。
 
 [Project Knowledge Summary]
 - Date: 2026-10-08
