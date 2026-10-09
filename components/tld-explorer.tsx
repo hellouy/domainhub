@@ -5,6 +5,7 @@ import Link from "next/link"
 import useSWR from "swr"
 import { ArrowUpRight, ExternalLink, Search, X } from "lucide-react"
 import { convertAmount } from "@/lib/format"
+import { getActivePromotionPrice } from "@/lib/promotion"
 import { cn, normalizeUrl, withRegistrarReferral } from "@/lib/utils"
 import { useCurrency, useLocale } from "@/components/providers"
 import type { DictKey } from "@/lib/i18n"
@@ -24,7 +25,19 @@ type ApiPrice = {
   registerPrice: number | null
   renewPrice: number | null
   transferPrice: number | null
+  promotionPrice: number | null
+  promotionEndsAt: string | null
   sourceUrl: string | null
+}
+
+/** 与卡片最低价（getTldsWithMinPrice）同口径：生效中的促销价优先 */
+function effectiveRegister(p: ApiPrice) {
+  const promo = getActivePromotionPrice(
+    p.registerPrice == null ? null : String(p.registerPrice),
+    p.promotionPrice == null ? null : String(p.promotionPrice),
+    p.promotionEndsAt,
+  )
+  return { value: promo != null ? Number(promo) : p.registerPrice, isPromo: promo != null }
 }
 
 const TYPE_TABS: { key: string; labelKey: DictKey }[] = [
@@ -37,11 +50,12 @@ const TYPE_TABS: { key: string; labelKey: DictKey }[] = [
 
 const PAGE_SIZE = 48
 
-/** 排序用 USD 折算：使用实时汇率(providers 提供),促销价(< $1)沉底避免误导 */
-function toUsdSort(value: number | null, currency: string, rates: Record<string, number> | null) {
+/** 排序用 USD 折算：非促销的 < $1 占位价沉底；生效中的促销价正常参与排序（与卡片最低价一致） */
+function toUsdSort(p: ApiPrice, rates: Record<string, number> | null) {
+  const { value, isPromo } = effectiveRegister(p)
   if (value == null) return Number.POSITIVE_INFINITY
-  const usd = convertAmount(value, currency, "USD", rates)
-  return usd < 1 ? usd + 100000 : usd
+  const usd = convertAmount(value, p.currency, "USD", rates)
+  return usd < 1 && !isPromo ? usd + 100000 : usd
 }
 
 const fetcher = (url: string) => fetch(url).then((r) => r.json())
@@ -59,9 +73,7 @@ function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
   const rows = useMemo(() => {
     const all = data?.data ?? []
     return [...all]
-      .sort(
-        (a, b) => toUsdSort(a.registerPrice, a.currency, rates) - toUsdSort(b.registerPrice, b.currency, rates),
-      )
+      .sort((a, b) => toUsdSort(a, rates) - toUsdSort(b, rates))
       .slice(0, 6)
   }, [data, rates])
 
@@ -127,8 +139,14 @@ function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
                     i === 0 && "text-primary",
                   )}
                 >
-                  {money(r.registerPrice, r.currency)}
+                  {money(effectiveRegister(r).value, r.currency)}
                 </span>
+                {effectiveRegister(r).isPromo && (
+                  <span className="text-[10px] text-muted-foreground">
+                    <span className="sr-only">原价 </span>
+                    <s>{money(r.registerPrice, r.currency)}</s>
+                  </span>
+                )}
                 <span className="text-[10px] text-muted-foreground">
                   {t("explorer.panel.renew")} {money(r.renewPrice, r.currency)}
                 </span>
