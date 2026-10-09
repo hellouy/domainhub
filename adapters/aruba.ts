@@ -94,9 +94,9 @@ export const arubaAdapter = defineAdapter({
   owner: "Data Team",
   currency: "EUR",
   capabilities: { registration: true, renewal: true, transfer: false, supportedCurrencies: ["EUR"] },
-  rateLimit: { concurrency: 1, rpm: 10, retries: 2, timeoutMs: 60_000 },
+  rateLimit: { concurrency: 1, rpm: 10, retries: 1, timeoutMs: 90_000 },
   strategies: [
-    { type: "playwright", url: URL, parse: parseAruba, browser: { extract: "html", waitForTimeoutMs: 15_000 } },
+    { type: "playwright", url: URL, parse: parseAruba, browser: { extract: "html", waitForTimeoutMs: 40_000 } },
     { type: "html", url: URL, parse: parseAruba },
   ],
 })

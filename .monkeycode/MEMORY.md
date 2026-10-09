@@ -128,6 +128,17 @@ Entries discovered by the Agent during task execution should follow this format:
   - table-adapter 新增 `dualValuePromoColumns` 配置：单元格含"原价 促销价"双值（lws "14.59€ 1.99 €"）时第二个更小值进 promotionPrice。lws 已配置 register 列，落 124 条促销，生产 `/api/v1/deals?registrar=lws` 验证通过。
 
 [Project Knowledge Summary]
+- Date: 2026-10-09
+- Context: Discovered by Agent while 价格数据完整性审计 + 批量修复适配器
+- Category: Troubleshooting & Debugging
+- Instructions:
+  - 价格完整性审计 SQL：`count(*) filter (where renew_price is null)` 按 registrar slug 分组，快速定位缺续费价的注册商。
+  - 本地批量重爬：设 `DATABASE_URL`（生产 Supabase）+ `BROWSER_SERVICE_URL=http://127.0.0.1:8840` + `BROWSER_SERVICE_TOKEN`，调 `runCrawlWithSdk(registrarId, {trigger:"manual"})`，直写生产库；JS 渲染适配器（onamae/exabytes/juming/namesilo/hostingkr/networksolutions）通过 playwright 策略经 browser-worker 渲染后正常解析。
+  - test-adapter.ts 用法：`DATABASE_URL=... BROWSER_SERVICE_URL=... BROWSER_SERVICE_TOKEN=... npx tsx scripts/test-adapter.ts <slug> --no-db`；带 browser env 时 playwright 策略自动生效。
+  - 源无续费价（不可修复）：vsys/imena/idwebhost/blacknight/exabytes/icdsoft/one/lcn/gzidc（源页面/API 无 renew 列）；mchost 378 行仅 7 有 renew；101domain 252 行仅 30 有 renew（pricing.htm 26 主流 TLD 有全维度，new_gtld_extensions.htm 仅注册价）。
+  - 适配器 URL 失效排查：curl 目标站首页后深挖 /domains、/pricing、/pricelist、本地化路径（如 loopia /domannamn/detaljerad_prislista/、aruba /listino-domini.aspx）；403/JS 渲染的用 browser-worker playwright 策略测试。
+
+[Project Knowledge Summary]
 - Date: 2026-10-08
 - Context: Discovered by Agent while favicon DB 缓存接入 + 生产权限诊断
 - Category: Operations & Deployment
