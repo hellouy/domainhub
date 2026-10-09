@@ -126,3 +126,13 @@ Entries discovered by the Agent during task execution should follow this format:
 - Instructions:
   - Spaceship：直连首页 403（Cloudflare），browser-worker /render 真实 Chrome UA 渲染成功（JS SPA）；定价走内部 BFF `POST /gateway/api/v1/pricing-bff/price/getPrices`（body=currencies:["USD"]+products[{productSlug,plan:{pricingPlanSlug:"regular",period:"P1Y",pricingPlanParams:{transfer:1,sld:"spaceship-query1"}}}]，单请求 ≤65 product，返回 regularPrice 标准 + price 促销）。自定义 extract script 页面上下文分块（60/批）重放，579 TLD 全量 ~24s。已入库 465 行含 18 促销（.com 9.68 vs 10.18），is_active=true。
   - table-adapter 新增 `dualValuePromoColumns` 配置：单元格含"原价 促销价"双值（lws "14.59€ 1.99 €"）时第二个更小值进 promotionPrice。lws 已配置 register 列，落 124 条促销，生产 `/api/v1/deals?registrar=lws` 验证通过。
+
+[Project Knowledge Summary]
+- Date: 2026-10-08
+- Context: Discovered by Agent while favicon DB 缓存接入 + 生产权限诊断
+- Category: Operations & Deployment
+- Instructions:
+  - 生产与本地 DB 连接角色不同：本地 `.env.local` 的 DATABASE_URL 是表 owner `tldbi_app`（全权限）；Vercel 生产用 tldbi_POSTGRES_URL（Supabase pooler）以 `postgres` 角色运行，对 registrars 等表**只有 SELECT 无 UPDATE/INSERT**。Vercel 上任何写操作若遇 `permission denied for table X`，用本地连接 `GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE X TO postgres` 后即可生效，无需改代码或环境变量。
+  - Next.js App Router 下划线前缀目录（如 `api/_diag`）是私有文件夹**不参与路由**，404；诊断路由须用普通命名（如 `api/diag`）。
+  - drizzle/pg 查询中 `column === value` 不会生成 WHERE（Column 对象 !== 字符串得 false 被忽略，返回全表 limit 1 错行），必须用 `eq(column, value)`。
+  - pg 驱动 bytea 默认返回 Buffer，drizzle customType 的 fromDriver/toDriver 直接透传 Buffer 即可 roundtrip。
