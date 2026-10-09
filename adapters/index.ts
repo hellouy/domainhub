@@ -21,6 +21,7 @@ import { godaddyAdapter } from "./godaddy"
 import { namecheapAdapter } from "./namecheap"
 import { namecomAdapter } from "./namecom"
 import { netimAdapter } from "./netim"
+import { metanameAdapter } from "./metaname"
 import { onecomAdapter } from "./onecom"
 import { porkbunAdapter } from "./porkbun"
 import { ovhcloudAdapter } from "./ovhcloud"
@@ -34,7 +35,6 @@ import {
 internetbsAdapter,
   loopiaAdapter,
   lwsAdapter,
-  metanameAdapter,
   netcupAdapter,
   onamaeAdapter,
   registercomAdapter,

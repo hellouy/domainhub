@@ -3,15 +3,15 @@
  * ------------------------------------------------------------
  * 所有权: Data Team
  *
- * 源: https://www.whc.ca/domain-names/
+ * 源: https://www.whc.ca/domain-names/ (301 到 https://whc.ca/domain-names/new)
  * 结构: <table class="tlds-table"><tr class="tld" tld=".ca" price="10.99" renewprice="C$14.99">
  * 仅 register(price) + renew(renewprice), 无 transfer。
- * 已验证约 441 TLD, CAD/年。
+ * 已验证约 958 TLD, CAD/年。
  */
 
 import { defineAdapter, type AdapterContext, type RawPrice } from "@/packages/adapter-sdk"
 
-const URL = "https://www.whc.ca/domain-names/"
+const URL = "https://whc.ca/domain-names/new"
 
 async function parseWhc(raw: string, _ctx: AdapterContext): Promise<RawPrice[]> {
   const out: RawPrice[] = []
@@ -27,7 +27,8 @@ async function parseWhc(raw: string, _ctx: AdapterContext): Promise<RawPrice[]> 
     const tld = tm[1].toLowerCase()
     if (!tld || seen.has(tld)) continue
     const read = (attr: string): number | null => {
-      const mm = tag.match(new RegExp(`${attr}="([\\d.]+)"`, "i"))
+      // 值可能带货币前缀如 C$14.99 / $14.99 / 14.99,提取数字部分
+      const mm = tag.match(new RegExp(`${attr}="(?:[A-Za-z$\\s]*)?([\\d.]+)"`, "i"))
       if (!mm) return null
       const n = Number.parseFloat(mm[1])
       return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : null

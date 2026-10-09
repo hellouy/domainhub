@@ -6,6 +6,7 @@
  * 源: https://imena.ua/domains/prices
  * 表: .border_table.full, 列 TLD | Registration min term | max term | Price for 1 year
  * 价目单元格含两个 div: zone-price-noaction(列表价) + magicprice_UAH(实付价, 取此)
+ * 实付价货币后缀为 "грн."(乌克兰语)或 "UAH"，两者均接受。
  * 无续费/转入列。
  * 已验证约 347 TLD(UAH)。
  */
@@ -35,9 +36,9 @@ async function parseImena(raw: string, _ctx: AdapterContext): Promise<RawPrice[]
     const tldCell = cells[0].replace(/<[^>]+>/g, "").replace(/&nbsp;|&amp;|&copy;/gi, " ").trim()
     const tld = tldCell.toLowerCase().replace(/^\./, "")
     if (!/^[a-z0-9\u00e0-\uffff-]{2,}$/.test(tld)) continue
-    // 价格单元格中找 magicprice_UAH div
+    // 价格单元格中找 magicprice_UAH div; 货币后缀为 грн. 或 UAH
     const priceCell = cells[3]
-    const m = priceCell.match(/<div class="magicprice_UAH"[^>]*>\s*([\d.,\s\u00a0]+?)\s*UAH\s*<\/div>/i)
+    const m = priceCell.match(/<div class="magicprice_UAH"[^>]*>\s*([\d.,\s\u00a0]+?)\s*(?:грн\.?|UAH)\s*<\/div>/i)
     if (!m) continue
     const numText = m[1].replace(/[\s\u00a0]/g, "").replace(",", ".")
     const n = Number.parseFloat(numText)

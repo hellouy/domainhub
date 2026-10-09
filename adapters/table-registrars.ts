@@ -15,7 +15,7 @@ export const hoverAdapter = createTableAdapter({
   name: "Hover",
   website: "https://www.hover.com",
   currency: "USD",
-  urls: ["https://www.hover.com/tlds"],
+  urls: ["https://www.hover.com/domains"],
   columnOrder: ["register", "renew", "transfer"],
 })
 
@@ -56,25 +56,13 @@ export const registercomAdapter = createTableAdapter({
   columnOrder: ["register", "renew", "transfer"],
 })
 
-export const metanameAdapter = createTableAdapter({
-  slug: "metaname",
-  name: "Metaname",
-  website: "https://metaname.net",
-  currency: "NZD",
-  urls: ["https://metaname.net/public/pricing"],
-  // 表头: TLD | 0-15 | 16-127 | 128-511 | 512-1023 | 1024+ (按持有量分档,单位 NZD)
-  // 每个单元格含两个金额(不含GST 首值),parsePrice 取首值; 注册价取 0-15 档
-  columnOrder: ["register", "skip", "skip", "skip", "skip"],
-  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
-})
-
 export const loopiaAdapter = createTableAdapter({
   slug: "loopia",
   name: "Loopia",
   website: "https://www.loopia.se",
   currency: "SEK",
   numberFormat: "eu",
-  urls: ["https://www.loopia.se/domain/"],
+  urls: ["https://www.loopia.se/domannamn/detaljerad_prislista/"],
   columnOrder: ["register", "renew", "transfer"],
 })
 
@@ -167,7 +155,7 @@ export const arubaAdapter = createTableAdapter({
   website: "https://www.aruba.it",
   currency: "EUR",
   numberFormat: "eu",
-  urls: ["https://www.aruba.it/domini/registrazione-dominio.aspx"],
+  urls: ["https://www.aruba.it/listino-domini.aspx"],
   columnOrder: ["register", "renew", "transfer"],
 })
 
