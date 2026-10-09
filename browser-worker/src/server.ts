@@ -42,6 +42,12 @@ const NETWORK_IDLE_TIMEOUT_MS = 15_000
 const VERSION = "1.1.0"
 const WORKER_TOKEN = process.env.BROWSER_WORKER_TOKEN ?? ""
 
+// 远程 Playwright Server（如自签名证书）需要放宽 Node 的 TLS 证书校验。
+// 仅在配置了 REMOTE_PLAYWRIGHT_URL 时生效，本地 launch 模式不受影响。
+if (process.env.REMOTE_PLAYWRIGHT_URL && !process.env.NODE_TLS_REJECT_UNAUTHORIZED) {
+  process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"
+}
+
 if (WORKER_TOKEN.length < 32) {
   throw new Error("BROWSER_WORKER_TOKEN 必须配置且至少 32 个字符")
 }
@@ -152,19 +158,31 @@ async function acquireSlot(): Promise<() => void> {
   return acquireSlot()
 }
 
+/** 远程 Playwright Server 连接串（wss://host:port）。配置后本服务不本地启动 Chromium，
+ *  而是通过 chromium.connect() 把渲染任务转发给远程服务器（客户端版本必须与服务端一致）。 */
+const REMOTE_PLAYWRIGHT_URL = process.env.REMOTE_PLAYWRIGHT_URL ?? ""
+/** 远程 Playwright Server 的 Bearer 令牌（与 BROWSER_WORKER_TOKEN 无关，随 connect 握手发送） */
+const REMOTE_PLAYWRIGHT_TOKEN = process.env.REMOTE_PLAYWRIGHT_TOKEN ?? ""
+
 let browserPromise: Promise<Browser> | null = null
 function getBrowser(): Promise<Browser> {
   if (browserPromise) return browserPromise
 
-  const launchPromise = chromium.launch({
-    headless: true,
-    args: [
-      "--disable-blink-features=AutomationControlled",
-      "--no-sandbox",
-      "--disable-dev-shm-usage",
-      "--disable-gpu",
-    ],
-  })
+  const launchPromise = REMOTE_PLAYWRIGHT_URL
+    ? chromium.connect(REMOTE_PLAYWRIGHT_URL, {
+        headers: REMOTE_PLAYWRIGHT_TOKEN
+          ? { Authorization: `Bearer ${REMOTE_PLAYWRIGHT_TOKEN}` }
+          : undefined,
+      })
+    : chromium.launch({
+        headless: true,
+        args: [
+          "--disable-blink-features=AutomationControlled",
+          "--no-sandbox",
+          "--disable-dev-shm-usage",
+          "--disable-gpu",
+        ],
+      })
   browserPromise = launchPromise
   void launchPromise.catch(() => {
     if (browserPromise === launchPromise) browserPromise = null
