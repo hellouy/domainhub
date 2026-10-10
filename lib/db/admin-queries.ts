@@ -102,6 +102,7 @@ export async function searchPrices(opts: {
     transferPrice: prices.transferPrice,
     promotionPrice: prices.promotionPrice,
     promoCode: prices.promoCode,
+    promoCodes: prices.promoCodes,
     promotionEndsAt: prices.promotionEndsAt,
     currency: prices.currency,
 

@@ -11,6 +11,7 @@
 
 import type {
   NormalizedPrice,
+  PromoCodeDetail,
   ValidatedPrice,
   ValidationIssue,
 } from "./types"
@@ -25,6 +26,8 @@ export type ExistingPriceLookup = (
   promotionPrice?: number | null
   /** 优惠码（deals-and-coupons，可选） */
   promoCode?: string | null
+  /** 多优惠码数组（deals-and-coupons，可选） */
+  promoCodes?: PromoCodeDetail[] | null
 } | undefined
 
 /** 单价超过该倍数中位数视为离群（警告） */

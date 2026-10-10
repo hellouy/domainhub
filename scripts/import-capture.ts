@@ -48,6 +48,7 @@ async function main() {
       premium: false,
       promotion: false,
       promoCode: null,
+      promoCodes: null,
       promotionPrice: null,
       promotionEndsAt: null,
       region: null,

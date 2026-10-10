@@ -217,6 +217,7 @@ export async function getPricesForTld(tldId: number) {
           transferPrice: prices.transferPrice,
           promotionPrice: prices.promotionPrice,
           promoCode: prices.promoCode,
+          promoCodes: prices.promoCodes,
           promotionEndsAt: prices.promotionEndsAt,
           currency: prices.currency,
           sourceUrl: prices.sourceUrl,
@@ -261,6 +262,7 @@ export async function getPricesForRegistrar(registrarId: number) {
           transferPrice: prices.transferPrice,
           promotionPrice: prices.promotionPrice,
           promoCode: prices.promoCode,
+          promoCodes: prices.promoCodes,
           promotionEndsAt: prices.promotionEndsAt,
           currency: prices.currency,
           updatedAt: prices.updatedAt,
@@ -272,7 +274,10 @@ export async function getPricesForRegistrar(registrarId: number) {
         .innerJoin(tlds, eq(prices.tldId, tlds.id))
         .where(eq(prices.registrarId, registrarId))
         .orderBy(asc(tlds.tld))
-      return rows
+      return rows.map((r) => ({
+        ...r,
+        promoCodes: (Array.isArray(r.promoCodes) ? r.promoCodes : null) as import("./seed-fallbacks").PromoCodesRow[] | null,
+      }))
     },
     seedPricesForRegistrar(registrarId),
   )

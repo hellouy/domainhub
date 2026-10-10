@@ -77,6 +77,7 @@ export async function createPriceSink(registrarId: number): Promise<{
       renewPrice: row.renewPrice ? Number.parseFloat(row.renewPrice) : null,
       promotionPrice: row.promotionPrice ? Number.parseFloat(row.promotionPrice) : null,
       promoCode: row.promoCode,
+      promoCodes: Array.isArray(row.promoCodes) ? row.promoCodes : null,
       promotionEndsAt: row.promotionEndsAt,
     }
   }
@@ -117,17 +118,44 @@ export async function createPriceSink(registrarId: number): Promise<{
           ? price.promotionPrice
           : null
 
+      // 多码：优先取适配器 promoCodes 数组，否则回退单值 promoCode
+      const promoCodes =
+        price.promoCodes && price.promoCodes.length > 0
+          ? price.promoCodes.map((c) => ({
+              code: c.code,
+              promotionPrice:
+                c.promotionPrice != null ? norm(typeof c.promotionPrice === "number" ? c.promotionPrice : Number.parseFloat(String(c.promotionPrice))) : null,
+              promotionEndsAt: c.promotionEndsAt ? new Date(c.promotionEndsAt) : null,
+              sourceUrl: c.sourceUrl ?? null,
+            }))
+          : price.promoCode
+            ? [
+                {
+                  code: price.promoCode,
+                  promotionPrice: norm(promoPrice),
+                  promotionEndsAt: price.promotionEndsAt ? new Date(price.promotionEndsAt) : null,
+                  sourceUrl: price.sourceUrl ?? null,
+                },
+              ]
+            : null
+
       const next = {
         registerPrice: norm(price.registerPrice),
         renewPrice: norm(price.renewPrice),
         transferPrice: norm(price.transferPrice),
         currency: price.currency,
         promotionPrice: norm(promoPrice),
-        promoCode: price.promoCode ?? null,
+        promoCode: promoCodes?.[0]?.code ?? null,
+        promoCodes,
         // 促销截止时间:往前保证 UTC ISO 输出由 DB 存储 timestamp
         promotionEndsAt: price.promotionEndsAt ? new Date(price.promotionEndsAt) : null,
       }
       const prev = existingByTldId.get(tldId)
+
+      const codesEqual =
+        prev?.promoCodes && next.promoCodes
+          ? JSON.stringify(prev.promoCodes) === JSON.stringify(next.promoCodes)
+          : prev?.promoCodes === next.promoCodes
 
       // compare：价格、币种与促销信息完全一致则跳过
       if (
@@ -139,6 +167,7 @@ export async function createPriceSink(registrarId: number): Promise<{
         (prev.promotionPrice === null ? null : Number.parseFloat(prev.promotionPrice)) ===
           (next.promotionPrice === null ? null : Number.parseFloat(next.promotionPrice)) &&
         prev.promoCode === next.promoCode &&
+        codesEqual &&
         (prev.promotionEndsAt?.toISOString() ?? null) ===
           (next.promotionEndsAt?.toISOString() ?? null)
       ) {
@@ -200,7 +229,9 @@ export async function createDryRunSink(registrarId: number): Promise<{
             (prev.promotionPrice === null || prev.promotionPrice === undefined
               ? null
               : prev.promotionPrice.toFixed(2)) &&
-          (price.promoCode ?? null) === (prev.promoCode ?? null)
+          (price.promoCode ?? null) === (prev.promoCode ?? null) &&
+          ((price.promoCodes && price.promoCodes.length > 0 ? JSON.stringify(price.promoCodes) : null) ===
+            (Array.isArray(prev.promoCodes) ? JSON.stringify(prev.promoCodes) : null))
         ) {
           skipped++
         } else {

@@ -149,6 +149,14 @@ export interface PriceForTldRow {
   registrarWebsite: string
 }
 
+/** 存储层写入 prices.promo_codes jsonb 的数组元素结构 */
+export interface PromoCodesRow {
+  code: string
+  promotionPrice?: number | null
+  promotionEndsAt?: string | null
+  sourceUrl?: string | null
+}
+
 export interface PriceForRegistrarRow {
   priceId: number
   registerPrice: string | null
@@ -156,6 +164,7 @@ export interface PriceForRegistrarRow {
   transferPrice: string | null
   promotionPrice: string | null
   promoCode?: string | null
+  promoCodes?: PromoCodesRow[] | null
   promotionEndsAt?: Date | null
   currency: string
   updatedAt: Date

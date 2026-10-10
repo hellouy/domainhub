@@ -43,6 +43,20 @@ export interface StrategyAttempt {
 // ============================================================
 
 /**
+ * 单个优惠码详情（多码支持）。
+ * 适配器可一次返回多个优惠码；normalize 阶段按序保留，首码作为主码。
+ */
+export interface PromoCodeDetail {
+  code: string
+  /** 使用该码后的促销价（首年实际支付价），可选 */
+  promotionPrice?: number | string | null
+  /** 促销截止时间（ISO 8601 UTC），可选 */
+  promotionEndsAt?: string | null
+  /** 优惠码来源页面，可选 */
+  sourceUrl?: string | null
+}
+
+/**
  * 适配器 parse 阶段返回的原始价格行。
  * 只需要提供拿得到的字段，normalize 阶段会补全为 NormalizedPrice。
  */
@@ -57,6 +71,8 @@ export interface RawPrice {
   premium?: boolean
   promotion?: boolean
   promoCode?: string | null
+  /** 多优惠码数组（优先于 promoCode）；首码写入 prices.promo_code */
+  promoCodes?: PromoCodeDetail[] | null
   /** 促销价（首年实际支付价），须低于 registerPrice；空=无促销 */
   promotionPrice?: number | string | null
   /** 促销截止时间（ISO 8601 UTC）；空=长期/未知 */
@@ -84,6 +100,8 @@ export interface NormalizedPrice {
   premium: boolean
   promotion: boolean
   promoCode: string | null
+  /** 多优惠码数组（promoCodes[0] === promoCode 主码），空=无 */
+  promoCodes: PromoCodeDetail[] | null
   /** 促销价（首年实际支付价），须低于 registerPrice；空=无促销 */
   promotionPrice: number | null
   /** 促销截止时间（ISO 8601 UTC）；空=长期/未知 */

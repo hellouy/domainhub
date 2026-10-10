@@ -29,6 +29,7 @@ export type PriceRow = {
   transferPrice: string | null
   promotionPrice: string | null
   promoCode: string | null
+  promoCodes: { code: string; promotionPrice?: string | null; promotionEndsAt?: string | null; sourceUrl?: string | null }[] | null
   promotionEndsAt: Date | string | null
   currency: string
   sourceUrl: string | null
@@ -140,6 +141,27 @@ function EditPriceDialog({ row }: { row: PriceRow }) {
               />
             </div>
             <div className="col-span-2 flex flex-col gap-2">
+              <Label htmlFor={`promo-codes-${row.priceId}`}>
+                多优惠码（每行一个 CODE 或 CODE,price[,YYYY-MM-DD][,url]，与上方单码互斥）
+              </Label>
+              <textarea
+                id={`promo-codes-${row.priceId}`}
+                name="promoCodes"
+                rows={3}
+                defaultValue={
+                  row.promoCodes && row.promoCodes.length > 0
+                    ? row.promoCodes
+                        .map((c) =>
+                          [c.code, c.promotionPrice ?? "", c.promotionEndsAt ? new Date(c.promotionEndsAt).toISOString().slice(0, 10) : "", c.sourceUrl ?? ""].filter((f, i) => f !== "" || i === 0).join(","),
+                        )
+                        .join("\n")
+                    : ""
+                }
+                autoComplete="off"
+                className="w-full rounded-md border border-input bg-transparent px-3 py-2 font-mono text-sm"
+              />
+            </div>
+            <div className="col-span-2 flex flex-col gap-2">
               <Label htmlFor={`promo-end-${row.priceId}`}>优惠截止日期（可留空）</Label>
               <Input
                 id={`promo-end-${row.priceId}`}
@@ -229,6 +251,18 @@ export function PriceTable({ rows }: { rows: PriceRow[] }) {
                       {formatPrice(r.promotionPrice, r.currency)}
                     </span>
                     {r.promoCode && <code className="font-mono text-xs text-muted-foreground">{r.promoCode}</code>}
+                    {r.promoCodes && r.promoCodes.length > 1 && (
+                      <code className="font-mono text-[10px] text-muted-foreground">
+                        +{r.promoCodes.length - 1} 个码
+                      </code>
+                    )}
+                  </div>
+                ) : r.promoCodes && r.promoCodes.length > 0 ? (
+                  <div className="flex flex-col gap-0.5">
+                    <code className="font-mono text-xs text-muted-foreground">{r.promoCodes[0].code}</code>
+                    {r.promoCodes.length > 1 && (
+                      <code className="font-mono text-[10px] text-muted-foreground">+{r.promoCodes.length - 1} 个码</code>
+                    )}
                   </div>
                 ) : (
                   <span className="text-xs text-muted-foreground">—</span>
