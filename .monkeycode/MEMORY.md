@@ -83,6 +83,9 @@ Entries discovered by the Agent during task execution should follow this format:
   - **多级后缀坑**：activedomains 旧正则 `[a-z0-9-]*` 不含点号把 com.ru 截断成 com 污染根后缀——新增解析器务必核对多级后缀。
   - **queryStatistics 隐蔽 bug**：raw sql 模板插值列对象产生未限定 `ON "id"="registrar_id"`（prices/registrars 都有 id）报 ambiguous，withFallback 吞错回退 seed 显示陈旧统计。排查 withFallback 类接口须本地直连 DB 跑函数，不能只看线上 200。
   - **is_active 陷阱**：registrars.is_active=false 即使 prices 有数据也被 `/api/v1/registrars` 过滤不进前端；修复适配器写库后必须显式 `update registrars set is_active=true where slug=...`；sync-registrars 的 onConflictDoNothing 不改已有行 is_active。
+  - **IANA 二轮扩展结论（2026-10-10）**：register4less（ICANN #1082）静态价目表 `register4less.com/info/pricing`，433 行 `<tr><td>TLD(大写,含AB.CA二级)</td><td>描述</td><td>&dollar;XX.XX</td></tr>`，仅注册价 USD，parse 420 行入库（register=USD，无 renew），com/net/org $17.95。适配器因"TLD 不在首列+描述列+空分隔格"用 defineAdapter 自定义解析（参照 interserver），不用 createTableAdapter——table-adapter 价格收集循环遍历原始 cells 而非 normalize 后数组，列错位。
+  - **其余候选全部不可采**：uk2/123-reg/ionos/webnic/cosmotown（价格 JS 渲染或搜索 API）、webnames.ca（站点下线 404）、123-reg（94B challenge）、sav.com/register.com（数据中心 IP 被 Cloudflare 拦 525）、namesco（静态表仅 17 行且全是首年促销价、18 个 TLD 全被 DB 重复覆盖）、heartinternet/fasthosts（促销块非价目表）。同类已验证源（namecheap/porkbun/dynadot/spaceship/namesilo）均已接入。
+  - **重复覆盖也有价值**：新注册商 420 行中 418 行是已有 TLD 的第二个价格点（增强比价），仅 2 个新增后缀；扩量时优先用 cross-icann-db 反向对照 ICANN 3322 家清单筛未接入零售注册商，但多数是 JS 动态价目表——命中"无登录+无 Cloudflare+结构稳定"的静态表标准才值得写适配器。
 
 [User Instruction Summary]
 - Date: 2026-09-28
