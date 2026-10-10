@@ -86,6 +86,7 @@ Entries discovered by the Agent during task execution should follow this format:
   - **IANA 二轮扩展结论（2026-10-10）**：register4less（ICANN #1082）静态价目表 `register4less.com/info/pricing`，433 行 `<tr><td>TLD(大写,含AB.CA二级)</td><td>描述</td><td>&dollar;XX.XX</td></tr>`，仅注册价 USD，parse 420 行入库（register=USD，无 renew），com/net/org $17.95。适配器因"TLD 不在首列+描述列+空分隔格"用 defineAdapter 自定义解析（参照 interserver），不用 createTableAdapter——table-adapter 价格收集循环遍历原始 cells 而非 normalize 后数组，列错位。
   - **其余候选全部不可采**：uk2/123-reg/ionos/webnic/cosmotown（价格 JS 渲染或搜索 API）、webnames.ca（站点下线 404）、123-reg（94B challenge）、sav.com/register.com（数据中心 IP 被 Cloudflare 拦 525）、namesco（静态表仅 17 行且全是首年促销价、18 个 TLD 全被 DB 重复覆盖）、heartinternet/fasthosts（促销块非价目表）。同类已验证源（namecheap/porkbun/dynadot/spaceship/namesilo）均已接入。
   - **重复覆盖也有价值**：新注册商 420 行中 418 行是已有 TLD 的第二个价格点（增强比价），仅 2 个新增后缀；扩量时优先用 cross-icann-db 反向对照 ICANN 3322 家清单筛未接入零售注册商，但多数是 JS 动态价目表——命中"无登录+无 Cloudflare+结构稳定"的静态表标准才值得写适配器。
+  - **探测前必须先核对适配器 slug 列表（2026-10-10 教训）**：本批 ovh（已有 ovhcloud API 适配器 941 行）与 atak（已有 atakdomain 958 行）均因未先查 `grep -n "slug:" adapters/*.ts` 而误做重复适配器。规范：任何新候选写适配器前，先 `grep -rn "slug:" adapters/*.ts` 取 106 个既有 slug，并 `npx tsx scripts/tmp-audit/check-dup.ts`（ilike 查询）核对 DB 别名，避免重名。误做后修复：删文件 + index.ts 移除 + DB `delete prices/registrars` + revert 提交。
 
 [User Instruction Summary]
 - Date: 2026-09-28
