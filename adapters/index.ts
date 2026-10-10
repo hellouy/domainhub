@@ -81,6 +81,7 @@ import { oneAdapter } from "./one"
 import { interserverAdapter } from "./interserver"
 import { register4lessAdapter } from "./register4less"
 import { rebelAdapter } from "./rebel"
+import { ovhAdapter } from "./ovh"
 import { domaincostclubAdapter } from "./domaincostclub"
 import { regtonsAdapter } from "./regtons"
 import { osirAdapter } from "./osir"
@@ -178,6 +179,7 @@ export const allAdapters = [
   interserverAdapter,
   register4lessAdapter,
   rebelAdapter,
+  ovhAdapter,
   domaincostclubAdapter,
   regtonsAdapter,
   osirAdapter,
