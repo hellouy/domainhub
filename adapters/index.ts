@@ -80,6 +80,7 @@ import { epikAdapter } from "./epik"
 import { oneAdapter } from "./one"
 import { interserverAdapter } from "./interserver"
 import { register4lessAdapter } from "./register4less"
+import { rebelAdapter } from "./rebel"
 import { domaincostclubAdapter } from "./domaincostclub"
 import { regtonsAdapter } from "./regtons"
 import { osirAdapter } from "./osir"
@@ -176,6 +177,7 @@ export const allAdapters = [
   oneAdapter,
   interserverAdapter,
   register4lessAdapter,
+  rebelAdapter,
   domaincostclubAdapter,
   regtonsAdapter,
   osirAdapter,

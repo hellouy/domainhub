@@ -154,6 +154,13 @@ Entries discovered by the Agent during task execution should follow this format:
   - **官方促销码采集方法论（替代聚合站）**：① SearXNG `site:<host> promo code OR promos OR deals OR coupons` 定向搜索找到官方促销页 URL（JSON 格式，自签名证书需脚本内 `NODE_TLS_REJECT_UNAUTHORIZED=0`，Bearer 鉴权，单查询 45s 超时+重试，勿加 time_range 否则变慢）；② browser-worker 渲染促销页，提取"use code X" / "Promo code: X" / 大写字码+价格块（`CODE|US$3.60|/年|US$9.66|/年`）。甄别噪音：gandi 的 EXCLUSIONS/FOLLOW/PLEASE、namesilo 的 THAT/WHILE、hostpoint 的 TEST、epik 的 OFFERINGS 均为 FAQ/普通词误报，需人工确认。③ 真实码入库 SQL：TLD 特定码 `UPDATE prices p SET promo_code=$c FROM tlds t WHERE p.tld_id=t.id AND p.registrar_id=$rid AND t.tld=ANY($tlds) AND p.promo_code IS NULL`，通用码去掉 `t.tld=ANY` 映射全部行。同注册商多码仅首码落位（一行一个 promo_code）。成果：with_code 21→919（namecheap NEWCOM679/ENTITLES/BDAYTRANSFER26、dynadot DYNA12、namecom SAVE15/NEWHOME/1006ETE6、spaceship COM67/NET19/XYZ52/IO85/SPSR86、101domain WELCOME/SAVEONDOMAINS、exabytes 1010SALE、networksolutions NSDOMAINS30）。
    - **多码支持（2026-10-10）**：prices/price_history 各加 `promo_codes jsonb` 列（`PromoCodesRow[]`：{code,promotionPrice?:number,promotionEndsAt?:string,sourceUrl?:string}），`promo_code` 保留为主码（数组首码）向后兼容，不建关联表。迁移=ALTER TABLE + 回填现有 promo_code→单元素数组；多码回填用 `promo_codes = promo_codes || jsonb_build_array(...)` + `@>` 防重复。全链路 select 均返回 promoCodes；storage save 时数组优先写 jsonb、首码作主码；admin action 多码输入每行 `CODE[,price[,YYYY-MM-DD][,url]]`，与单码互斥（两者只填一种）。jsonb 经 pg 返回 unknown，查询层必须 cast 成 PromoCodesRow[] 否则 TS 报错；jsonb 数组元素字段是 number（norm 后）而非 numeric string。deals 组件按码渲染多 chip + 独立复制。
 
+[User Instruction Summary]
+- Date: 2026-10-10
+- Context: IANA 注册商扩展探测 eNom 批发价目表时，用户纠正扫描范围
+- Instructions:
+  - 不对批发商做扫描（eNom/Tucows/OpenSRS/Key-Systems/Hexonet/1API/InterNetX/Realtime Register/ResellerClub/Synergy Wholesale/PDR 等），只要零售商家的价格
+  - 此前「批发/API 价源是主杠杆」的扩量思路（2026-09-28 条目）自此被取代：候选筛选与适配器只针对面向终端用户的零售注册商
+
 [Project Knowledge Summary]
 - Date: 2026-10-08
 - Context: Discovered by Agent while favicon DB 缓存接入 + 生产权限诊断
