@@ -174,3 +174,11 @@ Entries discovered by the Agent during task execution should follow this format:
   - Next.js App Router 下划线前缀目录（如 `api/_diag`）是私有文件夹**不参与路由**，404；诊断路由须用普通命名（如 `api/diag`）。
   - drizzle/pg 查询中 `column === value` 不会生成 WHERE（Column 对象 !== 字符串得 false 被忽略，返回全表 limit 1 错行），必须用 `eq(column, value)`。
   - pg 驱动 bytea 默认返回 Buffer，drizzle customType 的 fromDriver/toDriver 直接透传 Buffer 即可 roundtrip。
+
+[Project Knowledge Summary]
+- Date: 2026-10-10
+- Context: Discovered by Agent while 补全注册/续费/转移价格，排查 OVH 转移价 209 行缺失
+- Category: Troubleshooting & Debugging
+- Instructions:
+  - adapter-sdk `validatePrices`（packages/adapter-sdk/validation.ts）把 register/renew/transfer/restore 中 `<= 0.5` 的价格视为「占位未公布」置 null。但 transferPrice 的 0 是注册商明确的「免费转移」报价（OVH 对 209 个 TLD、istanco 对 rs 提供免费转入），2026-10-10 已改为 `field !== "transferPrice"` 时才对 <=0.5 置空——全库 106 家适配器里 transfer=0 仅 ovhcloud/istanco 两家出现，无副作用。
+  - 排查「源有价但 DB 缺」先跑 `scripts/tmp-audit/parse-vs-db.ts`（对比 62 家缺价注册商的 DB 三价 vs 实时 parse 增量）；多数缺价（register4less/vsys/imena 无续费列、stardomain/muumuu/value-domain 移管列标「-」、dynadot uk/co.uk tr_price="--"）是源设计，非解析漏采。
