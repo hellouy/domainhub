@@ -79,6 +79,7 @@ import { nicnamesAdapter } from "./nicnames"
 import { epikAdapter } from "./epik"
 import { oneAdapter } from "./one"
 import { interserverAdapter } from "./interserver"
+import { register4lessAdapter } from "./register4less"
 import { domaincostclubAdapter } from "./domaincostclub"
 import { regtonsAdapter } from "./regtons"
 import { osirAdapter } from "./osir"
@@ -174,6 +175,7 @@ export const allAdapters = [
   epikAdapter,
   oneAdapter,
   interserverAdapter,
+  register4lessAdapter,
   domaincostclubAdapter,
   regtonsAdapter,
   osirAdapter,
