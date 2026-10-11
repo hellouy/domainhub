@@ -6,6 +6,7 @@
  * 源: GET https://iwantmyname.com/Prices-getPrices.html?ajax=1&limit=500&offset=0&level=IWMN&currency=USD
  * 响应: rows 按 tld 键值, 每条含 registration.price / renewal.price / transfer.price
  * 已验证约 668 TLD, USD/年。分页 fetch 需翻页(每页 limit)。
+ * 2026-10-11 修复: 千位逗号("3,546.00") + transfer 'Free'→0 + registration discountedPrice 促销价。
  */
 
 import { defineAdapter, type AdapterContext, type RawPrice } from "@/packages/adapter-sdk"
@@ -45,13 +46,25 @@ async function parseIwm(raw: string, _ctx: AdapterContext): Promise<RawPrice[]> 
   const toNum = (s: unknown): number | null => {
     const t = String(s ?? "").trim()
     if (!t) return null
-    const n = Number.parseFloat(t)
+    if (t.toLowerCase() === "free") return 0
+    const n = Number.parseFloat(t.replace(/,/g, ""))
     return Number.isFinite(n) && n > 0 ? Math.round(n * 100) / 100 : null
   }
+  // 转移价允许 0(免费转入)
+  const toNumTr = (s: unknown): number | null => {
+    const t = String(s ?? "").trim()
+    if (!t) return null
+    if (t.toLowerCase() === "free") return 0
+    const n = Number.parseFloat(t.replace(/,/g, ""))
+    return Number.isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : null
+  }
   for (const [tld, v] of Object.entries<any>(rows)) {
-    const reg = toNum(v?.registration?.price)
+    const regObj = v?.registration ?? {}
+    // 促销价(welcome offer)优先
+    const isDisc = regObj?.hasDiscount === "yes" || regObj?.isWelcomeOffer === true
+    const reg = toNum(isDisc && regObj?.discountedPrice != null ? regObj.discountedPrice : regObj?.price)
     const ren = toNum(v?.renewal?.price)
-    const tra = toNum(v?.transfer?.price)
+    const tra = toNumTr(v?.transfer?.price)
     if (reg == null && ren == null && tra == null) continue
     const price: RawPrice = { tld, currency: CURRENCY, sourceUrl: "https://iwantmyname.com/domains/" }
     if (reg != null) price.registerPrice = reg
@@ -68,8 +81,8 @@ export const iwantmynameAdapter = defineAdapter({
   name: "iwantmyname",
   website: "https://iwantmyname.com",
   owner: "Data Team",
-  version: "1.0.0",
-  parserVersion: "1.0.0",
+  version: "1.1.0",
+  parserVersion: "1.1.0",
   currency: CURRENCY,
   capabilities: { registration: true, renewal: true, transfer: true, supportedCurrencies: ["USD", "GBP", "EUR", "AUD"] },
   rateLimit: { concurrency: 1, rpm: 15, retries: 3, timeoutMs: 60_000 },

@@ -7,6 +7,7 @@
  * 结构: <div class="domains7-tile" data-ren="15.00" data-tra="0.00">
  *         <div class="title">.ch</div><div class="price">5.00</div>
  * 货币: CHF
+ * 注: data-tra 仅部分 TLD 存在; data-tra="0.00" 为免费转入(2026-10-11 起采入)。
  */
 
 import { defineAdapter, type RawPrice } from "@/packages/adapter-sdk"
@@ -19,13 +20,20 @@ const num = (v: string | undefined): number | null => {
   return Number.isFinite(n) && n > 0 ? n : null
 }
 
+/** 转移价允许 0(免费转入), 见 data-tra="0.00" */
+const numAllowZero = (v: string | undefined): number | null => {
+  if (!v) return null
+  const n = Number.parseFloat(v)
+  return Number.isFinite(n) && n >= 0 ? n : null
+}
+
 export const hostpointAdapter = defineAdapter({
   slug: "hostpoint",
   name: "Hostpoint",
   website: "https://www.hostpoint.ch",
   owner: "Data Team",
-  version: "1.1.0",
-  parserVersion: "1.1.0",
+  version: "1.2.0",
+  parserVersion: "1.2.0",
   currency: "CHF",
   priority: 50,
   capabilities: {
@@ -66,7 +74,7 @@ export const hostpointAdapter = defineAdapter({
           if (seen.has(tld)) continue
           const register = num(m[3])
           const ren = num(/data-ren="([\d.]+)"/.exec(attrs)?.[1])
-          const tra = num(/data-tra="([\d.]+)"/.exec(attrs)?.[1])
+          const tra = numAllowZero(/data-tra="([\d.]+)"/.exec(attrs)?.[1])
           const res = num(/data-res="([\d.]+)"/.exec(attrs)?.[1])
           if (register === null && ren === null) continue
           seen.add(tld)

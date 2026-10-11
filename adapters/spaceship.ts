@@ -8,10 +8,14 @@
  *
  * 采集方式：走 browser-worker 页面会话，批量调用定价 BFF：
  *   POST /gateway/api/v1/pricing-bff/price/getPrices
- *   （products 按 productSlug 请求 purchase/renewal，单请求最多 65 个 product）
- * 用自定义 extract 脚本在页面上下文内分块（60/批）重放该接口，
- * 返回 [{ tld, register, renew, transfer }]，其中 transfer 槽复用为
- * 促销价（regularPrice > price 时），适配器 parse 阶段转成 promotionPrice。
+ *   （priceTypes 仅支持 purchase/renewal；单请求最多 65 个 product）
+ * 每批两个请求：
+ *   1. 标准场景（无 transfer 参数）→ purchase=注册价(regularPrice 标准价/price 首年促销价)，renewal=续费价
+ *   2. transfer:1 场景 → purchase=转移价（触发 transfer autopromo，如 "comtransfer"）
+ * 注意（2026-10-11 探针确认）：BFF 响应键全为小写（pricetype/usd/productslug），
+ * 旧代码读驼峰 priceType/USD 拿到 undefined 导致整表为空；脚本内做大小写兼容。
+ * 输出 [{ tld, register, renew, transfer, promotionPrice }]，
+ * worker 归一化为 registerPrice/renewPrice/transferPrice/promotionPrice。
  */
 import { defineAdapter } from "@/packages/adapter-sdk"
 
@@ -29,47 +33,70 @@ function buildScript(): string {
   const TLD_LIST = ${list}
   const BATCH = 60
   const URL = ${JSON.stringify(PRICE_API)}
-  const buildBody = (tlds) => ({
+  const amt = (v) => { const n = Number(v); return Number.isFinite(n) ? n : 0 }
+  const priceTypeOf = (x) => x?.pricetype ?? x?.priceType
+  const usdOf = (entry) => { const t = entry?.total ?? {}; return t?.usd ?? t?.USD ?? {} }
+  const buildBody = (tlds, withTransfer) => ({
     currencies: ["USD"],
     includeFields: ["components","modifiers","params","discount","pricePerPeriod","outputValues","reducers"],
     includeBasePrice: true,
     products: tlds.map((t) => ({
-      priceTypes: ["purchase","renewal","transfer"],
-      product: { productSlug: t, plan: { pricingPlanParams: { transfer: 1, sld: "spaceship-query1" }, pricingPlanSlug: "regular", period: "P1Y" } },
+      priceTypes: ["purchase","renewal"],
+      product: { productSlug: t, plan: { pricingPlanParams: withTransfer ? { transfer: 1, sld: "spaceship-query1" } : { sld: "spaceship-query1" }, pricingPlanSlug: "regular", period: "P1Y" } },
     })),
   })
-  const postBatch = async (tlds) => {
-    const r = await fetch(URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(buildBody(tlds)) })
+  const postBatch = async (tlds, withTransfer) => {
+    const r = await fetch(URL, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(buildBody(tlds, withTransfer)) })
     if (!r.ok) throw new Error("HTTP " + r.status)
     return r.json()
   }
   return (async () => {
-    const out = []
+    const byTld = new Map()
     for (let i = 0; i < TLD_LIST.length; i += BATCH) {
       const chunk = TLD_LIST.slice(i, i + BATCH)
-      let data
-      try { data = await postBatch(chunk) } catch (e) { continue }
-      const products = data?.products ?? []
-      for (const p of products) {
-        const slug = p?.product?.productSlug
-        if (!slug) continue
-        const prices = p?.prices ?? []
-        const purchase = prices.find((x) => x.priceType === "purchase")
-        const renewal = prices.find((x) => x.priceType === "renewal")
-        const transferEntry = prices.find((x) => x.priceType === "transfer")
-        const reg = Number(purchase?.total?.USD?.price?.amount)
-        const regRegular = Number(purchase?.total?.USD?.regularPrice?.amount)
-        const renew = Number(renewal?.total?.USD?.price?.amount)
-        const renewRegular = Number(renewal?.total?.USD?.regularPrice?.amount)
-        const trStandard = Number(transferEntry?.total?.USD?.regularPrice?.amount)
-        const trPrice = Number(transferEntry?.total?.USD?.price?.amount)
-        const standard = regRegular > 0 ? regRegular : reg
-        const promo = reg > 0 && standard > 0 && reg < standard ? reg : null
-        const transfer = trStandard > 0 ? trStandard : (trPrice > 0 ? trPrice : null)
-        out.push({ tld: slug, register: standard > 0 ? standard : null, renew: renew > 0 ? renew : renewRegular > 0 ? renewRegular : null, transfer, promo })
-      }
+      // 标准场景: 注册价 + 续费价
+      try {
+        const data = await postBatch(chunk, false)
+        for (const p of data?.products ?? []) {
+          const slug = p?.product?.productslug ?? p?.product?.productSlug
+          if (!slug) continue
+          const prices = p?.prices ?? []
+          const purchase = prices.find((x) => priceTypeOf(x) === "purchase")
+          const renewal = prices.find((x) => priceTypeOf(x) === "renewal")
+          if (purchase?.error) continue
+          const cur = usdOf(purchase)
+          const regRegular = amt(cur?.regularprice?.amount ?? cur?.regularPrice?.amount)
+          const regPrice = amt(cur?.price?.amount)
+          const rc = usdOf(renewal)
+          const renewRegular = amt(rc?.regularprice?.amount ?? rc?.regularPrice?.amount)
+          const renewPrice = amt(rc?.price?.amount)
+          const register = regRegular > 0 ? regRegular : (regPrice > 0 ? regPrice : null)
+          const promotionPrice = regPrice > 0 && register > 0 && regPrice < register ? regPrice : null
+          const renew = renewRegular > 0 ? renewRegular : (renewPrice > 0 ? renewPrice : null)
+          if (register != null || renew != null) byTld.set(slug, { tld: slug, register, renew, transfer: null, promotionPrice })
+        }
+      } catch (e) {}
+      // transfer:1 场景: 转移价(price=实付含转移促销, 回退 regularPrice)
+      try {
+        const data = await postBatch(chunk, true)
+        for (const p of data?.products ?? []) {
+          const slug = p?.product?.productslug ?? p?.product?.productSlug
+          if (!slug) continue
+          const prices = p?.prices ?? []
+          const purchase = prices.find((x) => priceTypeOf(x) === "purchase")
+          if (purchase?.error) continue
+          const cur = usdOf(purchase)
+          const trRegular = amt(cur?.regularprice?.amount ?? cur?.regularPrice?.amount)
+          const trPrice = amt(cur?.price?.amount)
+          const transfer = trPrice > 0 ? trPrice : (trRegular > 0 ? trRegular : null)
+          if (transfer == null) continue
+          const prev = byTld.get(slug)
+          if (prev) prev.transfer = transfer
+          else byTld.set(slug, { tld: slug, register: null, renew: null, transfer, promotionPrice: null })
+        }
+      } catch (e) {}
     }
-    return JSON.stringify(out)
+    return JSON.stringify([...byTld.values()])
   })()
 })()`
 }
@@ -120,12 +147,13 @@ export const spaceshipAdapter = defineAdapter({
         return JSON.stringify(extracted)
       },
       parse(raw) {
+        // fetch 返回的是 worker 归一化后的行: { tld, registerPrice, renewPrice, transferPrice, promotionPrice }
         const rows = JSON.parse(raw) as Array<{
           tld?: string
-          register?: number | null
-          renew?: number | null
-          transfer?: number | null
-          promo?: number | null
+          registerPrice?: number | null
+          renewPrice?: number | null
+          transferPrice?: number | null
+          promotionPrice?: number | null
         }>
         const out = rows
           .filter((r) => r.tld)
@@ -141,10 +169,10 @@ export const spaceshipAdapter = defineAdapter({
             } = {
               tld,
               currency: "USD",
-              registerPrice: r.register ?? null,
-              renewPrice: r.renew ?? null,
-              transferPrice: r.transfer ?? null,
-              promotionPrice: r.promo ?? null,
+              registerPrice: r.registerPrice ?? null,
+              renewPrice: r.renewPrice ?? null,
+              transferPrice: r.transferPrice ?? null,
+              promotionPrice: r.promotionPrice ?? null,
             }
             return price
           })
