@@ -176,9 +176,20 @@ export async function createPriceSink(registrarId: number): Promise<{
       }
 
       if (prev) {
+        // 保留既有促销信息: 普通价格采集适配器通常不带 promo, 若 next 无促销而 prev 有, 不抹掉(促销码/促销价由专项脚本维护)
+        const writeNext =
+          next.promoCodes == null && prev.promoCodes != null
+            ? {
+                ...next,
+                promotionPrice: prev.promotionPrice,
+                promoCode: prev.promoCode,
+                promoCodes: prev.promoCodes,
+                promotionEndsAt: prev.promotionEndsAt,
+              }
+            : next
         await db
           .update(prices)
-          .set({ ...next, sourceUrl: price.sourceUrl, updatedAt: new Date() })
+          .set({ ...writeNext, sourceUrl: price.sourceUrl, updatedAt: new Date() })
           .where(and(eq(prices.registrarId, registrarId), eq(prices.tldId, tldId)))
         updated++
       } else {

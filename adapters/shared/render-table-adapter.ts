@@ -33,14 +33,17 @@ interface RenderedTableConfig {
 
 async function renderHtml(fetchFn: (url: string, init?: RequestInit) => Promise<Response>, url: string, waitMs: number): Promise<string> {
   const base = process.env.BROWSER_SERVICE_URL ?? "http://127.0.0.1:8840"
+  const token = process.env.BROWSER_SERVICE_TOKEN ?? ""
   const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
   let html: string | null = null
   let lastErr = ""
   for (let attempt = 0; attempt < 3 && html === null; attempt++) {
     if (attempt > 0) await sleep(5_000)
+    const headers: Record<string, string> = { "Content-Type": "application/json", Accept: "application/json" }
+    if (token) headers.Authorization = `Bearer ${token}`
     const res = await fetchFn(`${base}/render`, {
       method: "POST",
-      headers: { "Content-Type": "application/json", Accept: "application/json" },
+      headers,
       body: JSON.stringify({ url, extract: "html", scrollToBottom: true, waitForTimeoutMs: waitMs }),
     })
     try {

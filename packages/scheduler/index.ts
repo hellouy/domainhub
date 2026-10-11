@@ -10,9 +10,9 @@
  * 只依赖 Queue 抽象与 services 层, 不依赖具体队列实现或 UI。
  */
 
-import { eq } from "drizzle-orm"
+import { and, eq, lte } from "drizzle-orm"
 import { db } from "@/lib/db"
-import { registrars } from "@/lib/db/schema"
+import { crawlQueue, registrars } from "@/lib/db/schema"
 import { getQueue, type QueueTrigger } from "@/packages/queue"
 
 /** 将所有激活注册商入队, 返回入队数量 */
@@ -36,8 +36,42 @@ export async function scheduleAll(trigger: QueueTrigger = "cron"): Promise<numbe
 }
 
 /**
+ * 恢复卡死的 running 队列项: serverless 执行中途崩溃会留下永久 running 项。
+ * 超过 staleAfterMs 的 running 项重置为 retrying(按 attempts 退避)或 pending。
+ */
+export async function recoverStaleRunning(
+  staleAfterMs = 30 * 60 * 1000,
+): Promise<number> {
+  const queue = getQueue()
+  const stale = await db
+    .select()
+    .from(crawlQueue)
+    .where(and(eq(crawlQueue.status, "running"), lte(crawlQueue.startedAt, new Date(Date.now() - staleAfterMs))))
+  for (const item of stale) {
+    if (item.attempts < item.maxAttempts) {
+      const delayMs = 60_000 * 2 ** item.attempts
+      await db
+        .update(crawlQueue)
+        .set({
+          status: "retrying",
+          lastError: "卡死超时恢复",
+          scheduledAt: new Date(Date.now() + delayMs),
+        })
+        .where(eq(crawlQueue.id, item.id))
+    } else {
+      await db
+        .update(crawlQueue)
+        .set({ status: "failed", lastError: "卡死超时(超过最大尝试次数)", finishedAt: new Date() })
+        .where(eq(crawlQueue.id, item.id))
+    }
+  }
+  return stale.length
+}
+
+/**
  * 逐个取出并执行队列任务, 直到队列为空或达到 maxJobs/预算时间。
  * runJob 由调用方注入(services 层的 runCrawl), 保持本模块与业务解耦。
+ * 执行前先恢复卡死的 running 项, 避免 serverless 崩溃残留阻塞队列。
  */
 export async function drainQueue(
   runJob: (registrarId: number) => Promise<{ ok: boolean; error?: string }>,
@@ -53,6 +87,8 @@ export async function drainQueue(
   let failed = 0
 
   while (processed < maxJobs && Date.now() - startedAt < budgetMs) {
+    // 先恢复卡死项, 再取任务(每轮最多恢复一次, 恢复本身不占任务预算)
+    if (processed === 0) await recoverStaleRunning()
     const item = await queue.dequeue()
     if (!item) break
     processed++
