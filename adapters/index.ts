@@ -91,6 +91,7 @@ import { mchostAdapter } from "./mchost"
 import { hostafricaAdapter } from "./hostafrica"
 import { afrihostAdapter } from "./afrihost"
 import { whogohostAdapter } from "./whogohost"
+import { afriregisterAdapter } from "./afriregister"
 import { ultahostAdapter } from "./ultahost"
 import { iwantmynameAdapter } from "./iwantmyname"
 import { gnameAdapter } from "./gname"
@@ -190,6 +191,7 @@ export const allAdapters = [
   hostafricaAdapter,
   afrihostAdapter,
   whogohostAdapter,
+  afriregisterAdapter,
   ultahostAdapter,
   // 第二批探索新增：更广覆盖与多币种（2026-10-02）
   iwantmynameAdapter,
