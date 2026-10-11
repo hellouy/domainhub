@@ -89,6 +89,8 @@ import { icdsoftAdapter } from "./icdsoft"
 import { istancoAdapter } from "./istanco"
 import { mchostAdapter } from "./mchost"
 import { hostafricaAdapter } from "./hostafrica"
+import { afrihostAdapter } from "./afrihost"
+import { whogohostAdapter } from "./whogohost"
 import { ultahostAdapter } from "./ultahost"
 import { iwantmynameAdapter } from "./iwantmyname"
 import { gnameAdapter } from "./gname"
@@ -186,6 +188,8 @@ export const allAdapters = [
   istancoAdapter,
   mchostAdapter,
   hostafricaAdapter,
+  afrihostAdapter,
+  whogohostAdapter,
   ultahostAdapter,
   // 第二批探索新增：更广覆盖与多币种（2026-10-02）
   iwantmynameAdapter,
