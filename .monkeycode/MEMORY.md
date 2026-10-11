@@ -237,3 +237,13 @@ Entries discovered by the Agent during task execution should follow this format:
   - **storage skip 刷新 updated_at(2026-10-11)**：之前价格一致就 continue 导致 updated_at 停留在上次价格变化(15 家"过期"实为价格无变化)。已改为 skip 时也 `UPDATE SET updated_at=now()`——updated_at 语义变为"最近检查时间"。已验证 dreamhost 补采后更新到当天。
   - **local-sync.sh 兜底补采**：全量轮后跑 scripts/list-stale-slugs.ts(打印 >7 天过期 slug 单行)非空则定向重试；全量/兜底/促销采集均加 timeout(7200/3600/3600)防挂起阻塞调度循环。曾发生第一轮 local-sync.sh 在 recrawl 中途静默死亡(日志无错误、进程消失)而调度循环干等 86400s 的事故——重启调度循环恢复。
   - **SearXNG 仍降级(2026-10-11)**：site:name.com promo code 仍 0 条，促销码扩采继续被阻塞；调度器每日自动重试 + fallback 固定路径兜底，恢复后无需人工干预。
+
+[Project Knowledge Summary]
+- Date: 2026-10-11
+- Context: Discovered by Agent while 修复转移价缺口（onama/afrihost/onlydomains/spaceship/inwx/hostpoint/openprovider/iwantmyname）
+- Category: Troubleshooting & Debugging
+- Instructions:
+  - **零值过滤 bug 类（duplicate pattern）**：适配器内 `num = v > 0 ? v : null` 形式的解析会丢掉合法"免费转入"(transferPrice=0)。多个注册商曾被此 bug 拖累：inwx(337 免费转移全被丢)、hostpoint(data-tra="0.00" 45 条)、openprovider(transferFee=0 共 331)、iwantmyname(transfer.price='Free' 字符串 18 条)。修复模式：转移价单独用 `n >= 0` 的 numTr，其余字段保持 `n > 0`。排查转移缺口时先看源里 transfer 是否为 0 或 "0.00"/"Free"/"free"。
+  - **iwantmyname 三个解析坑**：(a) 与逗号——价格 `"3,546.00"` 会被 `Number.parseFloat` 截成 3（DB 里 .security 曾记 3.00，实为 3546.00），必须 `replace(/,/g,"")`；(b) transfer 值可能是字符串 `'Free'`；(c) registration 含 `discountedPrice`(welcome offer，如 .com 19.99→8.99)，`hasDiscount=="yes"` 时用促销价。已全部修复并写库（.com=8.99/security=3546/transfer 637 覆盖）。
+  - **已确认源限制的转移缺口（勿再排查）**：onamae 78/443（源无转入列）、muumuu-domain 318/418（源 transfer null 326，0 免费）、ukrnames 96/471（源 null 99）、regtons 153（文档明确 "0,00=不提供→null"，源自设计）、forpsi 243（capability transfer:false）、101domain 222（new_gtld_extensions.htm 只有注册价，设计如此）、namecom 21 缺注册价（ccTLD 注册列"N/A"，vana/je/gg 页面 404，源不售注册）、openprovider 15 缺注册价（registerFee 空字符串）。
+  - **spaceship 三价已写库验证**：465 TLD 全部 register+renew，462 含 transfer；.com reg=9.86/renew=10.18/transfer=9.68/promo=9.08。afrihost 139 行三价齐全（co.za/org.za/net.za 免费转移=0）。onlydomains 878 行转移全覆盖（758 免费 $0）。openprovider 2069 行转移全覆盖（332 免费=0）+ 15 缺注册价源限制。
