@@ -61,12 +61,16 @@ function parseRebel(raw: string, _ctx: AdapterContext): RawPrice[] {
     const reg = toNum(usd?.Reg)
     const ren = toNum(usd?.Ren)
     const cur = toNum(usd?.Price)
+    const boRaw = usd?.Bo
+    const boNum = typeof boRaw === "number" ? boRaw : Number.parseFloat(String(boRaw ?? ""))
+    const transfer = Number.isFinite(boNum) ? boNum : null
     if (reg == null && ren == null) continue
     seen.add(tld)
     const price: RawPrice = { tld, currency: "USD", sourceUrl: SOURCE_URL }
     if (reg != null) price.registerPrice = reg
     if (ren != null) price.renewPrice = ren
     if (cur != null && reg != null && cur < reg) price.promotionPrice = cur
+    if (transfer != null && transfer >= 0) price.transferPrice = transfer
     out.push(price)
   }
   if (out.length === 0) throw new Error("rebel 解析结果为空")
@@ -81,7 +85,7 @@ export const rebelAdapter = defineAdapter({
   version: "1.0.0",
   parserVersion: "1.0.0",
   currency: "USD",
-  capabilities: { registration: true, renewal: true, transfer: false, supportedCurrencies: ["USD", "CAD"] },
+  capabilities: { registration: true, renewal: true, transfer: true, supportedCurrencies: ["USD", "CAD"] },
   rateLimit: { concurrency: 1, rpm: 15, retries: 3, timeoutMs: 60_000 },
   strategies: [
     {

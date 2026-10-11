@@ -34,7 +34,7 @@ function buildScript(): string {
     includeFields: ["components","modifiers","params","discount","pricePerPeriod","outputValues","reducers"],
     includeBasePrice: true,
     products: tlds.map((t) => ({
-      priceTypes: ["purchase","renewal"],
+      priceTypes: ["purchase","renewal","transfer"],
       product: { productSlug: t, plan: { pricingPlanParams: { transfer: 1, sld: "spaceship-query1" }, pricingPlanSlug: "regular", period: "P1Y" } },
     })),
   })
@@ -56,13 +56,17 @@ function buildScript(): string {
         const prices = p?.prices ?? []
         const purchase = prices.find((x) => x.priceType === "purchase")
         const renewal = prices.find((x) => x.priceType === "renewal")
+        const transferEntry = prices.find((x) => x.priceType === "transfer")
         const reg = Number(purchase?.total?.USD?.price?.amount)
         const regRegular = Number(purchase?.total?.USD?.regularPrice?.amount)
         const renew = Number(renewal?.total?.USD?.price?.amount)
         const renewRegular = Number(renewal?.total?.USD?.regularPrice?.amount)
+        const trStandard = Number(transferEntry?.total?.USD?.regularPrice?.amount)
+        const trPrice = Number(transferEntry?.total?.USD?.price?.amount)
         const standard = regRegular > 0 ? regRegular : reg
         const promo = reg > 0 && standard > 0 && reg < standard ? reg : null
-        out.push({ tld: slug, register: standard > 0 ? standard : null, renew: renew > 0 ? renew : renewRegular > 0 ? renewRegular : null, transfer: promo })
+        const transfer = trStandard > 0 ? trStandard : (trPrice > 0 ? trPrice : null)
+        out.push({ tld: slug, register: standard > 0 ? standard : null, renew: renew > 0 ? renew : renewRegular > 0 ? renewRegular : null, transfer, promo })
       }
     }
     return JSON.stringify(out)
@@ -118,33 +122,33 @@ export const spaceshipAdapter = defineAdapter({
       parse(raw) {
         const rows = JSON.parse(raw) as Array<{
           tld?: string
-          registerPrice?: number | null
-          renewPrice?: number | null
-          transferPrice?: number | null
+          register?: number | null
+          renew?: number | null
+          transfer?: number | null
+          promo?: number | null
         }>
         const out = rows
           .filter((r) => r.tld)
           .map((r) => {
             const tld = r.tld!.toLowerCase().replace(/^\./, "")
-            const register = r.registerPrice ?? null
-            const renew = r.renewPrice ?? null
-            const promo = r.transferPrice ?? null
             const price: {
               tld: string
               currency: string
               registerPrice: number | null
               renewPrice: number | null
+              transferPrice: number | null
               promotionPrice: number | null
             } = {
               tld,
               currency: "USD",
-              registerPrice: register,
-              renewPrice: renew,
-              promotionPrice: promo,
+              registerPrice: r.register ?? null,
+              renewPrice: r.renew ?? null,
+              transferPrice: r.transfer ?? null,
+              promotionPrice: r.promo ?? null,
             }
             return price
           })
-          .filter((p) => p.registerPrice != null || p.renewPrice != null || p.promotionPrice != null)
+          .filter((p) => p.registerPrice != null || p.renewPrice != null || p.transferPrice != null || p.promotionPrice != null)
         if (out.length === 0) throw new Error("spaceship 定价接口返回为空")
         return out
       },
