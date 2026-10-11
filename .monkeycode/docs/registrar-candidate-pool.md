@@ -275,3 +275,24 @@ ICANN 407 候选分四批探测（标准路径多为 404，须试本地化/产�
 - **其他本轮探测（均否决）**：xneelo.co.za 32 TLD 仅注册/续费两价、无转移列、城市 TLD(capetown/joburg/durban) 已有 17-18 卖家 → 低差异化；webnic.cc 促销页非完整价表；hostafrica(spa)/easydomain(CF 403)/son大量 404/000。web 检索余额不足，无法系统扩候选池。
 
 结论：用户提供新源 → 探测 → 命中即接入的流程再次验证有效（afriregister 140 行全命中）。此类"区域性多 ccTLD 注册商"是库外覆盖的好补充，后续扩量优先找同类（巴西/印度/东南亚本地注册商）。
+
+## 2026-10-11 两方向并行：anti-bot 应用到现有适配器 + 拉美/东南亚候选扩线（commit `e663b03` / 本轮）
+
+### 方向一：anti-bot 应用到 playwright 适配器评估
+
+对 16 家 playwright 适配器经 anti-bot 通道重新探测（`ab-probe2.ts`），评估是否值得加 antiBot 配置：
+
+- **krystal（已切换，`adapters/krystal.ts` v1.1.0）**：原 playwright extract-json（依赖本地 browser-worker），改 html 直连 + anti-bot 降级双链。直连 200/109KB/20 行 GBP 全 valid，recrawl 6.9s `tlds=20 upd=0` 无结构破坏。价值：去掉浏览器依赖，生产 cron 无 BROWSER_SERVICE_URL 也能采。
+- **centralnic（维持孤儿）**：crawl 通道拿到 60 行真实多币种表（USD 28/EUR 20/CHF/GBP/DKK/SEK/PLN，transfer 0.00 免费转移），比 playwright gridjs 30 TLD USD-only 更完整。但**多币种与 validatePrices 单币种强校验冲突**（`price.currency !== expectedCurrency` 即报 mismatch），且该适配器从未注册 index/未写库（历史孤儿）。维持现状，不做多币种适配。
+- **dynadot**：anti-bot browser 壳 29KB/0 表 → 维持既有 xhr API 策略（DB 820 行 USD）。
+- **hostinger/westcn**：anti-bot 60s 超时（前端壳 + 各自 XHR/自定义 script 是正确通道）→ 维持现状（DB 451/118 行）。
+- **namesilo/cosmotown**（前轮已接入）：html 403 → anti-bot 接管，已写库（474/249 行）。
+
+### 方向二：拉美/东南亚候选扩线
+
+- **pavietnam（已接入，上轮 `e663b03`）**：越南 VND 首币种，519 行三价（.vn 全家族 50 子域 + 33 省级新 TLD），库内 VND 覆盖从 0→1 卖家。
+- **ueepa（已接入，上轮 `e663b03`）**：巴西 BRL 首币种，392 行三价。
+- **indoglobal（否决）**：IDR 已有 idwebhost/rumahweb 438 TLD 覆盖，仅净增 tel/xxx 两 TLD，不值得接入。
+- **mi.com.co（否决）**：哥伦比亚 COP 价表 434 行，但 .co 家族仅 .nom.co、edu.co/gov.co 空白，价格以千分位点格式混排，差异价值低。
+- **拉美/东南亚批探测（`lat-am-probe.ts` 全 FAIL）**：registry.mx、neubox、donweb-mx、nic.cl、nic.ec、thnic、dot.ph、srsv.net.sg 经 anti-bot 全部 60s 超时（nic 注册局/本地注册商对聚合反爬通道响应慢）；直连也多为 JS 壳（nic-mx 14KB/3tr）、404（nic.cl/thnic URL 失效）、403（dot.ph）、SPA（pananames）。结论：拉美/东南亚本地注册商经反爬通道命中率低，维持候选池，未来优先试直连 + 本地化路径。
+- 币种现状：DB 23 币种，拉美 MXN/ARS/CLP/COP 与东南亚 THB/PHP/SGD 仍空白，待可用源解锁。
