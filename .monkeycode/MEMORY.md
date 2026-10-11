@@ -182,3 +182,47 @@ Entries discovered by the Agent during task execution should follow this format:
 - Instructions:
   - adapter-sdk `validatePrices`（packages/adapter-sdk/validation.ts）把 register/renew/transfer/restore 中 `<= 0.5` 的价格视为「占位未公布」置 null。但 transferPrice 的 0 是注册商明确的「免费转移」报价（OVH 对 209 个 TLD、istanco 对 rs 提供免费转入），2026-10-10 已改为 `field !== "transferPrice"` 时才对 <=0.5 置空——全库 106 家适配器里 transfer=0 仅 ovhcloud/istanco 两家出现，无副作用。
   - 排查「源有价但 DB 缺」先跑 `scripts/tmp-audit/parse-vs-db.ts`（对比 62 家缺价注册商的 DB 三价 vs 实时 parse 增量）；多数缺价（register4less/vsys/imena 无续费列、stardomain/muumuu/value-domain 移管列标「-」、dynadot uk/co.uk tr_price="--"）是源设计，非解析漏采。
+
+[Project Knowledge Summary]
+- Date: 2026-10-10
+- Context: Discovered by Agent while 完善自动更新链路 + 本地全量补采
+- Category: Operations & Deployment
+- Instructions:
+  - **生产 cron 吞吐瓶颈**：`/api/cron/crawl` 每日 scheduleAll 全量入队后 drainQueue 受 `budgetMs=270_000`（serverless 300s 上限）限制每轮只采 ~20 家；priority-50 项每日新入队永远插队，priority-100 项（09-27 起）长期 pending 饿死。88 家中 24 家因此从未入队成功采集。解决：本地全量补采（scripts/recrawl-browser-registrars.ts --all 直连 runCrawlWithSdk 不经队列），已用后台终端跑每日调度循环（scripts/local-sync-scheduler.sh）。
+  - **卡死 running 项阻塞队列**：serverless 中途崩溃会留永久 `crawl_queue.status='running'` 项，dequeue 只认 pending/retrying，卡死项永不回收（曾有 6 个，最早 09-30）。已新增 `recoverStaleRunning()`（packages/scheduler），drainQueue 每轮首循环恢复 running>30min 的项（attempts 退避重入队或置 failed）。
+  - **render-table-adapter 鉴权缺失 bug**：adapters/shared/render-table-adapter.ts 的 renderHtml 只带 Content-Type/Accept 无 `Authorization: Bearer`，本地 worker 鉴权后 julyname/59cn/zwcn 全返回「未授权」。已补 token 头，三家恢复采集（616/107/42 TLD）。
+  - **recrawl-browser-registrars.ts 语义**：无参=20 家 playwright；`--all`=全部激活注册商；指定 slug=精确采集（无论策略类型，html/api 直连、playwright 走本地 8841）。注意空数组 only 过滤 BUG（`only=[]` 为 truthy 会筛掉全部），用 `onlyRaw?.length>0` 判空。
+  - **crawl_jobs/crawl_queue 审计**：`registrars.health`、`crawlJobs.status`、`crawl_queue.status` 三处状态各不同，排查先 `crawl_queue`（入队情况）→ `crawl_jobs`（执行成败）→ `prices.updated_at`（数据新鲜度）。全量刷新脚本：`scripts/recrawl-browser-registrars.ts --all`，约 88 家 30-60 分钟。
+
+[Project Knowledge Summary]
+- Date: 2026-10-10
+- Context: Discovered by Agent while 恢复远端 playwright 链路（用户指出 BROWSER_SERVICE_URL 已提供）
+- Category: Operations & Deployment
+- Instructions:
+  - **两套 BROWSER_SERVICE 链路勿混淆**：SDK 的 `BROWSER_SERVICE_URL` 必须是 HTTP 端点（`POST ${URL}/render` + Bearer）；用户提供的 `wss://pachong.china.tn` 是给 browser-worker 的 `REMOTE_PLAYWRIGHT_URL`（worker 内 `chromium.connect()` 连远端），二者不同变量。`BROWSER_SERVICE_URL=http://127.0.0.1:8840`（worker 转发远端）+ token `dev-local-remote-pw-worker-token-0123456789abcdef`；本地 chromium 备用 worker 在 8841。
+  - **远端 playwright 可用性**：`wss://pachong.china.tn` + Bearer `b79b8155af569e66f29afd077a669ea89956aed95a22a89b`，服务端 playwright 1.62.1。connect 必须 `NODE_TLS_REJECT_UNAUTHORIZED=0`（自签名证书，playwright 的 chromium.connect 不认 Node 层 env，须在 worker 进程环境设）；客户端 playwright 版本必须与服务端精确一致否则 428。
+  - **worker 长时间运行退化**：8841 本地 chromium 健康检查正常但 render 卡死（example.com goto 60s 超时），8840 远端连接同样会随实例老化失效——重启即恢复（`background_terminal_kill` 旧实例释放端口再重建）。本地补采已切到 8840 远端，julyname 渲染从本地 99-145s 降到 8s。
+   - **local-sync 自愈**：`scripts/local-sync.sh` 每轮先 curl health 探测 8840，挂了用 nohup 带 `REMOTE_PLAYWRIGHT_URL/TOKEN + NODE_TLS_REJECT_UNAUTHORIZED=0` 重启 worker，再跑全量补采。
+
+[Project Knowledge Summary]
+- Date: 2026-10-10
+- Context: Discovered by Agent while 实现 SearXNG 官方促销码自动采集 + 促销码丢失根因定位
+- Category: Operations & Deployment
+- Instructions:
+  - **SearXNG 端点**：`https://paqu.china.tn/search?q=<query>&format=json`，Bearer `f2382174db20592e328a9611cd8850207fa2fa7d37db2bb3`，实测 HTTP 200；但**间歇性限流**——连续查询后任意 query 返回 0 条（含 query=test），冷却 ~10s 恢复，脚本需 3 次重试 + 查询间 6s 冷却。`site:www.name.com` 会 0 条，须剥 `www.` 前缀用裸域（`site:name.com` 才 20 条）。
+  - **collect-promo-codes.ts 促销码采集脚本**：SearXNG `site:<host> promo code OR promos OR deals OR coupons` 找官方促销页 → 8840 渲染 → 正则提取"use code X / promo code X / with code X"（先 `replace(/<[^>]+>/g," ")` 剥 HTML 标签再匹配，否则跨标签匹配失败）→ 过滤噪音（全大写强制 + NOISE 词表）→ 落库为**对象数组** `[{code}]` 合并去重（jsonb_agg(DISTINCT)）。通用码映射该注册商全部 TLD 行；首码作主码 `(x #>> '{}')`。搜索失败 fallback 常见路径 `/promos /promocodes /promo /deals /offers /domain/sales /sales /special-offers /promotions`。有效源：namecom /promocodes 提取 SAVE15/NEWHOME/1006ETE6；spaceship/dynadot/porkbun 的码不在渲染文本中（JS 交互），采集盲区。
+  - **促销码丢失根因（919→42）**：全量补采走 storage sink，适配器 parse 返回的 price 不含 promoCode 时 `next.promoCodes=null`，`codesEqual` 判定不等 → 价格若有变化即 UPDATE 覆盖清空既有 promo_code。促销码脚本 SQL 直写绕过 storage，**必须在全量补采之后运行**（local-sync.sh 已如此编排），否则被下一轮补采清空。
+  - **worker 必须 npm start（node --experimental-strip-types）**：再次用 `npx tsx src/server.ts` 启动 8840 导致 /render 全部 `__name is not defined`（页面端 evaluate 用不了 tsx 宿主），重启必须用 `npm start`（REMOTE_PLAYWRIGHT_URL/TOKEN + NODE_TLS_REJECT_UNAUTHORIZED=0）。local-sync.sh 自愈已强化为 render_ok() 探活（health + 真实 render example.com），不只查 health。
+  - **promo_codes 列结构**：必须对象数组 `[{code,promotionPrice?,promotionEndsAt?,sourceUrl?}]`（storage 读取 `c.code`），纯字符串数组 `["X"]` 会导致 storage 读到 undefined 且结构脏；迁移 SQL `jsonb_agg(DISTINCT CASE WHEN jsonb_typeof(x)='string' THEN jsonb_build_object('code',x) ELSE x END)` 归一化。
+  - **promo_code 主码提取坑**：从对象数组取主码必须 `x->>'code'`（取对象的 code 字段），不能用 `x #>> '{}'`（对对象返回整串 JSON 如 `{"code":"during"}` 写进 text 列）。曾致 spaceship 465 行 promo_code=`{"code":"during"}` 污染，已清理。
+   - **SearXNG 降级(2026-10-10)**：服务端后端引擎对多数 query 返回 0 条（query=test 只 1 条、site:name.com 0 条），非限流可等——促销码采集退化为仅 fallback 路径（/promos /promocodes /promo 前 3 个），只对 namecom 这类固定促销页有效。SearXNG 恢复前全量促销码采集低收益，勿空转。
+
+[Project Knowledge Summary]
+- Date: 2026-10-11
+- Context: Discovered by Agent while 扩展非洲/小型注册商覆盖
+- Category: Troubleshooting & Debugging
+- Instructions:
+  - **TLD 含点正则坑**：适配器提取 TLD 的捕获组若用 `([a-z0-9-]{2,24})`（不含点），`co.za`/`org.za` 等二级后缀国别域名永远匹配失败（`.co.za` 的 `co` 后是 `.za` 不是 `</dt>`）。必须允许点：`([a-z0-9][a-z0-9.-]{1,23})`。afrihost 因此曾只入库 101 个单段 TLD 漏掉全部 za 系，修复后 108 条。
+  - **afrihost.ts（南非,id=2005）**：`https://www.afrihost.com/za/domains`，ZAR，结构 `<dt>.tld</dt><dd><span class="formatted-price"> R197.<span>00`，R 前可有空格；只采注册价单列（页面 JSON 三价顺序歧义不采）。
+  - **whogohost.ts（尼日利亚,id=2110）**：`https://whogohost.com/domains/domain-pricing`，NGN 三价，结构 `<tr><td>.tld</td><td>₦reg</td><td>₦renew</td><td>₦transfer</td>`，443 TLD。
+  - **非洲 ccTLD 覆盖(2026-10-11)**：53 个非洲 ccTLD 中 36 个有报价；er/sz/gh/gn/lr/mz/za/zw/eh 的裸 ccTLD 在 tlds 表无记录（注册局实际只开二级如 co.za/com.gh，属合理缺失）。co.za 21 家/ng 20 家/mu 25 家/ke 14 家卖家，非洲主要国别域名覆盖已充分。东非小商（habari.co.tz/xneelo/kenyawebexperts）多为 SPA 需 JS 渲染，静态价目表稀缺，投入产出低暂缓。
