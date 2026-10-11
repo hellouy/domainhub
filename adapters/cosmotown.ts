@@ -6,7 +6,8 @@
  * 源: https://cosmotown.com/pricing (AngularJS 客户端渲染, 裸 HTML 无价表)
  * 表头: TLD | Registration | Renewal | Transfer
  * 行(渲染后): <tr ng-repeat=...><td>.com</td><td>$8.59</td><td>$11.35</td><td>$11.35</td></tr>
- * 币种 USD。因依赖 JS, 首选 html 策略(供未来 SSR), 失败降级 playwright 渲染后解析。
+ * 币种 USD。策略链: html(SSR 兜底) → anti-bot(聚合反爬渲染, 2026-10-11 验证 249 行三价全齐,
+ *   替代 playwright 依赖本地 worker) → playwright(最后兜底)。
  * 验证: ~250 TLD, .com 注册 $8.59 / 续费 $11.35。
  */
 
@@ -59,6 +60,12 @@ export const cosmotownAdapter = defineAdapter({
     {
       type: "html",
       url: URL,
+      parse: parseCosmotown,
+    },
+    {
+      type: "anti-bot",
+      url: URL,
+      antiBot: { keyword: "Registration" },
       parse: parseCosmotown,
     },
     {

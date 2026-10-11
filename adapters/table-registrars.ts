@@ -241,6 +241,7 @@ export const namesiloAdapter = createTableAdapter({
   columnOrder: ["register", "renew", "transfer"],
   owner: "Data Team",
   browser: { waitFor: "table", waitForTimeoutMs: 30_000 },
+  antiBot: { keyword: "TLD" },
 })
 
 export const truehostAdapter = createTableAdapter({
