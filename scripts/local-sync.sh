@@ -11,6 +11,8 @@ export BROWSER_SERVICE_URL="http://127.0.0.1:8840"
 export BROWSER_SERVICE_TOKEN="dev-local-remote-pw-worker-token-0123456789abcdef"
 export SEARXNG_BASE_URL=$(grep "^SEARXNG_BASE_URL=" .env.local | head -1 | cut -d= -f2- | tr -d '"')
 export SEARXNG_TOKEN=$(grep "^SEARXNG_TOKEN=" .env.local | head -1 | cut -d= -f2- | tr -d '"')
+export CRAWL_SERVICE_URL=$(grep "^CRAWL_SERVICE_URL=" .env.local | head -1 | cut -d= -f2- | tr -d '"')
+export CRAWL_SERVICE_TOKEN=$(grep "^CRAWL_SERVICE_TOKEN=" .env.local | head -1 | cut -d= -f2- | tr -d '"')
 
 LOG=logs/local-sync.log
 mkdir -p logs

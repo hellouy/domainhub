@@ -109,7 +109,7 @@ export class BaseAdapter {
     const first = this.definition.strategies[0]
     const info: DiscoveryInfo = {
       detectedStrategy: first?.type,
-      jsRequired: this.strategyPriority.includes("playwright"),
+      jsRequired: this.strategyPriority.includes("playwright") || this.strategyPriority.includes("anti-bot"),
       authRequired: this.strategyPriority.includes("private-api"),
     }
     for (const s of this.definition.strategies) {

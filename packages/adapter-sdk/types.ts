@@ -29,6 +29,7 @@ export type StrategyType =
   | "xml" // XML 数据源
   | "rss" // RSS 订阅
   | "playwright" // 无头浏览器（最后手段，需专用运行环境）
+  | "anti-bot" // 聚合反爬抓取服务（FlareSolverr + Browserless，自动降级）
 
 /** 单个策略的执行记录（写入 metrics 与日志） */
 export interface StrategyAttempt {
@@ -363,6 +364,20 @@ export interface BrowserStrategyOptions {
 }
 
 /**
+ * anti-bot（聚合反爬抓取服务）策略的附加选项。
+ * 采集时由 SDK 将请求转发到按 CRAWL_SERVICE_URL 配置的聚合服务
+ * （FlareSolverr 反爬代理 + Browserless 无头浏览器 + Crawlee 抓取库统一封装）。
+ * 服务端先走 FlareSolverr 轻量抓取，失败或 keyword 校验不匹配时自动降级到
+ * Browserless 渲染，返回最终 HTML 与 used_mode 标识。
+ */
+export interface AntiBotStrategyOptions {
+  /** 内容校验关键字：服务端在 crawl 模式下校验 HTML 是否含该关键字，不匹配则自动转 browser 渲染 */
+  keyword?: string
+  /** 请求超时毫秒，默认 90_000（聚合服务本身含多重降级，耗时长） */
+  timeoutMs?: number
+}
+
+/**
  * 单个数据源策略的实现。
  * fetch 拿原始数据，parse 转成 RawPrice[]。
  * parse 省略时由 Parser 平台自动选择解析器。
@@ -377,6 +392,8 @@ export interface StrategyDefinition {
   parse?: (raw: string, ctx: AdapterContext) => Promise<RawPrice[]> | RawPrice[]
   /** playwright 策略的浏览器渲染选项（仅 type=playwright 时生效） */
   browser?: BrowserStrategyOptions
+  /** anti-bot 策略的聚合抓取选项（仅 type=anti-bot 时生效） */
+  antiBot?: AntiBotStrategyOptions
 }
 
 /** defineAdapter() 的配置对象 —— 新增注册商只需要写这一个对象 */

@@ -11,6 +11,9 @@
  *        .bw(博茨瓦纳) .sn(塞内加尔) .so(索马里) .sl(塞拉利昂) 及 gTLD。
  * 价格 "€ 34.98"; Transfer=€ 0 表示免费转入。货币 EUR。
  * 注(2026-10-11): 该页 recaptcha 只用于提交表单, 价目表 DOM 直接返回可采。
+ * 限流(2026-10-11): 源对匿名高频请求间歇限流(偶发返回空/截断响应导致解析 0 行)。
+ *   新增 anti-bot 聚合通道降级策略(FlareSolverr + Browserless 自动降级)兜底,
+ *   直连失败时自动改走聚合反爬服务, keyword=biz.ss 校验内容完整性。
  */
 
 import { defineAdapter, type RawPrice } from "@/packages/adapter-sdk"
@@ -41,6 +44,39 @@ function parseEURAllowZero(v: string): number | null {
   return Number.isFinite(n) && n >= 0 ? Math.round(n * 100) / 100 : null
 }
 
+/** 解析价目表 HTML → RawPrice[]（html 直连与 anti-bot 聚合通道共用） */
+function parseAfriregister(raw: string): RawPrice[] {
+  const out: RawPrice[] = []
+  const seen = new Set<string>()
+  const tbl = raw.match(/<table[\s\S]*?<\/table>/i)
+  const scope = tbl ? tbl[0] : raw
+  const rows = scope.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) ?? []
+  for (const tr of rows) {
+    if (/<th[ >]/i.test(tr)) continue
+    const cells = tr.match(/<t[dh][^>]*>[\s\S]*?<\/t[dh]>/gi) ?? []
+    if (cells.length < 5) continue
+    const tld = (cells[0] ?? "")
+      .replace(/<[^>]+>/g, "")
+      .replace(/[^a-z0-9.-]/gi, "")
+      .trim()
+      .toLowerCase()
+      .replace(/^\./, "")
+    if (!tld || !/^[a-z0-9][a-z0-9.-]*$/.test(tld) || seen.has(tld)) continue
+    const reg = parseEUR(cells[2])
+    const tra = parseEURAllowZero(cells[3])
+    const ren = parseEUR(cells[4])
+    if (reg == null && ren == null && tra == null) continue
+    const price: RawPrice = { tld, currency: "EUR", sourceUrl: URL }
+    if (reg != null) price.registerPrice = reg
+    if (ren != null) price.renewPrice = ren
+    if (tra != null) price.transferPrice = tra
+    seen.add(tld)
+    out.push(price)
+  }
+  if (out.length < 50) throw new Error(`Afriregister 解析行数异常: ${out.length}(页面结构可能已变化)`)
+  return out
+}
+
 export const afriregisterAdapter = defineAdapter({
   slug: "afriregister",
   name: "Afriregister",
@@ -69,35 +105,15 @@ export const afriregisterAdapter = defineAdapter({
         })
       },
       parse(raw: string): RawPrice[] {
-        const out: RawPrice[] = []
-        const seen = new Set<string>()
-        const tbl = raw.match(/<table[\s\S]*?<\/table>/i)
-        const scope = tbl ? tbl[0] : raw
-        const rows = scope.match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) ?? []
-        for (const tr of rows) {
-          if (/<th[ >]/i.test(tr)) continue
-          const cells = tr.match(/<t[dh][^>]*>[\s\S]*?<\/t[dh]>/gi) ?? []
-          if (cells.length < 5) continue
-          const tld = (cells[0] ?? "")
-            .replace(/<[^>]+>/g, "")
-            .replace(/[^a-z0-9.-]/gi, "")
-            .trim()
-            .toLowerCase()
-            .replace(/^\./, "")
-          if (!tld || !/^[a-z0-9][a-z0-9.-]*$/.test(tld) || seen.has(tld)) continue
-          const reg = parseEUR(cells[2])
-          const tra = parseEURAllowZero(cells[3])
-          const ren = parseEUR(cells[4])
-          if (reg == null && ren == null && tra == null) continue
-          const price: RawPrice = { tld, currency: "EUR", sourceUrl: URL }
-          if (reg != null) price.registerPrice = reg
-          if (ren != null) price.renewPrice = ren
-          if (tra != null) price.transferPrice = tra
-          seen.add(tld)
-          out.push(price)
-        }
-        if (out.length < 50) throw new Error(`Afriregister 解析行数异常: ${out.length}(页面结构可能已变化)`)
-        return out
+        return parseAfriregister(raw)
+      },
+    },
+    {
+      type: "anti-bot",
+      url: URL,
+      antiBot: { keyword: "biz.ss" },
+      parse(raw: string): RawPrice[] {
+        return parseAfriregister(raw)
       },
     },
   ],

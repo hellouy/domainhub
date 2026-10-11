@@ -41,6 +41,10 @@ async function defaultFetch(def: StrategyDefinition, ctx: AdapterContext): Promi
 const BROWSER_SERVICE_URL = process.env.BROWSER_SERVICE_URL ?? ""
 const BROWSER_SERVICE_TOKEN = process.env.BROWSER_SERVICE_TOKEN ?? ""
 
+/** 聚合反爬抓取服务地址（FlareSolverr + Browserless + Crawlee 封装）；未配置时 anti-bot 策略直接降级 */
+const CRAWL_SERVICE_URL = process.env.CRAWL_SERVICE_URL ?? ""
+const CRAWL_SERVICE_TOKEN = process.env.CRAWL_SERVICE_TOKEN ?? ""
+
 /**
  * playwright 策略的浏览器 fetch：
  * 把渲染任务转发给浏览器服务（BROWSER_SERVICE_URL），服务端用 Playwright 打开页面、
@@ -100,6 +104,45 @@ async function browserStrategyFetch(def: StrategyDefinition, ctx: AdapterContext
   return JSON.stringify(data.extracted ?? [])
 }
 
+/**
+ * anti-bot 策略的聚合抓取 fetch：
+ * 把抓取任务转发给聚合反爬服务（CRAWL_SERVICE_URL，FlareSolverr + Browserless + Crawlee）。
+ * 服务端 /api/auto 先走 FlareSolverr 轻量抓取，失败或 keyword 校验不匹配时自动降级到
+ * Browserless 渲染，返回最终 HTML（used_mode 标识走了哪条通道）。
+ * 该服务聚合了反爬绕过能力，适合 html 直连被 Cloudflare/验证码拦截的静态价目表页。
+ */
+async function antiBotStrategyFetch(def: StrategyDefinition, ctx: AdapterContext): Promise<string> {
+  if (!CRAWL_SERVICE_URL || !CRAWL_SERVICE_TOKEN) {
+    throw new Error("anti-bot 策略需要配置 CRAWL_SERVICE_URL 和 CRAWL_SERVICE_TOKEN")
+  }
+  const opts = def.antiBot ?? {}
+  const res = await ctx.fetch(`${CRAWL_SERVICE_URL}/api/auto`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      "x-api-key": CRAWL_SERVICE_TOKEN,
+    },
+    body: JSON.stringify({
+      url: def.url,
+      keyword: opts.keyword ?? null,
+    }),
+    signal: AbortSignal.timeout(opts.timeoutMs ?? 90_000),
+  })
+  if (!res.ok) throw new Error(`聚合抓取服务返回 HTTP ${res.status}`)
+  const data = (await res.json()) as {
+    url?: string
+    html?: string
+    used_mode?: string
+    error?: string
+  }
+  if (typeof data.html !== "string" || data.html.length === 0) {
+    throw new Error(data.error ?? "聚合抓取服务未返回 html")
+  }
+  await ctx.log("info", `聚合抓取服务 used_mode=${data.used_mode ?? "?"}，${data.html.length} 字节`)
+  return data.html
+}
+
 /** 默认 parse：Parser 平台自动识别格式，要求数据已是 RawPrice 形状 */
 function defaultParse(raw: string): RawPrice[] {
   const { format, data } = autoParse(raw)
@@ -141,7 +184,9 @@ export async function executeStrategies(
         ? await def.fetch(ctx)
         : def.type === "playwright"
           ? await browserStrategyFetch(def, ctx)
-          : await defaultFetch(def, ctx)
+          : def.type === "anti-bot"
+            ? await antiBotStrategyFetch(def, ctx)
+            : await defaultFetch(def, ctx)
       const downloadMs = Date.now() - fetchStarted
 
       const parseStarted = Date.now()
