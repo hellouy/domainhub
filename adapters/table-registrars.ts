@@ -62,8 +62,12 @@ export const loopiaAdapter = createTableAdapter({
   website: "https://www.loopia.se",
   currency: "SEK",
   numberFormat: "eu",
-  urls: ["https://www.loopia.se/domannamn/detaljerad_prislista/"],
-  columnOrder: ["register", "renew", "transfer"],
+  urls: ["https://www.loopia.se/domannamn/"],
+  // 表头: Domäntyp | Stödjer ÅÄÖ | Första året | Förnyelse | Beställ
+  // 第2列是勾选图标(空文本), 价格单元格内嵌 without_tax/with_tax 双 span, 文本如 "9 11,25 kr"
+  columnOrder: ["skip", "register", "renew", "skip"],
+  capabilities: { registration: true, renewal: true, transfer: false, supportedCurrencies: ["SEK"] },
+  rowFilter: (cells) => /^\.[a-z0-9]/i.test((cells[0] ?? "").trim()),
 })
 
 export const domeneshopAdapter = createTableAdapter({

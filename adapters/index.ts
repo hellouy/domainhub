@@ -115,6 +115,8 @@ import { alldomainsUzAdapter } from "./alldomains-uz"
 import { rumahwebAdapter } from "./rumahweb"
 import { cosmotownAdapter } from "./cosmotown"
 import { pavietnamAdapter } from "./pavietnam"
+import { mileswebAdapter } from "./milesweb"
+import { hostripplesAdapter } from "./hostripples"
 import { ueepaAdapter } from "./ueepa"
 import { cpiAdapter } from "./cpi"
 import { active24Adapter } from "./active24"
@@ -223,6 +225,8 @@ export const allAdapters = [
   cosmotownAdapter,
   ueepaAdapter,
   pavietnamAdapter,
+  mileswebAdapter,
+  hostripplesAdapter,
   // 第六批: 修复失效 URL + 新增 CNDNS(2026-10-07)
   cndnsAdapter,
   // 第七批: 类别分组价表新增 CPI(JPY, 2026-10-07)

@@ -66,7 +66,6 @@ export const krystalAdapter = defineAdapter({
     {
       type: "html",
       url: URL,
-      headers: { "User-Agent": "Mozilla/5.0 Chrome/120", "Accept-Language": "en-GB,en;q=0.9" },
       parse(raw: string): RawPrice[] {
         return parseKrystal(raw)
       },

@@ -1,8 +1,8 @@
 # 注册商候选采集池（Backlog）
 
-> 所有权: Data Team · 最近核查: 2026-09-28
+> 所有权: Data Team · 最近核查: 2026-10-11
 >
-> 用途: 记录已系统性探测但尚未入适配器的注册商，标注"解锁条件"，供联网检索/凭据恢复后按优先级补采。已入适配器且在采的注册商见 `adapters/index.ts`（当前 32 active / 19 inactive）。
+> 用途: 记录已系统性探测但尚未入适配器的注册商，标注"解锁条件"，供联网检索/凭据恢复后按优先级补采。已入适配器且在采的注册商见 `adapters/index.ts`（115 个注册商 / 95 active / 20 inactive）。
 >
 > 状态图例补充:
 > - `❌ 无公开源` — 系统性探测后确认无游标外的公开价格源（登录门控 SPA / 需凭据接口），按平台规范不逆向，直接降级，勿重复试探。
@@ -37,7 +37,7 @@
 | transip | transip | 数百 | 🏗 结构漂移 | /domein-registreren/ 表解析空（JS 渲染） | 需逆向定价 XHR |
 | registercom | registercom | 数百 | 🏗 结构漂移 | /domains/domain-pricing 404 | 需新 URL |
 | metaname | metaname | 中小 | 🏗 结构漂移 | /pricing 404 | 需新 URL |
-| loopia | loopia | 中小 | 🏗 结构漂移 | loopia.se/domain/ 404 | 需新 URL |
+| loopia | loopia | 中小 | ✅ 已入采 | 已修(2026-10-11): URL→/domannamn/(domäntyp/check/år/nyelse 4列), eu 数字格式 + skip 三列映射, without_tax span 文本 "9 11,25 kr"→9 | 已采 47（SEK, register+renew, transfer:false） |
 | domeneshop | domeneshop | 中小 | 🏗 结构漂移 | domene.shop/priser 404 | 需新 URL |
 | netcup | netcup | 中小 | 🏗 结构漂移 | netcup.com/en/domain 404 | 需新 URL |
 | lws | lws | 数百 | 🛡 反爬 | lws.fr/nom-de-domaine.php 403 | 需绕过 Cloudflare（不稳定） |
@@ -50,6 +50,7 @@
 | juming (聚名) | juming | 数百 | ✅ 已入采 | 已修：加 playwright waitForTimeoutMs+scrollToBottom 兜底 | 已采 119（CNY） |
 | westcn | westcn | 118 | ✅ 已入采 v2.0.0 | 已修：自定义 script 精确定位 El-popover 各列（reg/renew/transfer） | 已采 118（reg/renew/transfer 全对，CNY） |
 | ukrnames | ukrnames | 471 | ✅ 已入采 | createTableAdapter 标准 `<tr>/<td>` 表（UA 本地价格，UAH） | 已采 471（register/renew/transfer/restore，UAH） |
+| hostripples | hostripples | 24 | ✅ 已入采 v1.0.0 | 新增(2026-10-11): /domain-registration.php 表格 5 列(extension/popular/genre/1st/yr), TLD 列 `<th scope="row">`+`<span>.biz</span>` 需在 skip 前按空格拆分取前段, UA 直连 | 已采 24（INR, register+renew, transfer:false） |
 | idwebhost | idwebhost | 243 | ✅ 已入采 | `<option data-hs-select-option='{...}'>` 内嵌 JSON | 已采 243（register only，IDR） |
 | keliweb | keliweb | 668 | ✅ 已入采 | `<li data-val data-p>` 中 data-p=年续费价，`<del>€X</del> €Y`：X=续费、Y=促销注册价；无 del=单值沿用双列。2026-09-28 源验证后修正（.com 12.72/15.90，.it 促销年免 null/12.90） | 已采 668（EUR，直连偶 303 stub，需浏览器重试） |
 | jagoanhosting | jagoanhosting | 194 | ❌ 已否决 | 194 行 TLD 但 151 行解析失败（每 TLD 结构变化） | 结构不稳定，接入价值低 |
@@ -296,3 +297,31 @@ ICANN 407 候选分四批探测（标准路径多为 404，须试本地化/产�
 - **mi.com.co（否决）**：哥伦比亚 COP 价表 434 行，但 .co 家族仅 .nom.co、edu.co/gov.co 空白，价格以千分位点格式混排，差异价值低。
 - **拉美/东南亚批探测（`lat-am-probe.ts` 全 FAIL）**：registry.mx、neubox、donweb-mx、nic.cl、nic.ec、thnic、dot.ph、srsv.net.sg 经 anti-bot 全部 60s 超时（nic 注册局/本地注册商对聚合反爬通道响应慢）；直连也多为 JS 壳（nic-mx 14KB/3tr）、404（nic.cl/thnic URL 失效）、403（dot.ph）、SPA（pananames）。结论：拉美/东南亚本地注册商经反爬通道命中率低，维持候选池，未来优先试直连 + 本地化路径。
 - 币种现状：DB 23 币种，拉美 MXN/ARS/CLP/COP 与东南亚 THB/PHP/SGD 仍空白，待可用源解锁。
+
+### 2026-10-11 第三镜：印度批 + 未激活修复（commit 未提交，工作区）
+
+背景：用户提供 45 家区域注册商清单（欧洲 14 / 亚洲中东 10 / 美洲 8 / 非洲 7 / 大洋洲 6），要求"重新查看未激活原因→再试→同步爬取"。
+
+**新增接入 1 家**：
+- **hostripples（INR）**：`hostripples.in/domain-registration.php` 静态表 5 列，UA 直连 323KB/25 行 → 24 TLD（register+renew，transfer 无列）。TLD 单元格为 `<th scope="row">` 内嵌 `<span>.biz</span>`+`Popular` 标签，解析需先按空格取前段。适配器 `adapters/hostripples.ts`，DB id 新增，recrawl `tlds=24 upd=24` 全命中。
+
+**修复激活 1 家**：
+- **loopia（SEK）**：候选池记录的 /domain/ 404 已解死——新 URL `loopia.se/domannamn/`（200/48tr）。表格 `Domäntyp|Stödjer|Första året|Förnyelse|Beställ`，价格单元格内嵌 `without_tax/with_tax` 双 span（文本 "9 11,25 kr"→eu 解析 9）。columnOrder 改为 `["skip","register","renew","skip"]`，capabilities transfer:false。DB is_active 置 true，recrawl `tlds=47 upd=47`。
+
+**渲染通道状态（本会话实测）**：
+- anti-bot 聚合服务（43.133.72.184:8090）**间歇超时**：pavietnam/afriregister 等已有适配器 sync 正常，但新源探测 20+ 次全 60s 超时 → 通道对"新域名"命中率低。
+- 远端 playwright（wss://pachong.china.tn）**连接超时**：browser-worker `chromiumAvailable:false`，/render 502 "Target page closed"，node chromium.connect 12000ms 超时 → 外部服务失效。
+- 结论：本轮新源探测实际只有**直连静态 HTML** 通道可靠。
+
+**未激活 21 家最终分类（2026-10-11）**：
+| 类型 | 注册商 | 处置 |
+|------|--------|------|
+| ✅ 已修复激活 | loopia | 新 URL + 列重映射，47 TLD SEO |
+| 🔒 需凭证（人工） | godaddy/netim/infomaniak/resellerclub/enom | API Key/代理商 ID，见 credentials.md |
+| 🏗 结构漂移仅剩直连 404/403 | hover/registercom/internetbs/transip/amen/netcup/onecom/eurodns/lws/metaname/domeneshop/aruba | 渲染通道恢复后需重建或逆向后端 |
+| ⬜ 壳条目（无 adapter/version） | aliyun/123reg/alibabacloud/uk2/ionos/webnic/enom | 从未有 adapter，等同候选池 |
+| ❄ 网络不可达 | milesweb（.in 域本会话 4 探全超时，仅 09-31 UTC 一次成功） | html 适配器已建未激活 |
+
+**45 家新清单 vs DB 重叠**：17 家已在库（13 active：joker/active24/forpsi/domeneshop/aruba/onamae/pavietnam/rumahweb/exabytes/rebel/hostafrica/truehost/metaname），4 家未激活（loopia 已激活、netim/infomaniak/eurodns 需凭证）；28 家需新建但当前通道限制下直连可采仅 hostripples 1 家。
+
+**其余新源探测结论（均暂不入）**：nazwa（功能对比表非价目）、simply/webnic/akky（SPA 无静态价）、matbao/hostripples 旧 URL 404（hostripples 已用 php 页接入）、z-com/qwords/wedos/zone-ee/onen-ka/hostinger-lt/core 等 404/SPA、webnames/donweb/marcaria/crazy-domains 403、whois-ai/hostgator-br/godaddy fetch failed。brazil（hostgator-br/rebel.ca）均需本地税号/身份门槛。
