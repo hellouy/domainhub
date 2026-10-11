@@ -40,10 +40,17 @@ fi
 echo "--- 恢复卡死 running 队列项 ---" >> "$LOG"
 npx tsx -e "import { recoverStaleRunning } from '@/packages/scheduler'; recoverStaleRunning(30*60*1000).then(n => console.log('恢复:', n)).catch(e => console.error(e.message))" >> "$LOG" 2>&1 || true
 
-# 全量采集: 所有激活注册商(playwright + 直连), 每轮 88 家约 30-60 分钟
-npx tsx scripts/recrawl-browser-registrars.ts --all >> "$LOG" 2>&1 || echo "补采失败: $?" >> "$LOG"
+# 全量采集: 所有激活注册商(playwright + 直连), 每轮 88 家约 30-60 分钟; timeout 防挂起阻塞调度循环
+timeout 7200 npx tsx scripts/recrawl-browser-registrars.ts --all >> "$LOG" 2>&1 || echo "补采失败: $?" >> "$LOG"
+
+# 兜底补采: 全量轮之后仍有过期(>7 天)的注册商(某轮采集静默失败等), 立即定向重试
+STALE_SLUGS=$(npx tsx scripts/list-stale-slugs.ts 2>/dev/null | tail -1 || true)
+if [ -n "$STALE_SLUGS" ]; then
+  echo "--- 兜底补采过期注册商: $STALE_SLUGS ---" >> "$LOG"
+  timeout 3600 npx tsx scripts/recrawl-browser-registrars.ts $STALE_SLUGS >> "$LOG" 2>&1 || echo "兜底补采失败: $?" >> "$LOG"
+fi
 
 # 促销码采集: SearXNG 发现官方促销页 + 远端 playwright 渲染提取, 全量补采后执行
 echo "--- 促销码采集(SearXNG) ---" >> "$LOG"
-npx tsx scripts/collect-promo-codes.ts >> "$LOG" 2>&1 || echo "促销码采集失败: $?" >> "$LOG"
+timeout 3600 npx tsx scripts/collect-promo-codes.ts >> "$LOG" 2>&1 || echo "促销码采集失败: $?" >> "$LOG"
 echo "==== $(date '+%F %T') 补采结束 ====" >> "$LOG"

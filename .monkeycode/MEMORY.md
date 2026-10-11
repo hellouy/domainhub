@@ -226,3 +226,14 @@ Entries discovered by the Agent during task execution should follow this format:
   - **afrihost.ts（南非,id=2005）**：`https://www.afrihost.com/za/domains`，ZAR，结构 `<dt>.tld</dt><dd><span class="formatted-price"> R197.<span>00`，R 前可有空格；只采注册价单列（页面 JSON 三价顺序歧义不采）。
   - **whogohost.ts（尼日利亚,id=2110）**：`https://whogohost.com/domains/domain-pricing`，NGN 三价，结构 `<tr><td>.tld</td><td>₦reg</td><td>₦renew</td><td>₦transfer</td>`，443 TLD。
   - **非洲 ccTLD 覆盖(2026-10-11)**：53 个非洲 ccTLD 中 36 个有报价；er/sz/gh/gn/lr/mz/za/zw/eh 的裸 ccTLD 在 tlds 表无记录（注册局实际只开二级如 co.za/com.gh，属合理缺失）。co.za 21 家/ng 20 家/mu 25 家/ke 14 家卖家，非洲主要国别域名覆盖已充分。东非小商（habari.co.tz/xneelo/kenyawebexperts）多为 SPA 需 JS 渲染，静态价目表稀缺，投入产出低暂缓。
+
+[Project Knowledge Summary]
+- Date: 2026-10-11
+- Context: Discovered by Agent while 补齐转移价缺口 + 建立定期更新机制
+- Category: Operations & Deployment
+- Instructions:
+  - **转移价缺口摸底结论(2026-10-11)**：转移价 23738→24733 行(67%→70%)。已补：easyspace 525(改 defineAdapter 解析 "Domain Transfer In Costs" 表，含 26 个 £0 免费转入)、rebel 470(API 的 Bo 字段=转移价，Rebel 全部免费转移=0)。spaceship 代码已改(API 加 "transfer" priceType + 修正 parse 字段名 register/renew/transfer/promo——旧代码 transfer 槽被 promo 复用且字段名错位)但 Cloudflare 拦截 BFF 待环境恢复后验证。源本身无转移价(勿再排查)：netzone/domaincostclub/whc/rumahweb/aruba/metaname/osir/muumuu-domain；forpsi 转移 tab 需 JS 渲染暂缓。
+  - **parsePrice 对 <=0 返回 null**：table-adapter 的 parsePrice 把 £0(免费转移)当无效值丢弃；需要免费转移语义时在适配器内对原始文本单独判断(`/0/.test(text.replace(/[^0-9]/g,""))` → 0)。adapter-sdk validation 已区分 transfer=0(免费转入合法)与其它价 <=0.5(占位置 null)。
+  - **storage skip 刷新 updated_at(2026-10-11)**：之前价格一致就 continue 导致 updated_at 停留在上次价格变化(15 家"过期"实为价格无变化)。已改为 skip 时也 `UPDATE SET updated_at=now()`——updated_at 语义变为"最近检查时间"。已验证 dreamhost 补采后更新到当天。
+  - **local-sync.sh 兜底补采**：全量轮后跑 scripts/list-stale-slugs.ts(打印 >7 天过期 slug 单行)非空则定向重试；全量/兜底/促销采集均加 timeout(7200/3600/3600)防挂起阻塞调度循环。曾发生第一轮 local-sync.sh 在 recrawl 中途静默死亡(日志无错误、进程消失)而调度循环干等 86400s 的事故——重启调度循环恢复。
+  - **SearXNG 仍降级(2026-10-11)**：site:name.com promo code 仍 0 条，促销码扩采继续被阻塞；调度器每日自动重试 + fallback 固定路径兜底，恢复后无需人工干预。

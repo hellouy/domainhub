@@ -157,7 +157,7 @@ export async function createPriceSink(registrarId: number): Promise<{
           ? JSON.stringify(prev.promoCodes) === JSON.stringify(next.promoCodes)
           : prev?.promoCodes === next.promoCodes
 
-      // compare：价格、币种与促销信息完全一致则跳过
+      // compare：价格、币种与促销信息完全一致则跳过（仅刷新 updated_at 表示最近检查时间）
       if (
         prev &&
         prev.registerPrice === next.registerPrice &&
@@ -171,6 +171,10 @@ export async function createPriceSink(registrarId: number): Promise<{
         (prev.promotionEndsAt?.toISOString() ?? null) ===
           (next.promotionEndsAt?.toISOString() ?? null)
       ) {
+        await db
+          .update(prices)
+          .set({ updatedAt: new Date() })
+          .where(and(eq(prices.registrarId, registrarId), eq(prices.tldId, tldId)))
         skipped++
         continue
       }
