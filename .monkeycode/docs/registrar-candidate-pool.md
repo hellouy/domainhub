@@ -257,3 +257,21 @@ ICANN 407 候选分四批探测（标准路径多为 404，须试本地化/产�
 
 ### 反爬壳源对策
 同 URL 状态不稳时，重试 3-4 次取最大响应体（`/tmp/opencode/vw/retry-shells.mjs`）；pavietnam 首次即用此法拿回。
+
+## 2026-10-11 用户提供新源：afriregister + 候选评估（commit `34b2296`）
+
+用户主动提供两个非洲多国 ccTLD 注册商，作为"非 IANA/主流名单之外的小型区域注册商"代表。均已探明：
+
+- **afriregister.com（已接入，`adapters/afriregister.ts` v1.0.0）**
+  - 源：`https://www.afriregister.com/checkavailableforregister.php`，静态 12 列 HTML 表（`<td class="col-md-2">`），单次 GET 全量。
+  - 列序：TLD|Min.Years|Register|Transfer|Renew|（后列省略），`€` 前缀，`data-tra` 值 0=免费转账（54 个 TLD）。
+  - 覆盖 140 个非洲 ccTLD：.ss/.bi/.bf/.bj/.ml/.ci/.cd/.sd/.ne/.td/.tz/.ke/.ug/.rw/.mz/.mw/.et/.bw/.sn/.so/.sl 及 com.bf/co.ug/biz.ss 等二级域 —— **.ss 库内仅 3 家，本源为稀缺覆盖**。
+  - 三价 100% 齐全、EUR；recaptcha 仅挡表单提交，不挡价目表 GET → 无渲染直连策略。
+  - DB：registrars id=2146 + sync capabilities v1.0.0；recrawl `tlds=140 upd=140`（首次瞬时空响应，重跑恢复——afriregister 间歇匿名）。
+  - 注意：afriregister 属**多国站点**，co.ke/co.ug 等二级域在其他国家站点可能有独立价目，未来扩量可查。
+
+- **001.africa（不接入）**：WHMCS 架构（cart.php?a=add&domain=register），Cloudflare 挡直连，域名价仅搜索后返回（CFA/EUR/NGN 多币），无静态价目表。登录/搜索交互型 SPA → 按平台规范不入库。
+
+- **其他本轮探测（均否决）**：xneelo.co.za 32 TLD 仅注册/续费两价、无转移列、城市 TLD(capetown/joburg/durban) 已有 17-18 卖家 → 低差异化；webnic.cc 促销页非完整价表；hostafrica(spa)/easydomain(CF 403)/son大量 404/000。web 检索余额不足，无法系统扩候选池。
+
+结论：用户提供新源 → 探测 → 命中即接入的流程再次验证有效（afriregister 140 行全命中）。此类"区域性多 ccTLD 注册商"是库外覆盖的好补充，后续扩量优先找同类（巴西/印度/东南亚本地注册商）。
