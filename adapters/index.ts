@@ -40,7 +40,6 @@ internetbsAdapter,
   registercomAdapter,
   transipAdapter,
   xserverAdapter,
-  valueDomainAdapter,
   muumuuDomainAdapter,
   directnicAdapter,
   dreamhostAdapter,
@@ -91,7 +90,8 @@ import { mchostAdapter } from "./mchost"
 import { hostafricaAdapter } from "./hostafrica"
 import { afrihostAdapter } from "./afrihost"
 import { whogohostAdapter } from "./whogohost"
-import { afriregisterAdapter } from "./afriregister"
+import { afriregisterAdapter } from "./afriregister";
+import { valuedomainAdapter as valueDomainAdapter } from "./value-domain"
 import { ultahostAdapter } from "./ultahost"
 import { iwantmynameAdapter } from "./iwantmyname"
 import { gnameAdapter } from "./gname"
