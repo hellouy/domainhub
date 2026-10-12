@@ -54,7 +54,7 @@ async function searxSearch(host: string): Promise<string[]> {
     try {
       const res = await fetch(url, {
         headers: SEARXNG_TOKEN ? { Authorization: `Bearer ${SEARXNG_TOKEN}` } : {},
-        signal: AbortSignal.timeout(40_000),
+        signal: AbortSignal.timeout(15_000),
       })
       if (!res.ok) continue
       const data = (await res.json()) as { results?: Array<{ url: string }> }
@@ -67,55 +67,109 @@ async function searxSearch(host: string): Promise<string[]> {
   return []
 }
 
-async function renderPage(url: string): Promise<string> {
-  const res = await fetch(`${BROWSER_URL}/render`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      ...(BROWSER_TOKEN ? { Authorization: `Bearer ${BROWSER_TOKEN}` } : {}),
-    },
-    body: JSON.stringify({ url, extract: "html", scrollToBottom: true, waitForTimeoutMs: 12_000 }),
-    signal: AbortSignal.timeout(90_000),
-  })
-  if (!res.ok) return ""
-  const data = (await res.json()) as { ok?: boolean; html?: string; error?: string }
-  if (!data.ok || !data.html) return ""
-  return data.html
+async function renderPage(url: string, timeoutMs = 35_000): Promise<string> {
+  try {
+    const res = await fetch(`${BROWSER_URL}/render`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        ...(BROWSER_TOKEN ? { Authorization: `Bearer ${BROWSER_TOKEN}` } : {}),
+      },
+      body: JSON.stringify({ url, extract: "html", scrollToBottom: true, waitForTimeoutMs: 12_000 }),
+      signal: AbortSignal.timeout(timeoutMs),
+    })
+    if (!res.ok) return ""
+    const data = (await res.json()) as { ok?: boolean; html?: string; error?: string }
+    if (!data.ok || !data.html) return ""
+    return data.html
+  } catch {
+    return ""
+  }
 }
 
-/** anti-bot 聚合服务二次兜底: playwright 渲染失败(Cloudflare/超时)时走 FlareSolverr 通道。
- *  该服务间歇性拒连(工作数次后断开), 需多轮退避重试 */
+/** worker /health 门控: 远端 playwright 挂掉时 /health 会挂起, 5s 内不响应则跳过 worker 渲染 */
+let workerHealthCheckedAt = 0
+let workerHealthy = true
+
+async function isWorkerHealthy(): Promise<boolean> {
+  if (Date.now() - workerHealthCheckedAt < 60_000) return workerHealthy
+  workerHealthCheckedAt = Date.now()
+  try {
+    const res = await fetch(`${BROWSER_URL}/health`, { signal: AbortSignal.timeout(5_000) })
+    if (!res.ok) { workerHealthy = false; return false }
+    const data = (await res.json()) as { chromiumAvailable?: boolean }
+    // chromiumAvailable=false 表示远端 playwright 断连, 渲染必然失败, 应跳过 worker
+    workerHealthy = data.chromiumAvailable === true
+  } catch {
+    workerHealthy = false
+  }
+  return workerHealthy
+}
+
+/** anti-bot 熔断器 + 限流: 服务限流 30 次/分, 每分钟 crontab 自愈,
+ *  连续失败后短暂停用(90s)对齐自愈周期, 避免每条路径空耗 */
+let abConsecutiveFails = 0
+let abDisabledUntil = 0
+const abCallTimes: number[] = []
+
 async function renderViaAntiBot(url: string): Promise<string> {
   if (!CRAWL_SERVICE_URL || !CRAWL_SERVICE_TOKEN) return ""
-  for (let attempt = 0; attempt < 3; attempt++) {
-    if (attempt > 0) await new Promise((r) => setTimeout(r, 20_000 * attempt))
-    try {
-      const res = await fetch(`${CRAWL_SERVICE_URL}/api/auto`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Accept: "application/json",
-          "x-api-key": CRAWL_SERVICE_TOKEN,
-        },
-        body: JSON.stringify({ url, keyword: null }),
-        signal: AbortSignal.timeout(120_000),
-      })
-      if (!res.ok) continue
-      const data = (await res.json()) as { html?: string; used_mode?: string }
-      if (typeof data.html === "string" && data.html) return data.html
-    } catch {
-      /* 拒连/超时, 退避后重试 */
-    }
+  if (Date.now() < abDisabledUntil) return ""
+  // 限流: 保留 5 次余量, 每分钟最多 25 次
+  const now = Date.now()
+  while (abCallTimes.length > 0 && now - abCallTimes[0] > 60_000) abCallTimes.shift()
+  if (abCallTimes.length >= 25) {
+    const wait = 60_000 - (now - abCallTimes[0]) + 500
+    if (wait > 0) await new Promise((r) => setTimeout(r, wait))
   }
-  return ""
+  abCallTimes.push(Date.now())
+  try {
+    const res = await fetch(`${CRAWL_SERVICE_URL}/api/auto`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "x-api-key": CRAWL_SERVICE_TOKEN,
+      },
+      body: JSON.stringify({ url, keyword: null }),
+      signal: AbortSignal.timeout(45_000),
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = (await res.json()) as { html?: string; used_mode?: string }
+    if (typeof data.html !== "string" || !data.html) throw new Error("empty html")
+    abConsecutiveFails = 0
+    return data.html
+  } catch {
+    abConsecutiveFails++
+    if (abConsecutiveFails >= 3) {
+      abDisabledUntil = Date.now() + 90_000
+      console.log(`  [anti-bot] 连续 ${abConsecutiveFails} 次失败, 熔断 90s(对齐自愈周期)`)
+    }
+    return ""
+  }
 }
 
-/** 渲染带兜底: worker 失败时走 anti-bot */
+/** 渲染带兜底: worker 失败或拿到 Cloudflare 挑战页时走 anti-bot。
+ *  注意: worker 渲染 CF 挑战页也算"成功"(ok:true + 挑战页 HTML), 必须按特征识别后降级 */
+const CF_CHALLENGE_SIGNS = ["just a moment", "attention required", "cf-chl", "challenge-platform", "cf-please-wait", "checking your browser"]
+
+function looksLikeChallenge(html: string): boolean {
+  if (html.length > 200_000) return false // 真实促销页内容量大, 挑战页都很小
+  const lower = html.toLowerCase()
+  return CF_CHALLENGE_SIGNS.some((s) => lower.includes(s))
+}
+
 async function renderWithFallback(url: string): Promise<string> {
-  const html = await renderPage(url)
-  if (html) return html
-  return renderViaAntiBot(url)
+  // worker 健康门控: 远端 playwright 挂掉时 /health 会挂起, 检测到不可用直接跳 worker 走 anti-bot
+  let html = ""
+  if (await isWorkerHealthy()) {
+    html = await renderPage(url)
+    if (html && !looksLikeChallenge(html)) return html
+  }
+  const viaAb = await renderViaAntiBot(url)
+  if (viaAb && !looksLikeChallenge(viaAb)) return viaAb
+  return ""
 }
 
 /** 从 HTML 提取真实促销码(带动作词上下文) */
@@ -165,6 +219,10 @@ async function main() {
   let withCodes = 0
   const COMMON_PROMO_PATHS = ["/promos", "/promocodes", "/promo", "/deals", "/offers", "/domain/sales", "/sales", "/special-offers", "/promotions"]
   for (const r of targets) {
+    const regStart = Date.now()
+    // 单家硬性上限 4 分钟: 避免单家卡死拖垮整轮(9 路径 × 最坏 ~25s)
+    const REG_DEADLINE = 4 * 60_000
+    const underDeadline = () => Date.now() - regStart < REG_DEADLINE
     try {
       const base = r.website?.replace(/\/$/, "") ?? ""
       const host = base.replace(/^https?:\/\//, "").replace(/\/.*$/, "").replace(/^www\./, "")
@@ -172,6 +230,7 @@ async function main() {
       await new Promise((res) => setTimeout(res, 6_000)) // SearXNG 限流冷却
       let codes: string[] = []
       for (const u of urls.slice(0, 3)) {
+        if (!underDeadline()) break
         const html = await renderWithFallback(u)
         if (!html) continue
         codes = extractCodes(html)
@@ -179,6 +238,7 @@ async function main() {
       }
       if (codes.length === 0) {
         for (const p of COMMON_PROMO_PATHS) {
+          if (!underDeadline()) break
           const html = await renderWithFallback(`${base}${p}`)
           if (!html) continue
           codes = extractCodes(html)
@@ -188,9 +248,9 @@ async function main() {
       if (codes.length > 0) {
         const updated = await persistCodes(r.id, r.slug, codes)
         withCodes++
-        console.log(`OK   ${r.slug.padEnd(16)} codes=[${codes.join(",")}] 落库=${updated} 行 (来源: ${urls[0] ?? "-"})`)
+        console.log(`OK   ${r.slug.padEnd(16)} codes=[${codes.join(",")}] 落库=${updated} 行 (${((Date.now()-regStart)/1000).toFixed(0)}s)`)
       } else {
-        console.log(`SKIP ${r.slug.padEnd(16)} 未找到官方促销码(搜索 ${urls.length} 个 URL)`)
+        console.log(`SKIP ${r.slug.padEnd(16)} 未找到官方促销码(${((Date.now()-regStart)/1000).toFixed(0)}s)`)
       }
     } catch (e: any) {
       console.log(`FAIL ${r.slug.padEnd(16)} ${e.message.slice(0, 100)}`)
