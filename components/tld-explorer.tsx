@@ -2,104 +2,72 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
-import useSWR from "swr"
-import { ArrowUpRight, Check, Copy, ExternalLink, Search, Ticket, X } from "lucide-react"
+import { Check, ChevronRight, Copy, ExternalLink, Search, Ticket, X } from "lucide-react"
 import { convertAmount } from "@/lib/format"
 import { getActivePromotionPrice } from "@/lib/promotion"
 import { cn, normalizeUrl, withRegistrarReferral } from "@/lib/utils"
 import { useCurrency, useLocale } from "@/components/providers"
 import type { DictKey } from "@/lib/i18n"
+import type { TldBestQuote } from "@/lib/db/queries"
 
-export type ExplorerTld = {
-  tld: string
-  type: string
-  isPopular: boolean
-  minRegister: string | null
-  registrarCount: number
-}
-
-type ApiPrice = {
-  registrar: string
-  registrarName: string
-  currency: string
-  registerPrice: number | null
-  renewPrice: number | null
-  transferPrice: number | null
-  promotionPrice: number | null
-  promoCode: string | null
-  promotionEndsAt: string | null
-  sourceUrl: string | null
-}
+export type ExplorerTld = TldBestQuote
 
 /** 优惠码与促销同生命周期：促销已过期则不再展示优惠码 */
-function activePromoCode(p: ApiPrice) {
-  const code = p.promoCode?.trim()
+function activePromoCode(q: ExplorerTld) {
+  const code = q.promoCode?.trim()
   if (!code) return null
-  if (p.promotionEndsAt != null) {
-    const end = new Date(p.promotionEndsAt).getTime()
+  if (q.promotionEndsAt != null) {
+    const end = new Date(q.promotionEndsAt).getTime()
     if (!Number.isFinite(end) || end < Date.now()) return null
   }
   return code
 }
 
-function formatEndDate(value: string | null) {
-  if (!value) return null
-  const d = new Date(value)
-  if (!Number.isFinite(d.getTime())) return null
-  return `${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+/** 与服务端选取最低价的 SQL 同口径：生效中的促销价优先 */
+function effectiveRegister(q: ExplorerTld) {
+  const promo = getActivePromotionPrice(q.registerPrice, q.promotionPrice, q.promotionEndsAt)
+  const value = promo ?? q.registerPrice
+  return { value: value == null ? null : Number(value), isPromo: promo != null }
 }
 
-function CouponChip({
-  code,
-  copied,
-  onCopy,
-  copyLabel,
-  copiedLabel,
-}: {
-  code: string
-  copied: boolean
-  onCopy: () => void
-  copyLabel: string
-  copiedLabel: string
-}) {
+function CouponChip({ code }: { code: string }) {
+  const { t } = useLocale()
+  const [copied, setCopied] = useState(false)
+
+  async function copy() {
+    try {
+      await navigator.clipboard.writeText(code)
+      setCopied(true)
+      window.setTimeout(() => setCopied(false), 1800)
+    } catch {
+      setCopied(false)
+    }
+  }
+
   return (
     <button
       type="button"
-      onClick={onCopy}
-      aria-label={`${copyLabel} ${code}`}
+      onClick={() => void copy()}
+      aria-label={`${t("deals.copyCode")} ${code}`}
       className={cn(
-        "group inline-flex min-h-8 max-w-full items-center gap-1.5 border border-dashed px-2 py-1 font-mono text-xs font-semibold transition-colors",
+        "relative z-10 inline-flex h-7 max-w-full items-center gap-1.5 border border-dashed px-2 font-mono text-xs font-semibold transition-colors",
         copied
           ? "border-primary bg-primary text-primary-foreground"
-          : "border-primary/60 bg-primary/5 text-primary hover:bg-primary/10",
+          : "border-primary bg-primary/10 text-primary hover:bg-primary/20",
       )}
     >
       <Ticket aria-hidden="true" className="size-3.5 shrink-0" />
       <span className="truncate tracking-wide">{code}</span>
-      <span aria-hidden="true" className="h-3.5 w-px shrink-0 bg-current opacity-30" />
       {copied ? (
-        <span className="flex shrink-0 items-center gap-0.5 font-sans text-[11px] font-medium">
-          <Check aria-hidden="true" className="size-3" />
-          {copiedLabel}
-        </span>
+        <Check aria-hidden="true" className="size-3.5 shrink-0" />
       ) : (
-        <Copy aria-hidden="true" className="size-3 shrink-0 opacity-70 group-hover:opacity-100" />
+        <Copy aria-hidden="true" className="size-3 shrink-0 opacity-70" />
       )}
       <span className="sr-only" aria-live="polite">
-        {copied ? copiedLabel : ""}
+        {copied ? t("deals.copied") : ""}
       </span>
     </button>
   )
-}
-
-/** 与卡片最低价（getTldsWithMinPrice）同口径：生效中的促销价优先 */
-function effectiveRegister(p: ApiPrice) {
-  const promo = getActivePromotionPrice(
-    p.registerPrice == null ? null : String(p.registerPrice),
-    p.promotionPrice == null ? null : String(p.promotionPrice),
-    p.promotionEndsAt,
-  )
-  return { value: promo != null ? Number(promo) : p.registerPrice, isPromo: promo != null }
 }
 
 const TYPE_TABS: { key: string; labelKey: DictKey }[] = [
@@ -110,226 +78,139 @@ const TYPE_TABS: { key: string; labelKey: DictKey }[] = [
   { key: "newG", labelKey: "explorer.tab.newg" },
 ]
 
-const PAGE_SIZE = 48
+const PAGE_SIZE = 30
 
-/** 排序用 USD 折算：非促销的 < $1 占位价沉底；生效中的促销价正常参与排序（与卡片最低价一致） */
-function toUsdSort(p: ApiPrice, rates: Record<string, number> | null) {
-  const { value, isPromo } = effectiveRegister(p)
-  if (value == null) return Number.POSITIVE_INFINITY
-  const usd = convertAmount(value, p.currency, "USD", rates)
-  return usd < 1 && !isPromo ? usd + 100000 : usd
-}
-
-const fetcher = (url: string) => fetch(url).then((r) => r.json())
-
-/** 展开面板：就地加载该后缀的最低报价，无需跳页 */
-function PricePanel({ tld, onClose }: { tld: string; onClose: () => void }) {
+function QuoteRow({ q }: { q: ExplorerTld }) {
   const { t } = useLocale()
-  const { money, rates } = useCurrency()
-  const [copiedKey, setCopiedKey] = useState<string | null>(null)
-
-  async function copyCode(key: string, code: string) {
-    try {
-      await navigator.clipboard.writeText(code)
-      setCopiedKey(key)
-      window.setTimeout(() => setCopiedKey((k) => (k === key ? null : k)), 1800)
-    } catch {
-      setCopiedKey(null)
-    }
-  }
-
-  const { data, isLoading } = useSWR<{ data: ApiPrice[] }>(
-    `/api/v1/prices?tld=${encodeURIComponent(tld)}&limit=50`,
-    fetcher,
-    { revalidateOnFocus: false },
-  )
-  // 客户端按实时汇率折算 USD 升序，促销价与 null 沉底，取前 6
-  const rows = useMemo(() => {
-    const all = data?.data ?? []
-    return [...all]
-      .sort((a, b) => toUsdSort(a, rates) - toUsdSort(b, rates))
-      .slice(0, 6)
-  }, [data, rates])
+  const { money } = useCurrency()
+  const eff = effectiveRegister(q)
+  const code = activePromoCode(q)
+  const savingPct =
+    eff.isPromo && q.registerPrice && eff.value != null
+      ? Math.round((1 - eff.value / Number(q.registerPrice)) * 100)
+      : null
+  const buyUrl = withRegistrarReferral(normalizeUrl(q.sourceUrl), "home_tld_list")
+  const hasDeal = eff.isPromo || code != null
 
   return (
-    <div className="col-span-full border border-primary/40 bg-card">
-      <div className="flex items-center justify-between border-b border-border px-4 py-3">
-        <h3 className="font-mono text-base font-semibold">
-          .{tld}{" "}
-          <span className="ml-1 text-xs font-normal text-muted-foreground">{t("explorer.panel.lowest")}</span>
-        </h3>
-        <div className="flex items-center gap-3">
-          <Link
-            href={`/tld/${tld}`}
-            className="flex items-center gap-1 text-xs font-medium text-primary hover:underline"
-          >
-            {t("explorer.panel.full")}
-            <ArrowUpRight aria-hidden="true" className="size-3.5" />
-          </Link>
-          <button
-            type="button"
-            onClick={onClose}
-            aria-label={t("explorer.panel.close")}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <X aria-hidden="true" className="size-4" />
-          </button>
-        </div>
+    <li className="group relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-3 py-3 transition-colors hover:bg-accent md:grid-cols-[8rem_10rem_minmax(0,1fr)_9rem_6rem_2.75rem] md:gap-x-4 md:px-4">
+      {/* 后缀 + 注册商（移动端两行） */}
+      <div className="flex min-w-0 flex-col gap-0.5 md:contents">
+        <Link
+          href={`/tld/${q.tld}`}
+          className="font-mono text-base font-semibold after:absolute after:inset-0 after:content-[''] md:text-lg"
+        >
+          .{q.tld}
+        </Link>
+        <span className="truncate text-xs text-muted-foreground md:hidden">
+          {q.registrarName ?? "—"} · {q.registrarCount} {t("explorer.registrars")}
+        </span>
       </div>
 
-      {isLoading ? (
-        <div className="flex flex-col gap-2 p-4" aria-busy="true" aria-label={t("explorer.panel.loading")}>
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="h-9 animate-pulse bg-secondary" />
-          ))}
-        </div>
-      ) : rows.length === 0 ? (
-        <p className="p-4 text-sm text-muted-foreground">{t("explorer.panel.noData")}</p>
-      ) : (
-        <ul className="flex flex-col">
-          {rows.map((r, i) => {
-            const eff = effectiveRegister(r)
-            const code = activePromoCode(r)
-            const hasDeal = eff.isPromo || code != null
-            const savingPct =
-              eff.isPromo && r.registerPrice && eff.value != null
-                ? Math.round((1 - eff.value / r.registerPrice) * 100)
-                : null
-            const endDate = hasDeal ? formatEndDate(r.promotionEndsAt) : null
-            return (
-            <li
-              key={r.registrar}
-              className={cn(
-                "grid grid-cols-[1.25rem_minmax(0,1fr)_auto_2.75rem] items-start gap-2 border-b border-border px-2 py-3 last:border-b-0 sm:px-4",
-                hasDeal && "bg-primary/[0.03]",
-              )}
-            >
-              <span
-                className={cn(
-                  "w-5 shrink-0 pt-0.5 font-mono text-xs",
-                  i === 0 ? "font-bold text-primary" : "text-muted-foreground",
-                )}
-              >
-                {i + 1}
+      {/* 价格：唯一的视觉重点 */}
+      <div className="flex flex-col items-end md:order-none md:items-start">
+        <span
+          className={cn(
+            "font-mono text-lg font-bold tabular-nums leading-tight",
+            hasDeal ? "text-primary" : "text-foreground",
+          )}
+        >
+          {eff.isPromo && <span className="sr-only">{t("promo.label")} </span>}
+          {eff.value != null ? money(eff.value, q.currency ?? "USD") : "—"}
+        </span>
+        {eff.isPromo && (
+          <span className="flex items-center gap-1 text-xs text-muted-foreground">
+            <span className="sr-only">{t("deals.regularPrice")} </span>
+            <s className="font-mono tabular-nums">{money(q.registerPrice, q.currency ?? "USD")}</s>
+            {savingPct != null && savingPct > 0 && (
+              <span className="bg-primary px-1 font-mono text-[10px] font-semibold leading-4 text-primary-foreground">
+                -{savingPct}%
               </span>
-              <div className="flex min-w-0 flex-col items-start gap-1.5">
-                <Link
-                  href={`/registrars/${r.registrar}`}
-                  className="max-w-full truncate text-sm font-medium hover:text-primary"
-                >
-                  {r.registrarName}
-                </Link>
-                {code && (
-                  <CouponChip
-                    code={code}
-                    copied={copiedKey === r.registrar}
-                    onCopy={() => void copyCode(r.registrar, code)}
-                    copyLabel={t("deals.copyCode")}
-                    copiedLabel={t("deals.copied")}
-                  />
-                )}
-                {endDate && (
-                  <span className="text-[11px] text-muted-foreground">
-                    {t("promo.ends")} {endDate}
-                  </span>
-                )}
-              </div>
-              <span className="flex shrink-0 flex-col items-end gap-0.5">
-                {eff.isPromo && (
-                  <span className="flex items-center gap-1 text-[11px] text-muted-foreground">
-                    <span className="sr-only">{t("deals.regularPrice")} </span>
-                    <s className="font-mono tabular-nums">{money(r.registerPrice, r.currency)}</s>
-                    {savingPct != null && savingPct > 0 && (
-                      <span className="bg-primary px-1 font-mono text-[10px] font-semibold leading-4 text-primary-foreground">
-                        -{savingPct}%
-                      </span>
-                    )}
-                  </span>
-                )}
-                <span
-                  className={cn(
-                    "font-mono text-base font-semibold tabular-nums",
-                    (i === 0 || eff.isPromo) && "text-primary",
-                  )}
-                >
-                  {eff.isPromo && <span className="sr-only">{t("promo.label")} </span>}
-                  {money(eff.value, r.currency)}
-                </span>
-                {code && !eff.isPromo && (
-                  <span className="max-w-32 text-right text-[10px] leading-tight text-muted-foreground">
-                    {t("deals.codeOnlyPrice")}
-                  </span>
-                )}
-                <span className="text-[11px] text-muted-foreground">
-                  {t("explorer.panel.renew")} {money(r.renewPrice, r.currency)}
-                </span>
-              </span>
-              {withRegistrarReferral(normalizeUrl(r.sourceUrl), "tld_price_panel") ? (
-                <a
-                  href={withRegistrarReferral(normalizeUrl(r.sourceUrl), "tld_price_panel")}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  aria-label={`${t("explorer.panel.visit")} ${r.registrarName}`}
-                  className="flex size-11 shrink-0 items-center justify-center text-muted-foreground hover:text-primary"
-                >
-                  <ExternalLink aria-hidden="true" className="size-3.5" />
-                </a>
-              ) : (
-                <ExternalLink aria-hidden="true" className="size-3.5 shrink-0 text-muted-foreground/30" />
-              )}
-            </li>
-            )
-          })}
-        </ul>
-      )}
-    </div>
+            )}
+          </span>
+        )}
+      </div>
+
+      {/* 桌面端：注册商列 */}
+      <span className="hidden min-w-0 flex-col md:flex">
+        <span className="truncate text-sm font-medium">{q.registrarName ?? "—"}</span>
+        <span className="text-xs text-muted-foreground">
+          {q.registrarCount} {t("explorer.registrars")}
+        </span>
+      </span>
+
+      {/* 优惠码：移动端独占一行，醒目可复制 */}
+      <div className={cn("col-span-2 md:col-span-1", !code && "hidden md:block")}>
+        {code ? <CouponChip code={code} /> : <span className="text-sm text-muted-foreground/50">—</span>}
+      </div>
+
+      {/* 桌面端：续费 + 去购买 */}
+      <span className="hidden font-mono text-sm tabular-nums text-muted-foreground md:block">
+        {q.renewPrice != null ? money(q.renewPrice, q.currency ?? "USD") : "—"}
+      </span>
+      <span className="hidden justify-end md:flex">
+        {buyUrl ? (
+          <a
+            href={buyUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={`${t("explorer.panel.visit")} ${q.registrarName ?? ""}`}
+            className="relative z-10 flex size-9 items-center justify-center text-muted-foreground hover:text-primary"
+          >
+            <ExternalLink aria-hidden="true" className="size-4" />
+          </a>
+        ) : (
+          <ChevronRight aria-hidden="true" className="size-4 text-muted-foreground" />
+        )}
+      </span>
+    </li>
   )
 }
 
 /**
- * TldExplorer —— 首页后缀浏览器。
- * 筛选 + 搜索 + 点击就地展开价格，一次点击看到报价，零页面跳转。
+ * TldExplorer —— 首页后缀比价列表。
+ * 一行一个后缀：最低首年价 + 注册商 + 优惠码，点击整行进入完整比价页。
  */
 export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
   const { t } = useLocale()
-  const { money } = useCurrency()
+  const { rates } = useCurrency()
   const [tab, setTab] = useState("popular")
+  const [sort, setSort] = useState<"popular" | "price">("popular")
   const [query, setQuery] = useState("")
-  const [expanded, setExpanded] = useState<string | null>(null)
   const [visible, setVisible] = useState(PAGE_SIZE)
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase().replace(/^\.+/, "")
     let list = tlds
     if (q) {
-      // 搜索优先级：前缀匹配 > 包含匹配
-      const starts = list.filter((t) => t.tld.startsWith(q))
-      const contains = list.filter((t) => !t.tld.startsWith(q) && t.tld.includes(q))
-      return [...starts, ...contains]
+      const starts = list.filter((x) => x.tld.startsWith(q))
+      const contains = list.filter((x) => !x.tld.startsWith(q) && x.tld.includes(q))
+      list = [...starts, ...contains]
+    } else if (tab === "popular") list = list.filter((x) => x.isPopular)
+    else if (tab !== "all") list = list.filter((x) => x.type === tab)
+
+    if (sort === "price") {
+      const usd = (x: ExplorerTld) => {
+        const v = effectiveRegister(x).value
+        return v == null ? Number.POSITIVE_INFINITY : convertAmount(v, x.currency ?? "USD", "USD", rates)
+      }
+      list = [...list].sort((a, b) => usd(a) - usd(b))
     }
-    if (tab === "popular") list = list.filter((t) => t.isPopular)
-    else if (tab !== "all") list = list.filter((t) => t.type === tab)
     return list
-  }, [tlds, tab, query])
+  }, [tlds, tab, sort, query, rates])
 
   const shown = filtered.slice(0, visible)
 
   function selectTab(key: string) {
     setTab(key)
     setQuery("")
-    setExpanded(null)
     setVisible(PAGE_SIZE)
   }
 
   return (
     <div className="flex flex-col gap-4">
-      {/* 筛选栏：移动端可横向滚动 */}
       <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
-        <div
-          role="tablist"
-          aria-label="后缀分类"
-          className="-mx-4 flex gap-1 overflow-x-auto px-4 md:mx-0 md:px-0"
-        >
+        <div role="tablist" aria-label="后缀分类" className="-mx-4 flex gap-1 overflow-x-auto px-4 md:mx-0 md:px-0">
           {TYPE_TABS.map((tabItem) => (
             <button
               key={tabItem.key}
@@ -355,7 +236,6 @@ export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
             value={query}
             onChange={(e) => {
               setQuery(e.target.value)
-              setExpanded(null)
               setVisible(PAGE_SIZE)
             }}
             placeholder={t("explorer.filter")}
@@ -375,39 +255,51 @@ export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
         </div>
       </div>
 
-      <p className="text-xs text-muted-foreground">
-        {filtered.length} {t("explorer.hint")}
-      </p>
-
-      {/* chip 网格：点击就地展开 */}
-      <div className="grid grid-cols-3 gap-1.5 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6">
-        {shown.map((t) => (
-          <div key={t.tld} className="contents">
+      <div className="flex items-center justify-between gap-3">
+        <p className="text-xs text-muted-foreground">
+          {filtered.length} {t("explorer.hint")}
+        </p>
+        <div className="flex shrink-0 border border-border text-xs" role="group" aria-label="排序">
+          {(["popular", "price"] as const).map((s) => (
             <button
+              key={s}
               type="button"
-              onClick={() => setExpanded(expanded === t.tld ? null : t.tld)}
-              aria-expanded={expanded === t.tld}
+              aria-pressed={sort === s}
+              onClick={() => setSort(s)}
               className={cn(
-                "flex flex-col gap-0.5 border px-2 py-1.5 text-left transition-colors md:px-3 md:py-2",
-                expanded === t.tld
-                  ? "border-primary bg-accent"
-                  : "border-border bg-card hover:border-primary hover:bg-accent",
+                "px-2.5 py-1 font-medium transition-colors",
+                sort === s ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground",
               )}
             >
-              <span className="truncate font-mono text-[13px] font-semibold md:text-sm">.{t.tld}</span>
-              <span className="truncate font-mono text-[11px] tabular-nums text-muted-foreground md:text-xs">
-                {t.minRegister != null ? money(t.minRegister, "USD") : "—"}
-              </span>
+              {t(s === "popular" ? "explorer.sort.popular" : "explorer.sort.price")}
             </button>
-            {expanded === t.tld && <PricePanel tld={t.tld} onClose={() => setExpanded(null)} />}
-          </div>
-        ))}
+          ))}
+        </div>
       </div>
 
-      {filtered.length === 0 && (
+      {filtered.length === 0 ? (
         <p className="border border-border bg-card p-8 text-center text-sm text-muted-foreground">
           {t("explorer.empty")}
         </p>
+      ) : (
+        <div className="border border-border bg-card">
+          <div
+            aria-hidden="true"
+            className="hidden grid-cols-[8rem_10rem_minmax(0,1fr)_9rem_6rem_2.75rem] gap-x-4 border-b border-border px-4 py-2 text-xs font-medium text-muted-foreground md:grid"
+          >
+            <span>{t("explorer.col.tld")}</span>
+            <span>{t("explorer.col.price")}</span>
+            <span>{t("explorer.col.registrar")}</span>
+            <span>{t("explorer.col.coupon")}</span>
+            <span>{t("explorer.col.renew")}</span>
+            <span />
+          </div>
+          <ul className="divide-y divide-border">
+            {shown.map((q) => (
+              <QuoteRow key={q.tld} q={q} />
+            ))}
+          </ul>
+        </div>
       )}
 
       {filtered.length > visible && (
