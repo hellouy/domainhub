@@ -5,8 +5,9 @@ import { PriceTable } from "@/components/price-table"
 import { Money } from "@/components/money"
 import { getActivePromotionPrice } from "@/lib/promotion"
 import { T, TldType, DataUpdated } from "@/components/i18n-text"
-import { getPricesForTld, getTldByName, getTldLastUpdated } from "@/lib/db/queries"
-import { getUsdRates, toUsd, type UsdRates } from "@/lib/fx"
+import { getPricesForTld, getTldByName, getTldLastUpdated, getTldsWithMinPrice } from "@/lib/db/queries"
+import { getUsdRates, type UsdRates } from "@/lib/fx"
+import { usablePriceUsd } from "@/lib/pricing"
 
 export const revalidate = 300
 
@@ -27,16 +28,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-/** 跨币种最低价:全部折算 USD 后比较,有效促销价可低于 $1。 */
+export async function generateStaticParams() {
+  const popular = await getTldsWithMinPrice(true)
+  return popular.slice(0, 60).map((t) => ({ tld: t.tld }))
+}
+
+/** 跨币种最低价:与首页、/tlds 共用 lib/pricing 的同一规则。 */
 function minUsdOf(
-  values: { value: string | null; currency: string; isPromotion?: boolean }[],
+  values: { value: string | null; currency: string; isPromotion?: boolean; rawRegister?: string | null }[],
   rates: UsdRates,
 ) {
   const nums = values
-    .filter((v): v is { value: string; currency: string; isPromotion?: boolean } => v.value != null)
-    .map((v) => ({ amount: toUsd(Number.parseFloat(v.value), v.currency, rates), isPromotion: v.isPromotion }))
-    .filter((v) => !Number.isNaN(v.amount) && (v.amount >= 1 || v.isPromotion))
-    .map((v) => v.amount)
+    .map((v) => usablePriceUsd(v.value, v.currency, rates, { isPromotion: v.isPromotion, rawRegister: v.rawRegister }))
+    .filter((v): v is number => v != null)
   return nums.length > 0 ? Math.min(...nums) : null
 }
 
@@ -58,6 +62,7 @@ export default async function TldPage({ params }: Props) {
         value: promotionPrice ?? p.registerPrice,
         currency: p.currency,
         isPromotion: promotionPrice !== null,
+        rawRegister: p.registerPrice,
       }
     }),
     rates,

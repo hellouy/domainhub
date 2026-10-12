@@ -185,80 +185,39 @@
   }
 }
 
-.navigation-feedback {
+.navigation-progress {
   position: fixed;
-  inset: 0;
-  z-index: 50;
-  display: grid;
-  place-items: center;
+  inset: 0 0 auto 0;
+  z-index: 60;
+  height: 2px;
   pointer-events: none;
-  opacity: 0;
-  visibility: hidden;
-  transition: opacity 160ms ease, visibility 160ms ease;
 }
 
-.navigation-feedback.is-visible {
-  opacity: 1;
-  visibility: visible;
-}
-
-.navigation-feedback__panel {
-  display: flex;
-  align-items: center;
-  gap: 0.875rem;
-  min-width: 12.5rem;
-  padding: 1rem 1.25rem;
-  border: 1px solid var(--border);
-  border-radius: 1rem;
-  background: var(--background);
-  box-shadow: 0 12px 40px color-mix(in srgb, var(--foreground) 12%, transparent);
-  animation: navigation-panel-in 180ms ease-out both;
-}
-
-.navigation-feedback__spinner {
+.navigation-progress__bar {
   display: block;
-  flex: none;
-  width: 1.75rem;
-  height: 1.75rem;
-  border: 2px solid var(--muted);
-  border-top-color: var(--primary);
-  border-radius: 50%;
-  animation: navigation-spin 760ms linear infinite;
+  height: 100%;
+  width: 0;
+  background: var(--primary);
+  opacity: 0;
 }
 
-.navigation-feedback__copy {
-  display: flex;
-  flex-direction: column;
-  gap: 0.125rem;
+.navigation-progress[data-state="loading"] .navigation-progress__bar {
+  opacity: 1;
+  animation: navigation-progress-grow 6s cubic-bezier(0.1, 0.7, 0.2, 1) forwards;
 }
 
-.navigation-feedback__label {
-  color: var(--foreground);
-  font-size: 0.875rem;
-  font-weight: 600;
-  line-height: 1.4;
+.navigation-progress[data-state="done"] .navigation-progress__bar {
+  width: 100%;
+  opacity: 0;
+  transition: width 120ms ease-out, opacity 200ms ease 80ms;
 }
 
-.navigation-feedback__hint {
-  color: var(--muted-foreground);
-  font-size: 0.75rem;
-  line-height: 1.4;
-}
-
-@keyframes navigation-spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-@keyframes navigation-panel-in {
+@keyframes navigation-progress-grow {
   from {
-    opacity: 0;
-    transform: translateY(4px) scale(0.98);
+    width: 0;
   }
   to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
+    width: 90%;
   }
 }
 
@@ -286,9 +245,7 @@
     transform: none;
   }
 
-  .navigation-feedback,
-  .navigation-feedback__panel,
-  .navigation-feedback__spinner,
+  .navigation-progress__bar,
   .deal-card-enter {
     animation: none;
     transition: none;

@@ -3,6 +3,7 @@ import { db } from "@/lib/db"
 import { crawlJobs, prices, registrars, tlds } from "@/lib/db/schema"
 import { computeRegistrarScore, type RegistrarScoreBreakdown } from "@/lib/registrar-score"
 import { getUsdRates } from "@/lib/fx"
+import { PLACEHOLDER_MAX } from "@/lib/pricing"
 import {
   seedActiveRegistrars,
   seedPricesForRegistrar,
@@ -59,17 +60,20 @@ export async function getStats(): Promise<StatsRow> {
  */
 async function usdEquivalentExpr(price: SQLWrapper = prices.registerPrice): Promise<SQL<string>> {
   const rates = await getUsdRates()
-  const currencies = ["EUR", "CHF", "GBP", "JPY", "SEK", "NOK", "NZD", "CAD", "CNY", "AUD", "HKD", "SGD"]
   const cases: SQL[] = []
-  for (const c of currencies) {
-    const r = rates[c]
-    if (r && r > 0) cases.push(sql`WHEN ${c} THEN ${sql.raw((1 / r).toFixed(6))}`)
+  for (const [c, r] of Object.entries(rates)) {
+    if (c === "USD" || !/^[A-Z]{3}$/.test(c) || !(r > 0)) continue
+    cases.push(sql`WHEN ${c} THEN ${sql.raw((1 / r).toPrecision(8))}`)
   }
+  // Unknown currencies must yield NULL, never be treated as USD (e.g. 1 NGN ≠ $1).
   return sql<string>`${price} * (CASE ${prices.currency}
   WHEN 'USD' THEN 1
   ${sql.join(cases, sql` `)}
-  ELSE 1 END)`
+  ELSE NULL END)`
 }
+
+/** Scraped "1.00" values are placeholders, not real prices; shared with lib/pricing.ts. */
+const notPlaceholder = (price: SQLWrapper) => sql`${price} > ${PLACEHOLDER_MAX}`
 
 /**
  * 全部后缀 + 每个后缀的最低注册价（实时汇率折算 USD，仅统计启用的注册商）。
@@ -98,7 +102,7 @@ export async function getTldsWithMinPrice(onlyPopular = false) {
           isPopular: tlds.isPopular,
           popularity: tlds.popularity,
           minRegister: min(
-            sql<string>`CASE WHEN ${usdEquivalent} >= 1 OR ${hasActivePromotion} THEN ${usdEquivalent} ELSE NULL END`,
+            sql<string>`CASE WHEN ${notPlaceholder(prices.registerPrice)} AND (${usdEquivalent} >= 1 OR ${hasActivePromotion}) THEN ${usdEquivalent} ELSE NULL END`,
           ),
           registrarCount: count(prices.id),
         })
@@ -184,7 +188,7 @@ export async function getTldsWithMinPrice(onlyPopular = false) {
   })
   .from(prices)
   .innerJoin(registrars, and(eq(registrars.id, prices.registrarId), eq(registrars.isActive, true)))
-  .where(sql`${effective} IS NOT NULL AND (${usd} >= 1 OR ${hasActivePromotion})`)
+  .where(sql`${usd} IS NOT NULL AND ${notPlaceholder(prices.registerPrice)} AND (${usd} >= 1 OR ${hasActivePromotion})`)
   .orderBy(prices.tldId, asc(usd))
   const byId = new Map(best.map((b) => [b.tldId, b]))
   return base.map((t, i) => {
