@@ -93,12 +93,12 @@ function QuoteRow({ q }: { q: ExplorerTld }) {
   const hasDeal = eff.isPromo || code != null
 
   return (
-    <li className="group relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-3 py-3 transition-colors hover:bg-accent md:grid-cols-[8rem_10rem_minmax(0,1fr)_9rem_6rem_2.75rem] md:gap-x-4 md:px-4">
+    <li className="tap-row group relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-3 py-3 transition-colors hover:bg-accent md:grid-cols-[8rem_10rem_minmax(0,1fr)_9rem_6rem_2.75rem] md:gap-x-4 md:px-4">
       {/* 后缀 + 注册商（移动端两行） */}
       <div className="flex min-w-0 flex-col gap-0.5 md:contents">
         <Link
           href={`/tld/${q.tld}`}
-          className="font-mono text-base font-semibold after:absolute after:inset-0 after:content-[''] md:text-lg"
+          className="tap-row__link font-mono text-base font-semibold after:absolute after:inset-0 after:content-[''] md:text-lg"
         >
           .{q.tld}
         </Link>

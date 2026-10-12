@@ -174,9 +174,32 @@
       box-shadow 160ms ease;
   }
 
+  :where(a, button, [role="button"], summary, label) {
+    touch-action: manipulation;
+  }
+
+  /* Press feedback must be instant; only the release eases out. */
   :where(a, button):active:not([aria-disabled="true"]):not(:disabled) {
-    opacity: 0.78;
-    transform: scale(0.98);
+    opacity: 0.7;
+    transform: scale(0.97);
+    transition-duration: 0ms;
+  }
+
+  /* Full-width rows shouldn't shrink — tint them instead. */
+  .tap-row {
+    transition: background-color 180ms ease;
+  }
+  .tap-row a.tap-row__link:active {
+    transform: none;
+    opacity: 1;
+  }
+  .tap-row:has(a.tap-row__link:active),
+  .tap-row:has(a.tap-row__link[data-pending="true"]) {
+    background-color: var(--accent);
+    transition-duration: 0ms;
+  }
+  .tap-row:has(a.tap-row__link[data-pending="true"]) .tap-row__link {
+    color: var(--primary);
   }
 
   :where(a, button):focus-visible {
@@ -189,7 +212,7 @@
   position: fixed;
   inset: 0 0 auto 0;
   z-index: 60;
-  height: 2px;
+  height: 3px;
   pointer-events: none;
 }
 
@@ -203,7 +226,7 @@
 
 .navigation-progress[data-state="loading"] .navigation-progress__bar {
   opacity: 1;
-  animation: navigation-progress-grow 6s cubic-bezier(0.1, 0.7, 0.2, 1) forwards;
+  animation: navigation-progress-grow 4s cubic-bezier(0.05, 0.8, 0.2, 1) forwards;
 }
 
 .navigation-progress[data-state="done"] .navigation-progress__bar {
@@ -214,10 +237,10 @@
 
 @keyframes navigation-progress-grow {
   from {
-    width: 0;
+    width: 30%;
   }
   to {
-    width: 90%;
+    width: 92%;
   }
 }
 

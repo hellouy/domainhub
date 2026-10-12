@@ -71,7 +71,7 @@ function MobilePromoStrip({ row }: { row: PriceRow }) {
     : null
 
   return (
-    <div className="flex flex-wrap items-center gap-x-3 gap-y-2 bg-primary/5 px-3 py-2 text-xs">
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 pr-3 text-xs">
       <span className="font-medium text-primary">{t("promo.label")}</span>
       <span className="font-mono text-muted-foreground line-through tabular-nums">
         {money(row.registerPrice, row.currency)}
@@ -173,60 +173,65 @@ export function PriceTable({ rows, showUpdated = true }: { rows: PriceRow[]; sho
           )
 
           return (
-            <article key={row.priceId} className="flex flex-col gap-3 p-3">
-              <div className="flex items-center justify-between gap-3">
-                <Link href={`/registrars/${row.registrarSlug}`} className="min-w-0 truncate font-semibold hover:text-primary">
-                  {row.registrarName}
-                </Link>
-                <div className="flex shrink-0 items-center gap-3">
-                  {showUpdated && <span className="text-xs text-muted-foreground">{formatRelative(row.updatedAt, locale)}</span>}
-                  {visitUrl && (
-                    <a
-                      href={visitUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={t("pt.visitAria").replace("{name}", row.registrarName)}
-                      className="inline-flex min-h-11 min-w-11 items-center justify-center text-muted-foreground hover:text-primary"
-                    >
-                      <ExternalLink aria-hidden="true" className="size-4" />
-                    </a>
-                  )}
+            <article key={row.priceId} className="flex flex-col gap-1.5 py-3 pl-3">
+              <div className="flex items-center gap-3">
+                <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+                  <Link
+                    href={`/registrars/${row.registrarSlug}`}
+                    className="truncate text-sm font-semibold hover:text-primary"
+                  >
+                    {row.registrarName}
+                  </Link>
+                  <p className="truncate font-mono text-xs tabular-nums text-muted-foreground">
+                    {(["renewPrice", "transferPrice"] as SortKey[]).map((key, i) => {
+                      const value = row[key]
+                      const isMin = toUsdAmount(value, row.currency, rates ?? {}) === minValues[key]
+                      return (
+                        <span key={key}>
+                          {i > 0 && <span aria-hidden="true"> · </span>}
+                          {t(key === "renewPrice" ? "th.renew" : "th.transfer")}{" "}
+                          <span className={cn(isMin && "font-semibold text-primary")}>
+                            {value == null ? "—" : money(value, row.currency)}
+                          </span>
+                          {isMin && <span className="sr-only">{t("pt.lowest")}</span>}
+                        </span>
+                      )
+                    })}
+                    {showUpdated && <span> · {formatRelative(row.updatedAt, locale)}</span>}
+                  </p>
                 </div>
-              </div>
-              <dl className="grid grid-cols-3 divide-x divide-border border-t border-border pt-3">
-                {(["registerPrice", "renewPrice", "transferPrice"] as SortKey[]).map((key) => {
-                  const value = comparablePrice(row, key)
-                  const isMin =
-                    toUsdAmount(
-                      value,
-                      row.currency,
-                      rates ?? {},
-                      key === "registerPrice" &&
-                        getActivePromotionPrice(row.registerPrice, row.promotionPrice, row.promotionEndsAt) !== null,
-                    ) === minValues[key]
-
+                {(() => {
+                  const value = comparablePrice(row, "registerPrice")
+                  const isPromo =
+                    getActivePromotionPrice(row.registerPrice, row.promotionPrice, row.promotionEndsAt) !== null
+                  const isMin = toUsdAmount(value, row.currency, rates ?? {}, isPromo) === minValues.registerPrice
                   return (
-                    <div key={key} className="flex min-w-0 flex-col gap-1 px-3 first:pl-0 last:pr-0">
-                      <dt className="text-xs text-muted-foreground">
-                        {t(key === "registerPrice" ? "th.register" : key === "renewPrice" ? "th.renew" : "th.transfer")}
-                      </dt>
-                      <dd
-                        className={cn(
-                          "truncate font-mono text-sm tabular-nums",
-                          value == null
-                            ? "text-muted-foreground"
-                            : isMin
-                              ? "font-semibold text-primary"
-                              : "text-foreground",
-                        )}
-                      >
-                        {value == null ? "—" : money(value, row.currency)}
-                        {isMin && <span className="sr-only">{t("pt.lowest")}</span>}
-                      </dd>
-                    </div>
+                    <span
+                      className={cn(
+                        "shrink-0 font-mono text-base font-bold tabular-nums",
+                        value == null ? "text-muted-foreground" : isMin || isPromo ? "text-primary" : "text-foreground",
+                      )}
+                    >
+                      <span className="sr-only">{t("th.register")} </span>
+                      {value == null ? "—" : money(value, row.currency)}
+                      {isMin && <span className="sr-only">{t("pt.lowest")}</span>}
+                    </span>
                   )
-                })}
-              </dl>
+                })()}
+                {visitUrl ? (
+                  <a
+                    href={visitUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    aria-label={t("pt.visitAria").replace("{name}", row.registrarName)}
+                    className="inline-flex size-11 shrink-0 items-center justify-center text-muted-foreground hover:text-primary"
+                  >
+                    <ExternalLink aria-hidden="true" className="size-4" />
+                  </a>
+                ) : (
+                  <span aria-hidden="true" className="size-11 shrink-0" />
+                )}
+              </div>
               <MobilePromoStrip row={row} />
             </article>
           )

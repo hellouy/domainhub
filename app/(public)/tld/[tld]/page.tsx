@@ -90,7 +90,7 @@ export default async function TldPage({ params }: Props) {
   }
 
   return (
-    <div className="mx-auto flex w-full max-w-6xl flex-col gap-10 px-4 py-12 md:px-6">
+    <div className="mx-auto flex w-full max-w-6xl flex-col gap-6 px-4 py-6 md:gap-10 md:px-6 md:py-12">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
@@ -107,7 +107,7 @@ export default async function TldPage({ params }: Props) {
         <span className="text-foreground">.{row.tld}</span>
       </nav>
 
-      <header className="flex flex-col gap-3">
+      <header className="flex flex-col gap-2 md:gap-3">
         <p className="text-xs font-medium uppercase tracking-widest text-primary">
           <TldType type={row.type} />
         </p>
@@ -118,27 +118,30 @@ export default async function TldPage({ params }: Props) {
         </p>
       </header>
 
-      <section aria-label="lowest prices" className="grid grid-cols-3 gap-px border border-border bg-border">
+      <dl aria-label="lowest prices" className="flex items-end gap-6 border-b border-border pb-6 md:gap-12">
         {(
           [
-            { label: "tld.minRegister", value: minRegister, note: "tld.noteFirst" },
-            { label: "tld.minRenew", value: minRenew, note: "tld.noteYear" },
-            { label: "tld.minTransfer", value: minTransfer, note: "tld.noteTransfer" },
+            { label: "tld.minRegister", value: minRegister, primary: true },
+            { label: "tld.minRenew", value: minRenew, primary: false },
+            { label: "tld.minTransfer", value: minTransfer, primary: false },
           ] as const
         ).map((item) => (
-          <div key={item.label} className="flex flex-col gap-1 bg-card p-3 md:gap-2 md:p-6">
-            <span className="text-[10px] uppercase tracking-wide text-muted-foreground md:text-xs md:tracking-widest">
+          <div key={item.label} className="flex min-w-0 flex-col gap-1">
+            <dt className="text-xs text-muted-foreground">
               <T k={item.label} />
-            </span>
-            <span className="font-mono text-lg font-bold tabular-nums text-primary md:text-3xl">
+            </dt>
+            <dd
+              className={
+                item.primary
+                  ? "font-mono text-2xl font-bold tabular-nums text-primary md:text-4xl"
+                  : "font-mono text-base font-semibold tabular-nums text-foreground md:text-2xl"
+              }
+            >
               {item.value != null ? <Money value={item.value} from="USD" /> : "—"}
-            </span>
-            <span className="text-[10px] text-muted-foreground md:text-xs">
-              <T k={item.note} />
-            </span>
+            </dd>
           </div>
         ))}
-      </section>
+      </dl>
 
       <section aria-labelledby="price-list" className="flex flex-col gap-4">
         <h2 id="price-list" className="text-xl font-bold tracking-tight">
