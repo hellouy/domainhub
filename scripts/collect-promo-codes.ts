@@ -171,10 +171,10 @@ const abCallTimes: number[] = []
 async function renderViaAggregate(url: string): Promise<string> {
   if (!CRAWL_SERVICE_URL || !CRAWL_SERVICE_TOKEN) return ""
   if (Date.now() < abDisabledUntil) return ""
-  // 限流: 每分钟最多 25 次(服务限制 30/min, 留 5 次余量)
+  // 限流: 每分钟最多 12 次(服务限制 30/min, 每 registrar 只 6 次, 留 2x 余量)
   const now = Date.now()
   while (abCallTimes.length > 0 && now - abCallTimes[0] > 60_000) abCallTimes.shift()
-  if (abCallTimes.length >= 25) {
+  if (abCallTimes.length >= 12) {
     const wait = 60_000 - (Date.now() - abCallTimes[0]) + 500
     if (wait > 0) await new Promise((r) => setTimeout(r, wait))
   }
@@ -260,28 +260,18 @@ async function main() {
       let codes: string[] = []
       for (const u of urls.slice(0, 3)) {
         if (!underDeadline()) break
-        // 单 URL 重试 3 次: 服务端 challenge/500/瞬时拒连常见, 探测实测重试后成功率>90%
-        let html = ""
-        for (let attempt = 0; attempt < 3; attempt++) {
-          if (!underDeadline()) break
-          html = await renderViaAggregate(u)
-          if (html) break
-          await new Promise((res) => setTimeout(res, 3_000))
-        }
+        // 每 URL 只试一次: Redis 缓存已覆盖之前探测过的 URL,一次命中即可
+        // 失败则快速跳过,避免堆积在 rate limit 队列
+        const html = await renderViaAggregate(u)
         if (!html) continue
         codes = extractCodes(html)
         if (codes.length > 0) break
       }
       if (codes.length === 0) {
-        for (const p of COMMON_PROMO_PATHS) {
+        // common paths 只试前 3 个(原 9 个),减少调用量
+        for (const p of COMMON_PROMO_PATHS.slice(0, 3)) {
           if (!underDeadline()) break
-          let html = ""
-          for (let attempt = 0; attempt < 3; attempt++) {
-            if (!underDeadline()) break
-            html = await renderViaAggregate(`${base}${p}`)
-            if (html) break
-            await new Promise((res) => setTimeout(res, 3_000))
-          }
+          const html = await renderViaAggregate(`${base}${p}`)
           if (!html) continue
           codes = extractCodes(html)
           if (codes.length > 0) break
