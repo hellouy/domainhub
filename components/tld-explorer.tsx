@@ -2,7 +2,8 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
-import { Check, ChevronRight, Copy, ExternalLink, Search, Ticket, X } from "lucide-react"
+import useSWR, { preload } from "swr"
+import { Check, ChevronDown, ChevronRight, Copy, ExternalLink, Search, Ticket, X } from "lucide-react"
 import { convertAmount } from "@/lib/format"
 import { getActivePromotionPrice } from "@/lib/promotion"
 import { cn, normalizeUrl, withRegistrarReferral } from "@/lib/utils"
@@ -91,17 +92,34 @@ function QuoteRow({ q }: { q: ExplorerTld }) {
       : null
   const buyUrl = withRegistrarReferral(normalizeUrl(q.sourceUrl), "home_tld_list")
   const hasDeal = eff.isPromo || code != null
+  const [open, setOpen] = useState(false)
+  const panelId = `tld-panel-${q.tld}`
+  const warm = () => void preload(cheapestUrl(q.tld), fetchJson)
 
   return (
-    <li className="tap-row group relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-3 py-3 transition-colors hover:bg-accent md:grid-cols-[8rem_10rem_minmax(0,1fr)_9rem_6rem_2.75rem] md:gap-x-4 md:px-4">
+    <li className="flex flex-col">
+    <div className={cn(
+      "tap-row group relative grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-3 gap-y-2 px-3 py-3 transition-colors hover:bg-accent md:grid-cols-[8rem_10rem_minmax(0,1fr)_9rem_6rem_2.75rem] md:gap-x-4 md:px-4",
+      open && "bg-accent",
+    )}>
       {/* 后缀 + 注册商（移动端两行） */}
       <div className="flex min-w-0 flex-col gap-0.5 md:contents">
-        <Link
-          href={`/tld/${q.tld}`}
-          className="tap-row__link font-mono text-base font-semibold after:absolute after:inset-0 after:content-[''] md:text-lg"
+        <button
+          type="button"
+          aria-expanded={open}
+          aria-controls={panelId}
+          onPointerEnter={warm}
+          onPointerDown={warm}
+          onFocus={warm}
+          onClick={() => setOpen((v) => !v)}
+          className="tap-row__link flex items-center gap-1.5 text-left font-mono text-base font-semibold after:absolute after:inset-0 after:content-[''] focus-visible:outline-none md:text-lg"
         >
           .{q.tld}
-        </Link>
+          <ChevronDown
+            aria-hidden="true"
+            className={cn("size-4 text-muted-foreground transition-transform duration-200", open && "rotate-180 text-primary")}
+          />
+        </button>
         <span className="truncate text-xs text-muted-foreground md:hidden">
           {q.registrarName ?? "—"} · {q.registrarCount} {t("explorer.registrars")}
         </span>
@@ -163,7 +181,102 @@ function QuoteRow({ q }: { q: ExplorerTld }) {
           <ChevronRight aria-hidden="true" className="size-4 text-muted-foreground" />
         )}
       </span>
+    </div>
+      <div
+        id={panelId}
+        className={cn(
+          "grid transition-[grid-template-rows] duration-200 ease-out motion-reduce:transition-none",
+          open ? "grid-rows-[1fr]" : "grid-rows-[0fr]",
+        )}
+      >
+        <div className="overflow-hidden">{open && <QuotePanel tld={q.tld} />}</div>
+      </div>
     </li>
+  )
+}
+
+type CheapestQuote = {
+  registrar: string
+  registrarName: string
+  currency: string
+  registerPrice: number | null
+  renewPrice: number | null
+  promotionPrice: number | null
+  promoCode: string | null
+  effectivePrice: number | null
+}
+
+const cheapestUrl = (tld: string) => `/api/v1/tld/${encodeURIComponent(tld)}/cheapest`
+const fetchJson = (url: string) =>
+  fetch(url).then((r) => {
+    if (!r.ok) throw new Error(String(r.status))
+    return r.json() as Promise<{ data: CheapestQuote[] }>
+  })
+
+const PANEL_LIMIT = 6
+
+/** 行内展开的多家报价：无需跳转即可比价，悬停/按下时已预取 */
+function QuotePanel({ tld }: { tld: string }) {
+  const { t } = useLocale()
+  const { money } = useCurrency()
+  const { data, error, isLoading } = useSWR(cheapestUrl(tld), fetchJson, {
+    revalidateOnFocus: false,
+    dedupingInterval: 300_000,
+  })
+  const rows = data?.data.slice(0, PANEL_LIMIT) ?? []
+
+  return (
+    <div className="border-t border-border bg-muted/40 px-3 pb-3 pt-2 md:px-4">
+      {isLoading ? (
+        <ul aria-label={t("explorer.panel.loading")} className="flex flex-col">
+          {Array.from({ length: 3 }, (_, i) => (
+            <li key={i} className="flex items-center justify-between py-2.5">
+              <span className="h-3.5 w-28 animate-pulse bg-border" />
+              <span className="h-3.5 w-16 animate-pulse bg-border" />
+            </li>
+          ))}
+        </ul>
+      ) : error || rows.length === 0 ? (
+        <p className="py-3 text-sm text-muted-foreground">{t("explorer.panel.noData")}</p>
+      ) : (
+        <ol className="flex flex-col divide-y divide-border/70">
+          {rows.map((r, i) => {
+            return (
+              <li key={r.registrar} className="flex items-center gap-3 py-2.5">
+                <span className="w-4 shrink-0 font-mono text-xs tabular-nums text-muted-foreground">{i + 1}</span>
+                <Link
+                  href={`/registrars/${r.registrar}`}
+                  prefetch={false}
+                  className="min-w-0 flex-1 truncate text-sm font-medium hover:text-primary"
+                >
+                  {r.registrarName}
+                </Link>
+                <span className="flex shrink-0 flex-col items-end">
+                  <span
+                    className={cn(
+                      "font-mono text-sm font-semibold tabular-nums",
+                      i === 0 ? "text-primary" : "text-foreground",
+                    )}
+                  >
+                    {r.effectivePrice != null ? money(r.effectivePrice, r.currency) : "—"}
+                  </span>
+                  <span className="font-mono text-xs tabular-nums text-muted-foreground">
+                    {t("explorer.panel.renew")} {r.renewPrice != null ? money(r.renewPrice, r.currency) : "—"}
+                  </span>
+                </span>
+              </li>
+            )
+          })}
+        </ol>
+      )}
+      <Link
+        href={`/tld/${tld}`}
+        className="mt-1 inline-flex h-10 items-center gap-1 text-sm font-medium text-primary active:opacity-60"
+      >
+        {t("explorer.panel.full")}
+        <ChevronRight aria-hidden="true" className="size-4" />
+      </Link>
+    </div>
   )
 }
 

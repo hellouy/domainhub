@@ -189,11 +189,12 @@
   .tap-row {
     transition: background-color 180ms ease;
   }
-  .tap-row a.tap-row__link:active {
+  .tap-row .tap-row__link:active {
     transform: none;
     opacity: 1;
   }
-  .tap-row:has(a.tap-row__link:active),
+  .tap-row:has(.tap-row__link:active),
+  .tap-row:has(button.tap-row__link:focus-visible),
   .tap-row:has(a.tap-row__link[data-pending="true"]) {
     background-color: var(--accent);
     transition-duration: 0ms;
