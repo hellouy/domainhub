@@ -8,8 +8,8 @@ export async function SiteHeader() {
   const brandName = `${s.brandTextMain}${s.brandTextAccent}${s.brandSuffix}`
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur">
-      <div className="mx-auto flex h-14 w-full max-w-6xl items-center justify-between px-4 md:px-6">
+    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/85 pt-[env(safe-area-inset-top)] backdrop-blur-xl">
+      <div className="mx-auto flex h-12 w-full max-w-6xl items-center justify-between gap-3 px-4 md:h-14 md:px-6">
         <Link href="/" aria-label={`${brandName} 首页`} className="flex items-baseline">
           {s.logoUrl ? (
             // 后台上传/填写了 Logo 图片:显示图片替代文字标(任意图片源用原生 img)
@@ -30,9 +30,9 @@ export async function SiteHeader() {
             </>
           )}
         </Link>
-        <div className="flex items-center gap-1">
+        <div className="flex items-center gap-0.5 md:gap-1">
           <SiteNavigation />
-          <span aria-hidden="true" className="mx-1 hidden h-5 border-l border-border sm:block" />
+          <span aria-hidden="true" className="mx-2 hidden h-5 border-l border-border md:block" />
           <CurrencyToggle />
           <LocaleToggle />
           <ThemeToggle />
