@@ -21,8 +21,6 @@ import { eq } from "drizzle-orm"
 
 const SEARXNG_BASE = process.env.SEARXNG_BASE_URL ?? "https://paqu.china.tn"
 const SEARXNG_TOKEN = process.env.SEARXNG_TOKEN ?? ""
-const BROWSER_URL = process.env.BROWSER_SERVICE_URL ?? "http://127.0.0.1:8840"
-const BROWSER_TOKEN = process.env.BROWSER_SERVICE_TOKEN ?? ""
 const CRAWL_SERVICE_URL = process.env.CRAWL_SERVICE_URL ?? ""
 const CRAWL_SERVICE_TOKEN = process.env.CRAWL_SERVICE_TOKEN ?? ""
 
@@ -36,16 +34,86 @@ const NOISE = new Set([
   "POST","GET","PUT","HOST","PORT","USER","PASS","SHA","HASH","SALT","BASE","TEST","DEMO","SAMPLE",
   "HOME","SIGNUP","SOCIAL","AREA","GROUP","TYPE","VALUE","FORM","INPUT","FIELD","LABEL","TITLE","LOADING",
   "ERROR","WARNING","SUCCESS","FAILED","PENDING","STATUS","ROLE","PERMISSION","ADMIN","MODERATOR","OWNER",
+  "PLAN","PLANS","YEAR","MONTH","MONTHLY","ANNUAL","REGISTER","RENEW","TRANSFER","RESTORE","PREMIUM",
+  "STANDARD","BUSINESS","PERSONAL","STARTER","PRO","LITE","BASIC","PLUS","MAX","MIN","BEST","TOP",
+  "FIRST","LAST","NEXT","PREV","BACK","MORE","LESS","VIEW","SHOW","HIDE","OPEN","CLOSE","COPY","SHARE",
+  "DOWNLOAD","UPLOAD","SUBMIT","CANCEL","CONTINUE","CONFIRM","SELECT","CHOOSE","CLICK","TAP","SWIPE",
+  "FEATURE","BENEFIT","ADVANTAGE","OFFER","SPECIAL","EXCLUSIVE","LIMITED","BONUS","EXTRA","ADDED",
+  "WEEKEND","HOLIDAY","SEASON","SPRING","SUMMER","AUTUMN","WINTER","JANUARY","FEBRUARY","MARCH","APRIL",
+  "MAY","JUNE","JULY","AUGUST","SEPTEMBER","OCTOBER","NOVEMBER","DECEMBER",
+  "BACKGROUND","BORDER","FOOTER","HEADER","NAVBAR","SIDEBAR","WRAPPER","CONTAINER","SECTION",
+  "ANIMATION","TRANSFORM","TRANSLATE","ROTATE","SCALE","OPACITY","VISIBILITY","DISPLAY","POSITION",
+  "JUSTIFY","CENTER","ALIGN","MARGIN","PADDING","WIDTH","HEIGHT","COLOR","FONT","SIZE","LINE",
+  "CONTENT","SCRIPT","STYLE","LINK","META","HEAD","BODY","TABLE","ROW","COLUMN","SPAN","DIV",
+  "CLASS","ID","HREF","SRC","ALT","TITLE","DATA","ATTR","PROP","NODE","ELEMENT",
+  "TRUE","FALSE","NULL","UNDEFINED","FUNCTION","RETURN","VAR","LET","CONST","THIS","THAT",
+  "NRBR","NREUM","BAM","LOADER","CONFIG","ACCOUNT","LICENSE","AGENT","BEACON","DENY","LIST",
+  "APPLICATION","TRUST","COOKIES","ENABLED","PRIVACY","DISTRIBUTED","TRACING","AJAX",
 ])
 
-/** 真实码上下文正则: 出现 use/enter/promo code/at checkout 等动作词 */
-const CODE_PATTERNS = [
-  /(?:use|enter|apply)\s+(?:the\s+)?(?:promo\s+)?code\s+["']?([A-Z0-9]{4,20})["']?/gi,
-  /(?:promo|discount|coupon)\s+code\s+(?:is\s+|:?\s*)["']?([A-Z0-9]{4,20})["']?/gi,
-  /(?:use|enter)\s+["']?([A-Z0-9]{4,20})["']?\s+at\s+checkout/gi,
-  /with\s+(?:promo\s+)?code\s+["']?([A-Z0-9]{4,20})["']?/gi,
-  /code\s+["']?([A-Z0-9]{4,20})["']?\s+at\s+checkout/gi,
-]
+/** 价格指示关键词(码邻近时高可信) */
+const PRICE_INDICATORS = /\$[\d,.]+|\/yr|\/year|\/month|\/mo\b|\d{1,3}%\s*off|discount|deal|promo|coupon|save\s+\$|special\s+offer/i
+
+/** 从 HTML 提取促销码 —— 多层策略:
+ *  T1 价格邻近: <CODE> $price (spaceship 风格: DOMAINS COM67 $3.60 /yr)
+ *  T2 字母+数字混合 token + 价格邻近 (通用布局)
+ *  T3 动作词上下文: use/enter/promo code X (namecheap 风格)
+ *  T4 纯大写 token + 强促销上下文 (code: WELCOME / at checkout)
+ *  每层独立提取, 合集去重后过滤噪音 */
+function extractCodes(html: string): string[] {
+  const text = html.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ")
+  const codes = new Set<string>()
+
+  const isCleanCode = (c: string): boolean =>
+    c.length >= 3 && c.length <= 20 && c === c.toUpperCase() && !NOISE.has(c) && !/^\d+$/.test(c)
+
+  // T1: 价格紧邻 —— <CODE> 紧跟 $price (最可靠, 误报极低)
+  for (const m of text.matchAll(/\b([A-Z][A-Z0-9]{2,19})\s+\$[\d,.]+/g)) {
+    if (isCleanCode(m[1])) codes.add(m[1])
+  }
+  // 变体: <CODE> $price /yr 或 <CODE> $price/yr
+  for (const m of text.matchAll(/\b([A-Z][A-Z0-9]{2,19})\s+\$[\d,.]+\s*\/(?:yr|year|mo|month)/gi)) {
+    if (isCleanCode(m[1])) codes.add(m[1])
+  }
+
+  // T2: 字母+数字混合 token, 80 字符窗口内有价格指示
+  for (const m of text.matchAll(/\b([A-Z]{1,6}[0-9]{1,6}[A-Z0-9]{0,6})\b/g)) {
+    const token = m[1]
+    if (!isCleanCode(token)) continue
+    if (!/[A-Z]/.test(token) || !/[0-9]/.test(token)) continue
+    const ctx = text.slice(Math.max(0, m.index - 80), m.index + 80)
+    if (PRICE_INDICATORS.test(ctx)) codes.add(token)
+  }
+
+  // T3: 动作词上下文 (原有逻辑)
+  const CODE_PATTERNS = [
+    /(?:use|enter|apply)\s+(?:the\s+)?(?:promo\s+)?code\s+["']?([A-Z0-9]{4,20})["']?/gi,
+    /(?:promo|discount|coupon)\s+code\s+(?:is\s+|:?\s*)["']?([A-Z0-9]{4,20})["']?/gi,
+    /(?:use|enter)\s+["']?([A-Z0-9]{4,20})["']?\s+at\s+checkout/gi,
+    /with\s+(?:promo\s+)?code\s+["']?([A-Z0-9]{4,20})["']?/gi,
+    /code\s+["']?([A-Z0-9]{4,20})["']?\s+at\s+checkout/gi,
+    /code:\s*["']?([A-Z0-9]{4,20})["']?/gi,
+  ]
+  for (const pat of CODE_PATTERNS) {
+    for (const m of text.matchAll(pat)) {
+      if (m[1] && isCleanCode(m[1])) codes.add(m[1])
+    }
+  }
+
+  // T4: 纯大写 token(无数字) + 强促销上下文 (catches WELCOME, SAVEONDOMAINS)
+  // 仅在 40 字符窗口内出现 "code:" / "at checkout" / "use" + "code" 时才采信
+  for (const m of text.matchAll(/\b([A-Z]{4,20})\b/g)) {
+    const token = m[1]
+    if (!isCleanCode(token)) continue
+    if (/[0-9]/.test(token)) continue // 有数字的已被 T2 覆盖
+    const ctx = text.slice(Math.max(0, m.index - 50), m.index + 50).toLowerCase()
+    if (/code:|at checkout|use code|enter code|promo code|coupon code|copy code|apply code/.test(ctx)) {
+      codes.add(token)
+    }
+  }
+
+  return [...codes]
+}
 
 async function searxSearch(host: string): Promise<string[]> {
   const q = `site:${host} promo code OR promos OR deals OR coupons`
@@ -67,60 +135,29 @@ async function searxSearch(host: string): Promise<string[]> {
   return []
 }
 
-async function renderPage(url: string, timeoutMs = 35_000): Promise<string> {
-  try {
-    const res = await fetch(`${BROWSER_URL}/render`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Accept: "application/json",
-        ...(BROWSER_TOKEN ? { Authorization: `Bearer ${BROWSER_TOKEN}` } : {}),
-      },
-      body: JSON.stringify({ url, extract: "html", scrollToBottom: true, waitForTimeoutMs: 12_000 }),
-      signal: AbortSignal.timeout(timeoutMs),
-    })
-    if (!res.ok) return ""
-    const data = (await res.json()) as { ok?: boolean; html?: string; error?: string }
-    if (!data.ok || !data.html) return ""
-    return data.html
-  } catch {
-    return ""
-  }
+/** 聚合抓取服务(8090/api/auto)统一渲染: 内置 FlareSolverr 过 Cloudflare + Browserless JS 渲染 + Redis 1h 缓存。
+ *  这是唯一渲染通道, 不再依赖本地 browser-worker / 远端 playwright(两者与聚合服务同主机, 互为冗余无意义)。
+ *  服务由 crontab 每分钟探活自愈, 限流 30 次/分钟每 key。 */
+const CF_CHALLENGE_SIGNS = ["just a moment", "attention required", "cf-chl", "challenge-platform", "cf-please-wait", "checking your browser"]
+
+function looksLikeChallenge(html: string): boolean {
+  if (html.length > 200_000) return false
+  const lower = html.toLowerCase()
+  return CF_CHALLENGE_SIGNS.some((s) => lower.includes(s))
 }
 
-/** worker /health 门控: 远端 playwright 挂掉时 /health 会挂起, 5s 内不响应则跳过 worker 渲染 */
-let workerHealthCheckedAt = 0
-let workerHealthy = true
-
-async function isWorkerHealthy(): Promise<boolean> {
-  if (Date.now() - workerHealthCheckedAt < 60_000) return workerHealthy
-  workerHealthCheckedAt = Date.now()
-  try {
-    const res = await fetch(`${BROWSER_URL}/health`, { signal: AbortSignal.timeout(5_000) })
-    if (!res.ok) { workerHealthy = false; return false }
-    const data = (await res.json()) as { chromiumAvailable?: boolean }
-    // chromiumAvailable=false 表示远端 playwright 断连, 渲染必然失败, 应跳过 worker
-    workerHealthy = data.chromiumAvailable === true
-  } catch {
-    workerHealthy = false
-  }
-  return workerHealthy
-}
-
-/** anti-bot 熔断器 + 限流: 服务限流 30 次/分, 每分钟 crontab 自愈,
- *  连续失败后短暂停用(90s)对齐自愈周期, 避免每条路径空耗 */
 let abConsecutiveFails = 0
 let abDisabledUntil = 0
 const abCallTimes: number[] = []
 
-async function renderViaAntiBot(url: string): Promise<string> {
+async function renderViaAggregate(url: string): Promise<string> {
   if (!CRAWL_SERVICE_URL || !CRAWL_SERVICE_TOKEN) return ""
   if (Date.now() < abDisabledUntil) return ""
-  // 限流: 保留 5 次余量, 每分钟最多 25 次
+  // 限流: 每分钟最多 25 次(服务限制 30/min, 留 5 次余量)
   const now = Date.now()
   while (abCallTimes.length > 0 && now - abCallTimes[0] > 60_000) abCallTimes.shift()
   if (abCallTimes.length >= 25) {
-    const wait = 60_000 - (now - abCallTimes[0]) + 500
+    const wait = 60_000 - (Date.now() - abCallTimes[0]) + 500
     if (wait > 0) await new Promise((r) => setTimeout(r, wait))
   }
   abCallTimes.push(Date.now())
@@ -133,55 +170,23 @@ async function renderViaAntiBot(url: string): Promise<string> {
         "x-api-key": CRAWL_SERVICE_TOKEN,
       },
       body: JSON.stringify({ url, keyword: null }),
-      signal: AbortSignal.timeout(45_000),
+      signal: AbortSignal.timeout(60_000),
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = (await res.json()) as { html?: string; used_mode?: string }
     if (typeof data.html !== "string" || !data.html) throw new Error("empty html")
+    if (looksLikeChallenge(data.html)) throw new Error("challenge page")
     abConsecutiveFails = 0
     return data.html
   } catch {
     abConsecutiveFails++
-    if (abConsecutiveFails >= 3) {
-      abDisabledUntil = Date.now() + 90_000
-      console.log(`  [anti-bot] 连续 ${abConsecutiveFails} 次失败, 熔断 90s(对齐自愈周期)`)
+    // 连续 5 次失败才熔断, 冷却 30s(小于 crontab 1 分钟自愈周期, 下个周期就能重探)
+    if (abConsecutiveFails >= 5) {
+      abDisabledUntil = Date.now() + 30_000
+      abConsecutiveFails = 0
     }
     return ""
   }
-}
-
-/** 渲染带兜底: worker 失败或拿到 Cloudflare 挑战页时走 anti-bot。
- *  注意: worker 渲染 CF 挑战页也算"成功"(ok:true + 挑战页 HTML), 必须按特征识别后降级 */
-const CF_CHALLENGE_SIGNS = ["just a moment", "attention required", "cf-chl", "challenge-platform", "cf-please-wait", "checking your browser"]
-
-function looksLikeChallenge(html: string): boolean {
-  if (html.length > 200_000) return false // 真实促销页内容量大, 挑战页都很小
-  const lower = html.toLowerCase()
-  return CF_CHALLENGE_SIGNS.some((s) => lower.includes(s))
-}
-
-async function renderWithFallback(url: string): Promise<string> {
-  // worker 健康门控: 远端 playwright 挂掉时 /health 会挂起, 检测到不可用直接跳 worker 走 anti-bot
-  let html = ""
-  if (await isWorkerHealthy()) {
-    html = await renderPage(url)
-    if (html && !looksLikeChallenge(html)) return html
-  }
-  const viaAb = await renderViaAntiBot(url)
-  if (viaAb && !looksLikeChallenge(viaAb)) return viaAb
-  return ""
-}
-
-/** 从 HTML 提取真实促销码(带动作词上下文) */
-function extractCodes(html: string): string[] {
-  const text = html.replace(/<[^>]+>/g, " ")
-  const codes = new Set<string>()
-  for (const pat of CODE_PATTERNS) {
-    for (const m of text.matchAll(pat)) {
-      if (m[1]) codes.add(m[1])
-    }
-  }
-  return [...codes].filter((c) => c.length >= 4 && c === c.toUpperCase() && !NOISE.has(c.toUpperCase()))
 }
 
 /** 通用码落库: 映射该注册商全部 TLD 行(对象数组去重合并, 首码为主码) */
@@ -231,7 +236,7 @@ async function main() {
       let codes: string[] = []
       for (const u of urls.slice(0, 3)) {
         if (!underDeadline()) break
-        const html = await renderWithFallback(u)
+        const html = await renderViaAggregate(u)
         if (!html) continue
         codes = extractCodes(html)
         if (codes.length > 0) break
@@ -239,7 +244,7 @@ async function main() {
       if (codes.length === 0) {
         for (const p of COMMON_PROMO_PATHS) {
           if (!underDeadline()) break
-          const html = await renderWithFallback(`${base}${p}`)
+          const html = await renderViaAggregate(`${base}${p}`)
           if (!html) continue
           codes = extractCodes(html)
           if (codes.length > 0) break
