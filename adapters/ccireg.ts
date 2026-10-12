@@ -57,8 +57,11 @@ export const cciregAdapter = defineAdapter({
   rateLimit: { concurrency: 1, rpm: 10, retries: 3, timeoutMs: 60_000 },
   strategies: [
     {
-      type: "html",
+      // ccireg 被 Cloudflare JS 挑战拦截（failedChecks 特征），直连 html 拿到 0 行，
+      // 必须走聚合反爬服务（FlareSolverr 自动过盾后返回真实价目表）
+      type: "anti-bot",
       url: URL,
+      antiBot: { keyword: "Indicative Pricing Table" },
       parse: parseCcireg,
     },
   ],

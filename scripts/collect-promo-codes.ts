@@ -23,6 +23,8 @@ const SEARXNG_BASE = process.env.SEARXNG_BASE_URL ?? "https://paqu.china.tn"
 const SEARXNG_TOKEN = process.env.SEARXNG_TOKEN ?? ""
 const BROWSER_URL = process.env.BROWSER_SERVICE_URL ?? "http://127.0.0.1:8840"
 const BROWSER_TOKEN = process.env.BROWSER_SERVICE_TOKEN ?? ""
+const CRAWL_SERVICE_URL = process.env.CRAWL_SERVICE_URL ?? ""
+const CRAWL_SERVICE_TOKEN = process.env.CRAWL_SERVICE_TOKEN ?? ""
 
 /** 真实码甄别: 颜色值/CSS/JS/常见词 排除 */
 const NOISE = new Set([
@@ -82,6 +84,40 @@ async function renderPage(url: string): Promise<string> {
   return data.html
 }
 
+/** anti-bot 聚合服务二次兜底: playwright 渲染失败(Cloudflare/超时)时走 FlareSolverr 通道。
+ *  该服务间歇性拒连(工作数次后断开), 需多轮退避重试 */
+async function renderViaAntiBot(url: string): Promise<string> {
+  if (!CRAWL_SERVICE_URL || !CRAWL_SERVICE_TOKEN) return ""
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (attempt > 0) await new Promise((r) => setTimeout(r, 20_000 * attempt))
+    try {
+      const res = await fetch(`${CRAWL_SERVICE_URL}/api/auto`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+          "x-api-key": CRAWL_SERVICE_TOKEN,
+        },
+        body: JSON.stringify({ url, keyword: null }),
+        signal: AbortSignal.timeout(120_000),
+      })
+      if (!res.ok) continue
+      const data = (await res.json()) as { html?: string; used_mode?: string }
+      if (typeof data.html === "string" && data.html) return data.html
+    } catch {
+      /* 拒连/超时, 退避后重试 */
+    }
+  }
+  return ""
+}
+
+/** 渲染带兜底: worker 失败时走 anti-bot */
+async function renderWithFallback(url: string): Promise<string> {
+  const html = await renderPage(url)
+  if (html) return html
+  return renderViaAntiBot(url)
+}
+
 /** 从 HTML 提取真实促销码(带动作词上下文) */
 function extractCodes(html: string): string[] {
   const text = html.replace(/<[^>]+>/g, " ")
@@ -136,14 +172,14 @@ async function main() {
       await new Promise((res) => setTimeout(res, 6_000)) // SearXNG 限流冷却
       let codes: string[] = []
       for (const u of urls.slice(0, 3)) {
-        const html = await renderPage(u)
+        const html = await renderWithFallback(u)
         if (!html) continue
         codes = extractCodes(html)
         if (codes.length > 0) break
       }
       if (codes.length === 0) {
-        for (const p of COMMON_PROMO_PATHS.slice(0, 3)) {
-          const html = await renderPage(`${base}${p}`)
+        for (const p of COMMON_PROMO_PATHS) {
+          const html = await renderWithFallback(`${base}${p}`)
           if (!html) continue
           codes = extractCodes(html)
           if (codes.length > 0) break
