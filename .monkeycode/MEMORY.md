@@ -249,3 +249,13 @@ Entries discovered by the Agent during task execution should follow this format:
   - **spaceship 三价已写库验证**：465 TLD 全部 register+renew，462 含 transfer；.com reg=9.86/renew=10.18/transfer=9.68/promo=9.08。afrihost 139 行三价齐全（co.za/org.za/net.za 免费转移=0）。onlydomains 878 行转移全覆盖（758 免费 $0）。openprovider 2069 行转移全覆盖（332 免费=0）+ 15 缺注册价源限制。
   - **大缺口注册商二轮排雷（2026-10-11）**：转移价缺口 8535 行里头部注册商逐一探源后全部确认源限制：netzone 1019（表仅4列 tld/国家/注册/续费，页内 110 处 "transfer" 全是 addToCart JS 交互词）、register4less 420（页无 transfer 提及）、value-domain 412（移管列源本身 424/483 标「-」不提供，仅 ~60 可抓）、whc 440/rumahweb 386（页内 transfer 仅为营销文案非价列）、aruba 361（data-tra 误匹配实为 data-trace-event 埋点）、imena 361/vsys 385/mchost 380/idwebhost 244/blacknight 157/keliweb 668（源无转移列）、lws 215（Cloudflare 403）、hostpoint 882（data-tra 仅部分 TLD）。**唯一可修 value-domain**：源同 TLD 多渠道行（eNom/GMO/KeySystems）跨渠道合并转移价已落地（480 行 +1 转移）。结论：转移缺口大头是源设计，非采集缺陷。
   - **value-domain 重复定义坑（2026-10-11）**：`adapters/value-domain.ts` 与 `adapters/table-registrars.ts` 都导出 `valueDomainAdapter`，index.ts 一直引 table-registrars 版（createTableAdapter，URL `/domain/price/`），独立文件是死代码。新写独立适配器若与 table-registrars 同名必须同时改 index.ts 引用来源，否则改动不生效（排查用 test-adapter 输出的 adapter version 判断读到哪份）。
+
+[Project Knowledge Summary]
+- Date: 2026-10-12
+- Context: Discovered by Agent while 排查"老注册商更新时间不一致"(root cause 不是 skip 逻辑, 而是调度跑不完)
+- Category: Operations & Deployment
+- Instructions:
+  - **"没更新的注册商"根因链(2026-10-12)**：95 家 active 全量 recrawl 需 60-120 分钟, local-sync.sh 全量轮原 timeout=7200s(2h) 每轮在中途被 SIGTERM 截断(`补采失败: 124`), 且 recrawl --all 按适配器注册顺序固定, 排在尾部(如 stardomain/gatehills 等 html 直连源)的注册商每轮都排不上, updated_at 停留在 10-04/10-05。**修复二件套**：(a) recrawl-browser-registrars.ts `--all` 改为按 max(prices.updated_at) 升序("最久未更新优先")排序, 即使被截断也先刷最旧的；(b) local-sync.sh 全量轮 timeout 7200→21600。修复后 27 家 stale 补刷成功 22 家。
+  - **判定"是否真的过期"的 SQL**：`select slug, max(p.updated_at) from registrars r join prices p on p.registrar_id=r.id where r.is_active group by slug having max(p.updated_at) < now() - interval '24 hours' order by max(p.updated_at) asc`。注意 list-stale-slugs.ts 用的是 >7 天阈值(太宽, 用户看到"几天没更新"时它不报)。
+  - **同批 FAIL 残留分类(勿重复排查)**：ccireg 页变 Cloudflare JS 挑战(failedChecks 混淆, html 直连拿 0 行, 需反爬通道)；zwcn/59cn/julyname/pskz 是 playwright 策略依赖远端服务, 环境恢复后 recrawl 自动好; netzone 已修(URL 加 www 前缀即可, 原 301 页面被当解析源)。
+  - **ccireg.com 的 Cloudflare 挑战特征**：curl 返回 200/11KB, 但页面 JS 含 `w='pdata',m='failedChecks',o='/z0f76a1d14fd21a8fb5fd0d03e0fdc3d3cedae52f'` —— 判定反爬升级用 `failedChecks` 关键字, 别当成"页面结构变了"去改解析。
