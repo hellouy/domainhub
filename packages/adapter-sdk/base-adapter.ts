@@ -109,7 +109,7 @@ export class BaseAdapter {
     const first = this.definition.strategies[0]
     const info: DiscoveryInfo = {
       detectedStrategy: first?.type,
-      jsRequired: this.strategyPriority.includes("playwright"),
+      jsRequired: this.strategyPriority.includes("playwright") || this.strategyPriority.includes("anti-bot"),
       authRequired: this.strategyPriority.includes("private-api"),
     }
     for (const s of this.definition.strategies) {
@@ -142,7 +142,18 @@ export class BaseAdapter {
         restorePrice: parsePriceString(raw.restorePrice),
         premium: raw.premium ?? false,
         promotion: raw.promotion ?? false,
-        promoCode: raw.promoCode ?? null,
+        promoCode: raw.promoCodes?.[0]?.code ?? raw.promoCode ?? null,
+        promoCodes:
+          raw.promoCodes && raw.promoCodes.length > 0
+            ? raw.promoCodes.map((c) => ({
+                code: c.code,
+                promotionPrice: c.promotionPrice != null ? parsePriceString(c.promotionPrice) : null,
+                promotionEndsAt: c.promotionEndsAt ?? null,
+                sourceUrl: c.sourceUrl ?? null,
+              }))
+            : raw.promoCode
+              ? [{ code: raw.promoCode, promotionPrice: raw.promotionPrice != null ? parsePriceString(raw.promotionPrice) : null, promotionEndsAt: raw.promotionEndsAt ?? null, sourceUrl: raw.sourceUrl ?? null }]
+              : null,
         promotionPrice: raw.promotionPrice != null ? parsePriceString(raw.promotionPrice) : null,
         promotionEndsAt: raw.promotionEndsAt ?? null,
         region: raw.region ?? null,

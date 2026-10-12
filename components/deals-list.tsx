@@ -17,6 +17,7 @@ type Deal = {
   registerPrice: number | null
   promotionPrice: number | null
   promoCode: string | null
+  promoCodes: { code: string; promotionPrice?: number | null; promotionEndsAt?: string | null; sourceUrl?: string | null }[] | null
   promotionEndsAt: Date | string | null
   sourceUrl: string | null
   registrarWebsite: string | null
@@ -46,7 +47,12 @@ export function DealsList({ deals }: { deals: Deal[] }) {
     if (suffixMatches.length > 0) return suffixMatches
 
     return deals.filter((deal) =>
-      [deal.registrarName, deal.registrar, deal.promoCode]
+      [
+        deal.registrarName,
+        deal.registrar,
+        deal.promoCode,
+        ...(deal.promoCodes ?? []).map((c) => c.code),
+      ]
         .filter((value): value is string => Boolean(value))
         .some((value) => value.toLocaleLowerCase().includes(normalizedQuery)),
     )
@@ -130,7 +136,14 @@ export function DealsList({ deals }: { deals: Deal[] }) {
           deal.promotionPrice !== null && original > 0
             ? Math.round((1 - offer / original) * 100)
             : 0
-        const copied = deal.promoCode !== null && copiedCode === deal.promoCode
+        const codes =
+          deal.promoCodes && deal.promoCodes.length > 0
+            ? deal.promoCodes
+                .map((c) => c.code)
+                .filter((v): v is string => Boolean(v))
+            : deal.promoCode
+              ? [deal.promoCode]
+              : []
         const endsAt = deal.promotionEndsAt
           ? new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
               year: "numeric",
@@ -173,7 +186,7 @@ export function DealsList({ deals }: { deals: Deal[] }) {
                 </Link>
               </div>
               <Badge variant="secondary" className="shrink-0">
-                {deal.promoCode ? t("deals.codeLabel") : t("promo.label")}
+                {codes.length > 0 ? t("deals.codeLabel") : t("promo.label")}
               </Badge>
             </div>
 
@@ -188,7 +201,7 @@ export function DealsList({ deals }: { deals: Deal[] }) {
                     <span className="line-through">{money(deal.registerPrice, deal.currency)}</span>
                   </span>
                 )}
-                {deal.promoCode && deal.promotionPrice === null && (
+                {codes.length > 0 && deal.promotionPrice === null && (
                   <span className="text-xs leading-relaxed text-muted-foreground">{t("deals.codeOnlyPrice")}</span>
                 )}
               </div>
@@ -196,25 +209,29 @@ export function DealsList({ deals }: { deals: Deal[] }) {
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3">
-              <div className="flex min-w-0 items-center gap-2">
-                {deal.promoCode ? (
-                  <>
-                    <Tag aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
-                    <code className="break-all rounded-md border border-dashed border-border bg-muted px-2.5 py-1.5 font-mono text-sm font-semibold text-foreground">
-                      {deal.promoCode}
-                    </code>
-                    <Button
-                      type="button"
-                      variant="outline"
-                      size="icon-sm"
-                      aria-label={copied ? t("deals.copied") : t("deals.copyCode")}
-                      title={copied ? t("deals.copied") : t("deals.copyCode")}
-                      onClick={() => void copyCode(deal.promoCode!)}
-                    >
-                      {copied ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
-                    </Button>
-                    <span className="sr-only" aria-live="polite">{copied ? t("deals.copied") : ""}</span>
-                  </>
+              <div className="flex min-w-0 flex-wrap items-center gap-2">
+                {codes.length > 0 ? (
+                  codes.map((code) => {
+                    const isCopied = copiedCode === code
+                    return (
+                      <span key={code} className="inline-flex items-center gap-1.5">
+                        <Tag aria-hidden="true" className="size-4 shrink-0 text-muted-foreground" />
+                        <code className="break-all rounded-md border border-dashed border-border bg-muted px-2.5 py-1.5 font-mono text-sm font-semibold text-foreground">
+                          {code}
+                        </code>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon-sm"
+                          aria-label={isCopied ? t("deals.copied") : t("deals.copyCode")}
+                          title={isCopied ? t("deals.copied") : t("deals.copyCode")}
+                          onClick={() => void copyCode(code)}
+                        >
+                          {isCopied ? <Check aria-hidden="true" /> : <Copy aria-hidden="true" />}
+                        </Button>
+                      </span>
+                    )
+                  })
                 ) : (
                   <span className="text-sm text-muted-foreground">{t("promo.label")}</span>
                 )}

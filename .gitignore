@@ -15,3 +15,7 @@ node_modules
 .DS_Store
 .vercel
 .env*
+
+# Local runtime & debug artifacts
+logs/
+scripts/tmp-audit/

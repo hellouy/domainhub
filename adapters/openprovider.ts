@@ -6,6 +6,7 @@
  * 站点内部 XHR 端点 `/api/pricing-data?currency=USD` 返回全量
  * 2069 个 TLD 的注册/续费/转入/赎回价（USD，无凭证）。字段映射：
  * registerFee/renewalFee/transferFee/restoreFee → RawPrice 四价字段。
+ * 注: 331 个 TLD 的 transferFee=0(免费转入), 2026-10-11 起允许 0 值采入。
  */
 import { defineAdapter, type AdapterContext, type RawPrice } from "@/packages/adapter-sdk"
 
@@ -26,11 +27,16 @@ async function parseOpenprovider(raw: string, _ctx: AdapterContext): Promise<Raw
       const n = Number(v)
       return Number.isFinite(n) && n > 0 ? n : null
     }
+    // 转移价允许 0(免费转入); 其余字段用 num
+    const numTr = (v: unknown): number | null => {
+      const n = Number(v)
+      return Number.isFinite(n) && n >= 0 ? n : null
+    }
     out.push({
       tld,
       registerPrice: num(fee.registerFee),
       renewPrice: num(fee.renewalFee),
-      transferPrice: num(fee.transferFee),
+      transferPrice: numTr(fee.transferFee),
       restorePrice: num(fee.restoreFee),
       currency: String(d.currency ?? "USD"),
     })
@@ -42,8 +48,8 @@ export const openproviderAdapter = defineAdapter({
   slug: "openprovider",
   name: "OpenProvider",
   website: "https://www.openprovider.com",
-  version: "1.0.0",
-  parserVersion: "1.0.0",
+  version: "1.1.0",
+  parserVersion: "1.1.0",
   owner: "Data Team",
   currency: "USD",
   capabilities: { registration: true, renewal: true, transfer: true, supportedCurrencies: ["USD"] },

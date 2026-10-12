@@ -21,26 +21,25 @@ import { godaddyAdapter } from "./godaddy"
 import { namecheapAdapter } from "./namecheap"
 import { namecomAdapter } from "./namecom"
 import { netimAdapter } from "./netim"
+import { metanameAdapter } from "./metaname"
 import { onecomAdapter } from "./onecom"
 import { porkbunAdapter } from "./porkbun"
 import { ovhcloudAdapter } from "./ovhcloud"
 import { hostpointAdapter } from "./hostpoint"
+import { arubaAdapter } from "./aruba"
 import {
   amenAdapter,
-  arubaAdapter,
   domeneshopAdapter,
   eurodnsAdapter,
   hoverAdapter,
 internetbsAdapter,
   loopiaAdapter,
   lwsAdapter,
-  metanameAdapter,
   netcupAdapter,
   onamaeAdapter,
   registercomAdapter,
   transipAdapter,
   xserverAdapter,
-  valueDomainAdapter,
   muumuuDomainAdapter,
   directnicAdapter,
   dreamhostAdapter,
@@ -79,6 +78,8 @@ import { nicnamesAdapter } from "./nicnames"
 import { epikAdapter } from "./epik"
 import { oneAdapter } from "./one"
 import { interserverAdapter } from "./interserver"
+import { register4lessAdapter } from "./register4less"
+import { rebelAdapter } from "./rebel"
 import { domaincostclubAdapter } from "./domaincostclub"
 import { regtonsAdapter } from "./regtons"
 import { osirAdapter } from "./osir"
@@ -87,6 +88,10 @@ import { icdsoftAdapter } from "./icdsoft"
 import { istancoAdapter } from "./istanco"
 import { mchostAdapter } from "./mchost"
 import { hostafricaAdapter } from "./hostafrica"
+import { afrihostAdapter } from "./afrihost"
+import { whogohostAdapter } from "./whogohost"
+import { afriregisterAdapter } from "./afriregister";
+import { valuedomainAdapter as valueDomainAdapter } from "./value-domain"
 import { ultahostAdapter } from "./ultahost"
 import { iwantmynameAdapter } from "./iwantmyname"
 import { gnameAdapter } from "./gname"
@@ -109,6 +114,10 @@ import { vsysAdapter } from "./vsys"
 import { alldomainsUzAdapter } from "./alldomains-uz"
 import { rumahwebAdapter } from "./rumahweb"
 import { cosmotownAdapter } from "./cosmotown"
+import { pavietnamAdapter } from "./pavietnam"
+import { mileswebAdapter } from "./milesweb"
+import { hostripplesAdapter } from "./hostripples"
+import { ueepaAdapter } from "./ueepa"
 import { cpiAdapter } from "./cpi"
 import { active24Adapter } from "./active24"
 import { spaceshipAdapter } from "./spaceship"
@@ -174,6 +183,8 @@ export const allAdapters = [
   epikAdapter,
   oneAdapter,
   interserverAdapter,
+  register4lessAdapter,
+  rebelAdapter,
   domaincostclubAdapter,
   regtonsAdapter,
   osirAdapter,
@@ -182,6 +193,9 @@ export const allAdapters = [
   istancoAdapter,
   mchostAdapter,
   hostafricaAdapter,
+  afrihostAdapter,
+  whogohostAdapter,
+  afriregisterAdapter,
   ultahostAdapter,
   // 第二批探索新增：更广覆盖与多币种（2026-10-02）
   iwantmynameAdapter,
@@ -209,6 +223,10 @@ export const allAdapters = [
   alldomainsUzAdapter,
   rumahwebAdapter,
   cosmotownAdapter,
+  ueepaAdapter,
+  pavietnamAdapter,
+  mileswebAdapter,
+  hostripplesAdapter,
   // 第六批: 修复失效 URL + 新增 CNDNS(2026-10-07)
   cndnsAdapter,
   // 第七批: 类别分组价表新增 CPI(JPY, 2026-10-07)

@@ -173,6 +173,49 @@ HTML 解析拿不到价格时,工厂自动追加一个指向同一价格页的 p
 
 Worker 在每次导航/子请求时检查 URL 协议、端口、DNS 解析及私有/保留 IP，重定向也会重新检查。该 DNS 检查不能替代网络层隔离：部署时还应配置出站防火墙，禁止访问 loopback、RFC1918、link-local 与云元数据地址，以阻止 DNS rebinding 绕过。
 
+## Anti-Bot Strategy(聚合反爬抓取降级)
+
+### 背景
+
+部分静态价目表页被 Cloudflare 或同类 WAF 拦截(直连返回 403/502,或间歇匿名限流返回空/截断响应),但页面本身无需 JS 渲染即可解析。此类源既不适合普通 fetch(被拦),也不适合 playwright(过度渲染,慢且耗并发)。SDK 的 `anti-bot` 策略把抓取转发给聚合反爬服务(`FlareSolverr` 反爬代理 + `Browserless` 无头浏览器 + `Crawlee` 统一封装),服务端先走 FlareSolverr 轻量抓取,失败或内容校验关键字不匹配时自动降级到 Browserless 渲染,返回最终 HTML 与 `used_mode` 标识。
+
+### 使用方式
+
+在策略中声明 `type: "anti-bot"` + `antiBot` 选项,通常作为 html 直连之后的降级链:
+
+```ts
+{
+  type: "html",
+  url: "https://www.example.com/pricing",
+  // ...html 表格解析(优先)
+},
+{
+  type: "anti-bot",
+  url: "https://www.example.com/pricing",
+  antiBot: {
+    keyword: "biz.ss",   // 内容校验关键字:crawl 模式下校验 HTML 是否含该串,
+                         // 不匹配则自动转 browser 渲染(防止拿到验证页/空页)
+    timeoutMs: 90_000,   // 聚合服务含多重降级,默认 90s
+  },
+},
+```
+
+- 服务端 `/api/auto` 先走 FlareSolverr 轻量抓取,失败或 `keyword` 校验不匹配时自动降级到 Browserless 渲染,返回 `{ url, html, used_mode }`。
+- 返回的是最终 HTML 字符串,配合自定义 `parse`(可与直连策略共用同一解析函数)。
+- 单次请求可能较慢(crawl 失败转 browser 时可达数秒到几十秒),`rateLimit` 需留足 timeout。
+- 未配置服务时该策略直接抛错,适配器按降级链继续,不会影响其他策略。
+
+### 环境变量
+
+- `CRAWL_SERVICE_URL`(主站点):聚合反爬服务地址,如 `http://43.133.72.184:8090`。未配置时 anti-bot 策略直接抛错并降级。
+- `CRAWL_SERVICE_TOKEN`(主站点):服务端鉴权 `x-api-key` 头值。
+
+### 适用场景
+
+- Cloudflare/WAF 拦截静态价目表页(直连 403/502)。
+- 匿名高频请求被间歇限流的源(偶发返回空/截断),用聚合通道兜底而非依赖本地浏览器 worker。
+- 实现示例:`adapters/afriregister.ts`(直连 html + anti-bot 降级,keyword 校验价目表完整性)。
+
 ### 浏览器服务契约(`browser-worker/`)
 
 独立 Node 服务,任意可运行 Playwright 的主机部署(`npm install && npx playwright install --with-deps chromium && npm start`):

@@ -6,6 +6,7 @@
  * 公开内部 JSON API `/api/v1/domain/all-prices` 返回全量 2232 个 TLD 的
  * 注册/续费/转入/赎回价（无凭证，主 USD / 个别 EUR）。字段映射：
  * createPrice/renewalPrice/transferPrice/restorePrice → RawPrice 四价字段。
+ * 注: 337 个 TLD 的 transferPrice=0(免费转入), 2026-10-11 起允许 0 值采入。
  */
 import { defineAdapter, type AdapterContext, type RawPrice } from "@/packages/adapter-sdk"
 
@@ -20,11 +21,16 @@ async function parseInwx(raw: string, _ctx: AdapterContext): Promise<RawPrice[]>
       const n = Number(v)
       return Number.isFinite(n) && n > 0 ? n : null
     }
+    // 转移价允许 0(免费转入); 其余字段用 num
+    const numTr = (v: unknown): number | null => {
+      const n = Number(v)
+      return Number.isFinite(n) && n >= 0 ? n : null
+    }
     out.push({
       tld,
       registerPrice: num(t.createPrice),
       renewPrice: num(t.renewalPrice),
-      transferPrice: num(t.transferPrice),
+      transferPrice: numTr(t.transferPrice),
       restorePrice: num(t.restorePrice),
       currency: String(t.currency ?? "USD"),
     })
@@ -36,8 +42,8 @@ export const inwxAdapter = defineAdapter({
   slug: "inwx",
   name: "INWX",
   website: "https://www.inwx.com",
-  version: "1.0.0",
-  parserVersion: "1.0.0",
+  version: "1.1.0",
+  parserVersion: "1.1.0",
   owner: "Data Team",
   currency: "USD",
   capabilities: { registration: true, renewal: true, transfer: true, supportedCurrencies: ["USD", "EUR"] },

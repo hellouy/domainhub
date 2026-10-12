@@ -73,6 +73,16 @@ export interface TableAdapterConfig {
     /** 自定义提取脚本(默认服务端内置 extract.js) */
     script?: string
   }
+  /**
+   * 聚合反爬降级(仅当静态价目表被 Cloudflare/WAF 拦截、或直连被间歇限流时配置)。
+   * 配置后工厂自动追加一个 anti-bot 策略(介于 html 与 playwright 之间)：
+   * 直连失败时改走聚合反爬服务(CRAWL_SERVICE_URL, FlareSolverr + Browserless 自动降级),
+   * keyword 为内容校验关键字(服务端用其判断 crawl 是否拿到完整页面)。
+   */
+  antiBot?: {
+    /** 内容校验关键字:crawl 模式下 HTML 含该串才算成功, 否则转 browser 渲染 */
+    keyword?: string
+  }
 }
 
 /** 清洗单元格中的价格数字, 失败返回 null */
@@ -187,6 +197,59 @@ export function createTableAdapter(config: TableAdapterConfig) {
   /** 双值促销列集合(parse 复用,避免每行都做 Set 构造) */
   let dualColumns = new Set<string>(config.dualValuePromoColumns ?? [])
 
+  /** 解析表格 HTML → RawPrice[](三种策略通道共用) */
+  function parseTableRows(raw: string): RawPrice[] {
+    const rows = extractTableRows(raw)
+    const prices: RawPrice[] = []
+    const seen = new Set<string>()
+    for (const cells of rows) {
+      if (config.rowFilter && !config.rowFilter(cells)) continue
+      const normCells = (config.normalizeCells ?? defaultNormalize)(cells)
+      const tldHit = findTldCell(normCells)
+      if (!tldHit) continue
+      const [tld, tldIdx] = tldHit
+      if (seen.has(tld)) continue
+      // 收集 TLD 列之后的数字单元格(双值列同时取标准价与促销价)
+      const priceValues: (number | null)[] = []
+      const promoValues: (number | null)[] = []
+      for (let i = tldIdx + 1; i < cells.length; i++) {
+        const idx = i - (tldIdx + 1)
+        const role = effective.columnOrder[idx]
+        if (role && dualColumns.has(role)) {
+          const [main, promo] = parseDualPrice(cells[i], effective.numberFormat)
+          priceValues.push(main)
+          promoValues.push(promo)
+        } else {
+          priceValues.push(parsePrice(cells[i], effective.numberFormat))
+          promoValues.push(null)
+        }
+      }
+      if (priceValues.every((v) => v === null)) continue
+      const price: RawPrice = { tld, currency: effective.currency, sourceUrl: effective.urls[0] }
+      let vi = 0
+      for (const role of effective.columnOrder) {
+        if (vi >= priceValues.length) break
+        const value = priceValues[vi]
+        const promo = promoValues[vi]
+        vi++
+        if (role === "skip") continue
+        if (role === "register") price.registerPrice = value
+        else if (role === "renew") price.renewPrice = value
+        else if (role === "transfer") price.transferPrice = value
+        else if (role === "restore") price.restorePrice = value
+        // 双值列: 标准价已被上面的 role 承接, 促销价(第二个,更小)进 promotionPrice
+        if (promo != null && (value == null || promo < value) && price.promotionPrice == null) {
+          price.promotionPrice = promo
+        }
+      }
+      if (price.registerPrice == null && price.renewPrice == null && price.transferPrice == null) continue
+      seen.add(tld)
+      prices.push(price)
+    }
+    if (prices.length === 0) throw new Error(`${config.slug} 表格解析结果为空(页面结构可能已变化)`)
+    return prices
+  }
+
   const definition: AdapterDefinition = {
     slug: config.slug,
     name: config.name,
@@ -244,57 +307,26 @@ export function createTableAdapter(config: TableAdapterConfig) {
           return pages.join("\n<!--PAGE_BREAK-->\n")
         },
         parse(raw): RawPrice[] {
-          const rows = extractTableRows(raw)
-          const prices: RawPrice[] = []
-          const seen = new Set<string>()
-          for (const cells of rows) {
-            if (config.rowFilter && !config.rowFilter(cells)) continue
-            const normCells = (config.normalizeCells ?? defaultNormalize)(cells)
-            const tldHit = findTldCell(normCells)
-            if (!tldHit) continue
-            const [tld, tldIdx] = tldHit
-            if (seen.has(tld)) continue
-            // 收集 TLD 列之后的数字单元格(双值列同时取标准价与促销价)
-            const priceValues: (number | null)[] = []
-            const promoValues: (number | null)[] = []
-            for (let i = tldIdx + 1; i < cells.length; i++) {
-              const idx = i - (tldIdx + 1)
-              const role = effective.columnOrder[idx]
-              if (role && dualColumns.has(role)) {
-                const [main, promo] = parseDualPrice(cells[i], effective.numberFormat)
-                priceValues.push(main)
-                promoValues.push(promo)
-              } else {
-                priceValues.push(parsePrice(cells[i], effective.numberFormat))
-                promoValues.push(null)
-              }
-            }
-            if (priceValues.every((v) => v === null)) continue
-            const price: RawPrice = { tld, currency: effective.currency, sourceUrl: effective.urls[0] }
-            let vi = 0
-            for (const role of effective.columnOrder) {
-              if (vi >= priceValues.length) break
-              const value = priceValues[vi]
-              const promo = promoValues[vi]
-              vi++
-              if (role === "skip") continue
-              if (role === "register") price.registerPrice = value
-              else if (role === "renew") price.renewPrice = value
-              else if (role === "transfer") price.transferPrice = value
-              else if (role === "restore") price.restorePrice = value
-              // 双值列: 标准价已被上面的 role 承接, 促销价(第二个,更小)进 promotionPrice
-              if (promo != null && (value == null || promo < value) && price.promotionPrice == null) {
-                price.promotionPrice = promo
-              }
-            }
-            if (price.registerPrice == null && price.renewPrice == null && price.transferPrice == null) continue
-            seen.add(tld)
-            prices.push(price)
-          }
-          if (prices.length === 0) throw new Error(`${config.slug} 表格解析结果为空(页面结构可能已变化)`)
-          return prices
+          return parseTableRows(raw)
         },
       },
+        // 静态价目表被 Cloudflare/WAF 拦截或直连间歇限流时的聚合反爬降级:
+        // 改走聚合服务(CRAWL_SERVICE_URL) FlareSolverr+Browserless 自动降级抓取,
+        // 返回完整 HTML 后复用同一 parseTableRows 解析。
+        ...(config.antiBot
+          ? [
+              {
+                type: "anti-bot" as const,
+                url: config.urls[0],
+                antiBot: {
+                  keyword: config.antiBot.keyword,
+                },
+                parse(raw: string): RawPrice[] {
+                  return parseTableRows(raw)
+                },
+              },
+            ]
+          : []),
         // JS 渲染表格的浏览器降级：HTML 解析拿不到时，把同一个价格页交给
         // 远程浏览器服务(BROWSER_SERVICE_URL)渲染并提取，再走默认 parse。
         ...(config.browser

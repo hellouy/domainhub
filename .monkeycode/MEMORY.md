@@ -83,6 +83,10 @@ Entries discovered by the Agent during task execution should follow this format:
   - **多级后缀坑**：activedomains 旧正则 `[a-z0-9-]*` 不含点号把 com.ru 截断成 com 污染根后缀——新增解析器务必核对多级后缀。
   - **queryStatistics 隐蔽 bug**：raw sql 模板插值列对象产生未限定 `ON "id"="registrar_id"`（prices/registrars 都有 id）报 ambiguous，withFallback 吞错回退 seed 显示陈旧统计。排查 withFallback 类接口须本地直连 DB 跑函数，不能只看线上 200。
   - **is_active 陷阱**：registrars.is_active=false 即使 prices 有数据也被 `/api/v1/registrars` 过滤不进前端；修复适配器写库后必须显式 `update registrars set is_active=true where slug=...`；sync-registrars 的 onConflictDoNothing 不改已有行 is_active。
+  - **IANA 二轮扩展结论（2026-10-10）**：register4less（ICANN #1082）静态价目表 `register4less.com/info/pricing`，433 行 `<tr><td>TLD(大写,含AB.CA二级)</td><td>描述</td><td>&dollar;XX.XX</td></tr>`，仅注册价 USD，parse 420 行入库（register=USD，无 renew），com/net/org $17.95。适配器因"TLD 不在首列+描述列+空分隔格"用 defineAdapter 自定义解析（参照 interserver），不用 createTableAdapter——table-adapter 价格收集循环遍历原始 cells 而非 normalize 后数组，列错位。
+  - **其余候选全部不可采**：uk2/123-reg/ionos/webnic/cosmotown（价格 JS 渲染或搜索 API）、webnames.ca（站点下线 404）、123-reg（94B challenge）、sav.com/register.com（数据中心 IP 被 Cloudflare 拦 525）、namesco（静态表仅 17 行且全是首年促销价、18 个 TLD 全被 DB 重复覆盖）、heartinternet/fasthosts（促销块非价目表）。同类已验证源（namecheap/porkbun/dynadot/spaceship/namesilo）均已接入。
+  - **重复覆盖也有价值**：新注册商 420 行中 418 行是已有 TLD 的第二个价格点（增强比价），仅 2 个新增后缀；扩量时优先用 cross-icann-db 反向对照 ICANN 3322 家清单筛未接入零售注册商，但多数是 JS 动态价目表——命中"无登录+无 Cloudflare+结构稳定"的静态表标准才值得写适配器。
+  - **探测前必须先核对适配器 slug 列表（2026-10-10 教训）**：本批 ovh（已有 ovhcloud API 适配器 941 行）与 atak（已有 atakdomain 958 行）均因未先查 `grep -n "slug:" adapters/*.ts` 而误做重复适配器。规范：任何新候选写适配器前，先 `grep -rn "slug:" adapters/*.ts` 取 106 个既有 slug，并 `npx tsx scripts/tmp-audit/check-dup.ts`（ilike 查询）核对 DB 别名，避免重名。误做后修复：删文件 + index.ts 移除 + DB `delete prices/registrars` + revert 提交。
 
 [User Instruction Summary]
 - Date: 2026-09-28
@@ -126,3 +130,132 @@ Entries discovered by the Agent during task execution should follow this format:
 - Instructions:
   - Spaceship：直连首页 403（Cloudflare），browser-worker /render 真实 Chrome UA 渲染成功（JS SPA）；定价走内部 BFF `POST /gateway/api/v1/pricing-bff/price/getPrices`（body=currencies:["USD"]+products[{productSlug,plan:{pricingPlanSlug:"regular",period:"P1Y",pricingPlanParams:{transfer:1,sld:"spaceship-query1"}}}]，单请求 ≤65 product，返回 regularPrice 标准 + price 促销）。自定义 extract script 页面上下文分块（60/批）重放，579 TLD 全量 ~24s。已入库 465 行含 18 促销（.com 9.68 vs 10.18），is_active=true。
   - table-adapter 新增 `dualValuePromoColumns` 配置：单元格含"原价 促销价"双值（lws "14.59€ 1.99 €"）时第二个更小值进 promotionPrice。lws 已配置 register 列，落 124 条促销，生产 `/api/v1/deals?registrar=lws` 验证通过。
+
+[Project Knowledge Summary]
+- Date: 2026-10-09
+- Context: Discovered by Agent while 价格数据完整性审计 + 批量修复适配器
+- Category: Troubleshooting & Debugging
+- Instructions:
+  - 价格完整性审计 SQL：`count(*) filter (where renew_price is null)` 按 registrar slug 分组，快速定位缺续费价的注册商。
+  - 本地批量重爬：设 `DATABASE_URL`（生产 Supabase）+ `BROWSER_SERVICE_URL=http://127.0.0.1:8840` + `BROWSER_SERVICE_TOKEN`，调 `runCrawlWithSdk(registrarId, {trigger:"manual"})`，直写生产库；JS 渲染适配器（onamae/exabytes/juming/namesilo/hostingkr/networksolutions）通过 playwright 策略经 browser-worker 渲染后正常解析。
+  - test-adapter.ts 用法：`DATABASE_URL=... BROWSER_SERVICE_URL=... BROWSER_SERVICE_TOKEN=... npx tsx scripts/test-adapter.ts <slug> --no-db`；带 browser env 时 playwright 策略自动生效。
+  - 源无续费价（不可修复）：vsys/imena/idwebhost/blacknight/exabytes/icdsoft/one/lcn/gzidc（源页面/API 无 renew 列）；mchost 378 行仅 7 有 renew；101domain 252 行仅 30 有 renew（pricing.htm 26 主流 TLD 有全维度，new_gtld_extensions.htm 仅注册价）。
+  - 适配器 URL 失效排查：curl 目标站首页后深挖 /domains、/pricing、/pricelist、本地化路径（如 loopia /domannamn/detaljerad_prislista/、aruba /listino-domini.aspx）；403/JS 渲染的用 browser-worker playwright 策略测试。
+
+[Project Knowledge Summary]
+- Date: 2026-10-09
+- Context: Discovered by Agent while 接入远程 Playwright Server
+- Category: Operations & Deployment
+- Instructions:
+  - 平台提供远程 Playwright Browser Server：`wss://pachong.china.tn`（Bearer token `b79b8155af569e66f29afd077a669ea89956aed95a22a89b`，服务端 playwright 1.62.1 / Chromium 151，自签名证书）。browser-worker 配置 `REMOTE_PLAYWRIGHT_URL=wss://...` + `REMOTE_PLAYWRIGHT_TOKEN=...` 即用 `chromium.connect()` 连远程而非本地 launch，SDK 的 HTTP `/render` 协议不变；远程模式下自动 `NODE_TLS_REJECT_UNAUTHORIZED=0`。
+  - playwright `chromium.connect()` 客户端版本必须与服务端精确一致（不匹配返回 428 Precondition Required）；已把 browser-worker 的 playwright 固定为 `1.62.1`。
+  - 远程 Playwright 服务器数据中心 IP 会被 Cloudflare 拦截（namesilo 返回 "Just a moment..."），反爬严的站点仍走本地 browser-worker；常规 JS 渲染站点（cosmotown 249 行 26s、aruba 360 行 16s）远程模式验证正常。
+   - browser-worker 常驻服务启动必须用 background_terminal 且 `timeout_ms` 设 0，否则会被按超时杀掉。
+   - **BROWSER_SERVICE 配置（2026-10-10 修复）**：SDK playwright 策略读 `BROWSER_SERVICE_URL/BROWSER_SERVICE_TOKEN`（POST `${URL}/render` + Bearer）。原指向 8840 远程已失效（token 变）；本地 8841（token `dev-local-chromium-worker-token-abcdef0123456789`）活着且本地 chromium 更稳。修复：`.env.local` 两变量改指 `http://127.0.0.1:8841`，但 tsx 脚本不自动加载 .env.local，运行须手动 `export BROWSER_SERVICE_URL/TOKEN` + `export DATABASE_URL=$(grep ...)`。修复后 15 家 playwright 注册商全部恢复采集（namecom 更新 586 行、dynadot 158、networksolutions 32、cloudns 12；spaceship/101domain 偶发 Cloudflare 限流 502 属正常，重试可成）。
+   - **storage 跳过即不刷新 updatedAt（设计）**：价格与既有行完全一致时 `skipped++` 不写库，updatedAt 保持旧值——「STALE(>7d)」是「价格自上次以来没变」而非缺陷。inwx/22cn 更新成功说明其价格确实变了。
+   - **续费价缺失多数是源设计**：register4less(420)/vsys(385)/mchost(371)/imena(361)/idwebhost(243)/blacknight(157)/exabytes(62) 等 noRenew=全行，适配器注释明确源「无续费/转入列」，非采集缺陷；注册价本身有比价价值。
+  - 全量 86 注册商首页促销码探测结论：首页渲染只能发现"首页级促销码"，多数注册商把码藏在独立促销页（`/promos/`、`/coupon_deals.htm`、`/promocodes`、`/promotions-and-free-offers`）。反爬分布：Cloudflare-challenge 拦 namecheap/namecom/onamae/lws/exabytes，captcha 拦 cloudns/westcn/connectreseller/regtons/vsys/cosmotown/lcn/blacknight/easyspace；本地 Chromium 对 Cloudflare 挑战仍无解。首页候选 token（如 osir SAMPLES、gname EXCHANGE、wpx SAVE79）均为页面噪音。
+  - **官方促销码采集方法论（替代聚合站）**：① SearXNG `site:<host> promo code OR promos OR deals OR coupons` 定向搜索找到官方促销页 URL（JSON 格式，自签名证书需脚本内 `NODE_TLS_REJECT_UNAUTHORIZED=0`，Bearer 鉴权，单查询 45s 超时+重试，勿加 time_range 否则变慢）；② browser-worker 渲染促销页，提取"use code X" / "Promo code: X" / 大写字码+价格块（`CODE|US$3.60|/年|US$9.66|/年`）。甄别噪音：gandi 的 EXCLUSIONS/FOLLOW/PLEASE、namesilo 的 THAT/WHILE、hostpoint 的 TEST、epik 的 OFFERINGS 均为 FAQ/普通词误报，需人工确认。③ 真实码入库 SQL：TLD 特定码 `UPDATE prices p SET promo_code=$c FROM tlds t WHERE p.tld_id=t.id AND p.registrar_id=$rid AND t.tld=ANY($tlds) AND p.promo_code IS NULL`，通用码去掉 `t.tld=ANY` 映射全部行。同注册商多码仅首码落位（一行一个 promo_code）。成果：with_code 21→919（namecheap NEWCOM679/ENTITLES/BDAYTRANSFER26、dynadot DYNA12、namecom SAVE15/NEWHOME/1006ETE6、spaceship COM67/NET19/XYZ52/IO85/SPSR86、101domain WELCOME/SAVEONDOMAINS、exabytes 1010SALE、networksolutions NSDOMAINS30）。
+   - **多码支持（2026-10-10）**：prices/price_history 各加 `promo_codes jsonb` 列（`PromoCodesRow[]`：{code,promotionPrice?:number,promotionEndsAt?:string,sourceUrl?:string}），`promo_code` 保留为主码（数组首码）向后兼容，不建关联表。迁移=ALTER TABLE + 回填现有 promo_code→单元素数组；多码回填用 `promo_codes = promo_codes || jsonb_build_array(...)` + `@>` 防重复。全链路 select 均返回 promoCodes；storage save 时数组优先写 jsonb、首码作主码；admin action 多码输入每行 `CODE[,price[,YYYY-MM-DD][,url]]`，与单码互斥（两者只填一种）。jsonb 经 pg 返回 unknown，查询层必须 cast 成 PromoCodesRow[] 否则 TS 报错；jsonb 数组元素字段是 number（norm 后）而非 numeric string。deals 组件按码渲染多 chip + 独立复制。
+
+[User Instruction Summary]
+- Date: 2026-10-10
+- Context: IANA 注册商扩展探测 eNom 批发价目表时，用户纠正扫描范围
+- Instructions:
+  - 不对批发商做扫描（eNom/Tucows/OpenSRS/Key-Systems/Hexonet/1API/InterNetX/Realtime Register/ResellerClub/Synergy Wholesale/PDR 等），只要零售商家的价格
+  - 此前「批发/API 价源是主杠杆」的扩量思路（2026-09-28 条目）自此被取代：候选筛选与适配器只针对面向终端用户的零售注册商
+
+[Project Knowledge Summary]
+- Date: 2026-10-08
+- Context: Discovered by Agent while favicon DB 缓存接入 + 生产权限诊断
+- Category: Operations & Deployment
+- Instructions:
+  - 生产与本地 DB 连接角色不同：本地 `.env.local` 的 DATABASE_URL 是表 owner `tldbi_app`（全权限）；Vercel 生产用 tldbi_POSTGRES_URL（Supabase pooler）以 `postgres` 角色运行，对 registrars 等表**只有 SELECT 无 UPDATE/INSERT**。Vercel 上任何写操作若遇 `permission denied for table X`，用本地连接 `GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE X TO postgres` 后即可生效，无需改代码或环境变量。
+  - Next.js App Router 下划线前缀目录（如 `api/_diag`）是私有文件夹**不参与路由**，404；诊断路由须用普通命名（如 `api/diag`）。
+  - drizzle/pg 查询中 `column === value` 不会生成 WHERE（Column 对象 !== 字符串得 false 被忽略，返回全表 limit 1 错行），必须用 `eq(column, value)`。
+  - pg 驱动 bytea 默认返回 Buffer，drizzle customType 的 fromDriver/toDriver 直接透传 Buffer 即可 roundtrip。
+
+[Project Knowledge Summary]
+- Date: 2026-10-10
+- Context: Discovered by Agent while 补全注册/续费/转移价格，排查 OVH 转移价 209 行缺失
+- Category: Troubleshooting & Debugging
+- Instructions:
+  - adapter-sdk `validatePrices`（packages/adapter-sdk/validation.ts）把 register/renew/transfer/restore 中 `<= 0.5` 的价格视为「占位未公布」置 null。但 transferPrice 的 0 是注册商明确的「免费转移」报价（OVH 对 209 个 TLD、istanco 对 rs 提供免费转入），2026-10-10 已改为 `field !== "transferPrice"` 时才对 <=0.5 置空——全库 106 家适配器里 transfer=0 仅 ovhcloud/istanco 两家出现，无副作用。
+  - 排查「源有价但 DB 缺」先跑 `scripts/tmp-audit/parse-vs-db.ts`（对比 62 家缺价注册商的 DB 三价 vs 实时 parse 增量）；多数缺价（register4less/vsys/imena 无续费列、stardomain/muumuu/value-domain 移管列标「-」、dynadot uk/co.uk tr_price="--"）是源设计，非解析漏采。
+
+[Project Knowledge Summary]
+- Date: 2026-10-10
+- Context: Discovered by Agent while 完善自动更新链路 + 本地全量补采
+- Category: Operations & Deployment
+- Instructions:
+  - **生产 cron 吞吐瓶颈**：`/api/cron/crawl` 每日 scheduleAll 全量入队后 drainQueue 受 `budgetMs=270_000`（serverless 300s 上限）限制每轮只采 ~20 家；priority-50 项每日新入队永远插队，priority-100 项（09-27 起）长期 pending 饿死。88 家中 24 家因此从未入队成功采集。解决：本地全量补采（scripts/recrawl-browser-registrars.ts --all 直连 runCrawlWithSdk 不经队列），已用后台终端跑每日调度循环（scripts/local-sync-scheduler.sh）。
+  - **卡死 running 项阻塞队列**：serverless 中途崩溃会留永久 `crawl_queue.status='running'` 项，dequeue 只认 pending/retrying，卡死项永不回收（曾有 6 个，最早 09-30）。已新增 `recoverStaleRunning()`（packages/scheduler），drainQueue 每轮首循环恢复 running>30min 的项（attempts 退避重入队或置 failed）。
+  - **render-table-adapter 鉴权缺失 bug**：adapters/shared/render-table-adapter.ts 的 renderHtml 只带 Content-Type/Accept 无 `Authorization: Bearer`，本地 worker 鉴权后 julyname/59cn/zwcn 全返回「未授权」。已补 token 头，三家恢复采集（616/107/42 TLD）。
+  - **recrawl-browser-registrars.ts 语义**：无参=20 家 playwright；`--all`=全部激活注册商；指定 slug=精确采集（无论策略类型，html/api 直连、playwright 走本地 8841）。注意空数组 only 过滤 BUG（`only=[]` 为 truthy 会筛掉全部），用 `onlyRaw?.length>0` 判空。
+  - **crawl_jobs/crawl_queue 审计**：`registrars.health`、`crawlJobs.status`、`crawl_queue.status` 三处状态各不同，排查先 `crawl_queue`（入队情况）→ `crawl_jobs`（执行成败）→ `prices.updated_at`（数据新鲜度）。全量刷新脚本：`scripts/recrawl-browser-registrars.ts --all`，约 88 家 30-60 分钟。
+
+[Project Knowledge Summary]
+- Date: 2026-10-10
+- Context: Discovered by Agent while 恢复远端 playwright 链路（用户指出 BROWSER_SERVICE_URL 已提供）
+- Category: Operations & Deployment
+- Instructions:
+  - **两套 BROWSER_SERVICE 链路勿混淆**：SDK 的 `BROWSER_SERVICE_URL` 必须是 HTTP 端点（`POST ${URL}/render` + Bearer）；用户提供的 `wss://pachong.china.tn` 是给 browser-worker 的 `REMOTE_PLAYWRIGHT_URL`（worker 内 `chromium.connect()` 连远端），二者不同变量。`BROWSER_SERVICE_URL=http://127.0.0.1:8840`（worker 转发远端）+ token `dev-local-remote-pw-worker-token-0123456789abcdef`；本地 chromium 备用 worker 在 8841。
+  - **远端 playwright 可用性**：`wss://pachong.china.tn` + Bearer `b79b8155af569e66f29afd077a669ea89956aed95a22a89b`，服务端 playwright 1.62.1。connect 必须 `NODE_TLS_REJECT_UNAUTHORIZED=0`（自签名证书，playwright 的 chromium.connect 不认 Node 层 env，须在 worker 进程环境设）；客户端 playwright 版本必须与服务端精确一致否则 428。
+  - **worker 长时间运行退化**：8841 本地 chromium 健康检查正常但 render 卡死（example.com goto 60s 超时），8840 远端连接同样会随实例老化失效——重启即恢复（`background_terminal_kill` 旧实例释放端口再重建）。本地补采已切到 8840 远端，julyname 渲染从本地 99-145s 降到 8s。
+   - **local-sync 自愈**：`scripts/local-sync.sh` 每轮先 curl health 探测 8840，挂了用 nohup 带 `REMOTE_PLAYWRIGHT_URL/TOKEN + NODE_TLS_REJECT_UNAUTHORIZED=0` 重启 worker，再跑全量补采。
+
+[Project Knowledge Summary]
+- Date: 2026-10-10
+- Context: Discovered by Agent while 实现 SearXNG 官方促销码自动采集 + 促销码丢失根因定位
+- Category: Operations & Deployment
+- Instructions:
+  - **SearXNG 端点**：`https://paqu.china.tn/search?q=<query>&format=json`，Bearer `f2382174db20592e328a9611cd8850207fa2fa7d37db2bb3`，实测 HTTP 200；但**间歇性限流**——连续查询后任意 query 返回 0 条（含 query=test），冷却 ~10s 恢复，脚本需 3 次重试 + 查询间 6s 冷却。`site:www.name.com` 会 0 条，须剥 `www.` 前缀用裸域（`site:name.com` 才 20 条）。
+  - **collect-promo-codes.ts 促销码采集脚本**：SearXNG `site:<host> promo code OR promos OR deals OR coupons` 找官方促销页 → 8840 渲染 → 正则提取"use code X / promo code X / with code X"（先 `replace(/<[^>]+>/g," ")` 剥 HTML 标签再匹配，否则跨标签匹配失败）→ 过滤噪音（全大写强制 + NOISE 词表）→ 落库为**对象数组** `[{code}]` 合并去重（jsonb_agg(DISTINCT)）。通用码映射该注册商全部 TLD 行；首码作主码 `(x #>> '{}')`。搜索失败 fallback 常见路径 `/promos /promocodes /promo /deals /offers /domain/sales /sales /special-offers /promotions`。有效源：namecom /promocodes 提取 SAVE15/NEWHOME/1006ETE6；spaceship/dynadot/porkbun 的码不在渲染文本中（JS 交互），采集盲区。
+  - **促销码丢失根因（919→42）**：全量补采走 storage sink，适配器 parse 返回的 price 不含 promoCode 时 `next.promoCodes=null`，`codesEqual` 判定不等 → 价格若有变化即 UPDATE 覆盖清空既有 promo_code。促销码脚本 SQL 直写绕过 storage，**必须在全量补采之后运行**（local-sync.sh 已如此编排），否则被下一轮补采清空。
+  - **worker 必须 npm start（node --experimental-strip-types）**：再次用 `npx tsx src/server.ts` 启动 8840 导致 /render 全部 `__name is not defined`（页面端 evaluate 用不了 tsx 宿主），重启必须用 `npm start`（REMOTE_PLAYWRIGHT_URL/TOKEN + NODE_TLS_REJECT_UNAUTHORIZED=0）。local-sync.sh 自愈已强化为 render_ok() 探活（health + 真实 render example.com），不只查 health。
+  - **promo_codes 列结构**：必须对象数组 `[{code,promotionPrice?,promotionEndsAt?,sourceUrl?}]`（storage 读取 `c.code`），纯字符串数组 `["X"]` 会导致 storage 读到 undefined 且结构脏；迁移 SQL `jsonb_agg(DISTINCT CASE WHEN jsonb_typeof(x)='string' THEN jsonb_build_object('code',x) ELSE x END)` 归一化。
+  - **promo_code 主码提取坑**：从对象数组取主码必须 `x->>'code'`（取对象的 code 字段），不能用 `x #>> '{}'`（对对象返回整串 JSON 如 `{"code":"during"}` 写进 text 列）。曾致 spaceship 465 行 promo_code=`{"code":"during"}` 污染，已清理。
+   - **SearXNG 降级(2026-10-10)**：服务端后端引擎对多数 query 返回 0 条（query=test 只 1 条、site:name.com 0 条），非限流可等——促销码采集退化为仅 fallback 路径（/promos /promocodes /promo 前 3 个），只对 namecom 这类固定促销页有效。SearXNG 恢复前全量促销码采集低收益，勿空转。
+
+[Project Knowledge Summary]
+- Date: 2026-10-11
+- Context: Discovered by Agent while 扩展非洲/小型注册商覆盖
+- Category: Troubleshooting & Debugging
+- Instructions:
+  - **TLD 含点正则坑**：适配器提取 TLD 的捕获组若用 `([a-z0-9-]{2,24})`（不含点），`co.za`/`org.za` 等二级后缀国别域名永远匹配失败（`.co.za` 的 `co` 后是 `.za` 不是 `</dt>`）。必须允许点：`([a-z0-9][a-z0-9.-]{1,23})`。afrihost 因此曾只入库 101 个单段 TLD 漏掉全部 za 系，修复后 108 条。
+  - **afrihost.ts（南非,id=2005）**：`https://www.afrihost.com/za/domains`，ZAR，结构 `<dt>.tld</dt><dd><span class="formatted-price"> R197.<span>00`，R 前可有空格；只采注册价单列（页面 JSON 三价顺序歧义不采）。
+  - **whogohost.ts（尼日利亚,id=2110）**：`https://whogohost.com/domains/domain-pricing`，NGN 三价，结构 `<tr><td>.tld</td><td>₦reg</td><td>₦renew</td><td>₦transfer</td>`，443 TLD。
+  - **非洲 ccTLD 覆盖(2026-10-11)**：53 个非洲 ccTLD 中 36 个有报价；er/sz/gh/gn/lr/mz/za/zw/eh 的裸 ccTLD 在 tlds 表无记录（注册局实际只开二级如 co.za/com.gh，属合理缺失）。co.za 21 家/ng 20 家/mu 25 家/ke 14 家卖家，非洲主要国别域名覆盖已充分。东非小商（habari.co.tz/xneelo/kenyawebexperts）多为 SPA 需 JS 渲染，静态价目表稀缺，投入产出低暂缓。
+
+[Project Knowledge Summary]
+- Date: 2026-10-11
+- Context: Discovered by Agent while 补齐转移价缺口 + 建立定期更新机制
+- Category: Operations & Deployment
+- Instructions:
+  - **转移价缺口摸底结论(2026-10-11)**：转移价 23738→24733 行(67%→70%)。已补：easyspace 525(改 defineAdapter 解析 "Domain Transfer In Costs" 表，含 26 个 £0 免费转入)、rebel 470(API 的 Bo 字段=转移价，Rebel 全部免费转移=0)。spaceship 代码已改(API 加 "transfer" priceType + 修正 parse 字段名 register/renew/transfer/promo——旧代码 transfer 槽被 promo 复用且字段名错位)但 Cloudflare 拦截 BFF 待环境恢复后验证。源本身无转移价(勿再排查)：netzone/domaincostclub/whc/rumahweb/aruba/metaname/osir/muumuu-domain；forpsi 转移 tab 需 JS 渲染暂缓。
+  - **parsePrice 对 <=0 返回 null**：table-adapter 的 parsePrice 把 £0(免费转移)当无效值丢弃；需要免费转移语义时在适配器内对原始文本单独判断(`/0/.test(text.replace(/[^0-9]/g,""))` → 0)。adapter-sdk validation 已区分 transfer=0(免费转入合法)与其它价 <=0.5(占位置 null)。
+  - **storage skip 刷新 updated_at(2026-10-11)**：之前价格一致就 continue 导致 updated_at 停留在上次价格变化(15 家"过期"实为价格无变化)。已改为 skip 时也 `UPDATE SET updated_at=now()`——updated_at 语义变为"最近检查时间"。已验证 dreamhost 补采后更新到当天。
+  - **local-sync.sh 兜底补采**：全量轮后跑 scripts/list-stale-slugs.ts(打印 >7 天过期 slug 单行)非空则定向重试；全量/兜底/促销采集均加 timeout(7200/3600/3600)防挂起阻塞调度循环。曾发生第一轮 local-sync.sh 在 recrawl 中途静默死亡(日志无错误、进程消失)而调度循环干等 86400s 的事故——重启调度循环恢复。
+  - **SearXNG 仍降级(2026-10-11)**：site:name.com promo code 仍 0 条，促销码扩采继续被阻塞；调度器每日自动重试 + fallback 固定路径兜底，恢复后无需人工干预。
+
+[Project Knowledge Summary]
+- Date: 2026-10-11
+- Context: Discovered by Agent while 修复转移价缺口（onama/afrihost/onlydomains/spaceship/inwx/hostpoint/openprovider/iwantmyname）
+- Category: Troubleshooting & Debugging
+- Instructions:
+  - **零值过滤 bug 类（duplicate pattern）**：适配器内 `num = v > 0 ? v : null` 形式的解析会丢掉合法"免费转入"(transferPrice=0)。多个注册商曾被此 bug 拖累：inwx(337 免费转移全被丢)、hostpoint(data-tra="0.00" 45 条)、openprovider(transferFee=0 共 331)、iwantmyname(transfer.price='Free' 字符串 18 条)。修复模式：转移价单独用 `n >= 0` 的 numTr，其余字段保持 `n > 0`。排查转移缺口时先看源里 transfer 是否为 0 或 "0.00"/"Free"/"free"。
+  - **iwantmyname 三个解析坑**：(a) 与逗号——价格 `"3,546.00"` 会被 `Number.parseFloat` 截成 3（DB 里 .security 曾记 3.00，实为 3546.00），必须 `replace(/,/g,"")`；(b) transfer 值可能是字符串 `'Free'`；(c) registration 含 `discountedPrice`(welcome offer，如 .com 19.99→8.99)，`hasDiscount=="yes"` 时用促销价。已全部修复并写库（.com=8.99/security=3546/transfer 637 覆盖）。
+  - **已确认源限制的转移缺口（勿再排查）**：onamae 78/443（源无转入列）、muumuu-domain 318/418（源 transfer null 326，0 免费）、ukrnames 96/471（源 null 99）、regtons 153（文档明确 "0,00=不提供→null"，源自设计）、forpsi 243（capability transfer:false）、101domain 222（new_gtld_extensions.htm 只有注册价，设计如此）、namecom 21 缺注册价（ccTLD 注册列"N/A"，vana/je/gg 页面 404，源不售注册）、openprovider 15 缺注册价（registerFee 空字符串）。
+  - **spaceship 三价已写库验证**：465 TLD 全部 register+renew，462 含 transfer；.com reg=9.86/renew=10.18/transfer=9.68/promo=9.08。afrihost 139 行三价齐全（co.za/org.za/net.za 免费转移=0）。onlydomains 878 行转移全覆盖（758 免费 $0）。openprovider 2069 行转移全覆盖（332 免费=0）+ 15 缺注册价源限制。
+  - **大缺口注册商二轮排雷（2026-10-11）**：转移价缺口 8535 行里头部注册商逐一探源后全部确认源限制：netzone 1019（表仅4列 tld/国家/注册/续费，页内 110 处 "transfer" 全是 addToCart JS 交互词）、register4less 420（页无 transfer 提及）、value-domain 412（移管列源本身 424/483 标「-」不提供，仅 ~60 可抓）、whc 440/rumahweb 386（页内 transfer 仅为营销文案非价列）、aruba 361（data-tra 误匹配实为 data-trace-event 埋点）、imena 361/vsys 385/mchost 380/idwebhost 244/blacknight 157/keliweb 668（源无转移列）、lws 215（Cloudflare 403）、hostpoint 882（data-tra 仅部分 TLD）。**唯一可修 value-domain**：源同 TLD 多渠道行（eNom/GMO/KeySystems）跨渠道合并转移价已落地（480 行 +1 转移）。结论：转移缺口大头是源设计，非采集缺陷。
+  - **value-domain 重复定义坑（2026-10-11）**：`adapters/value-domain.ts` 与 `adapters/table-registrars.ts` 都导出 `valueDomainAdapter`，index.ts 一直引 table-registrars 版（createTableAdapter，URL `/domain/price/`），独立文件是死代码。新写独立适配器若与 table-registrars 同名必须同时改 index.ts 引用来源，否则改动不生效（排查用 test-adapter 输出的 adapter version 判断读到哪份）。
+
+[Project Knowledge Summary]
+- Date: 2026-10-12
+- Context: Discovered by Agent while 排查"老注册商更新时间不一致"(root cause 不是 skip 逻辑, 而是调度跑不完)
+- Category: Operations & Deployment
+- Instructions:
+  - **"没更新的注册商"根因链(2026-10-12)**：95 家 active 全量 recrawl 需 60-120 分钟, local-sync.sh 全量轮原 timeout=7200s(2h) 每轮在中途被 SIGTERM 截断(`补采失败: 124`), 且 recrawl --all 按适配器注册顺序固定, 排在尾部(如 stardomain/gatehills 等 html 直连源)的注册商每轮都排不上, updated_at 停留在 10-04/10-05。**修复二件套**：(a) recrawl-browser-registrars.ts `--all` 改为按 max(prices.updated_at) 升序("最久未更新优先")排序, 即使被截断也先刷最旧的；(b) local-sync.sh 全量轮 timeout 7200→21600。修复后 27 家 stale 补刷成功 22 家。
+  - **判定"是否真的过期"的 SQL**：`select slug, max(p.updated_at) from registrars r join prices p on p.registrar_id=r.id where r.is_active group by slug having max(p.updated_at) < now() - interval '24 hours' order by max(p.updated_at) asc`。注意 list-stale-slugs.ts 用的是 >7 天阈值(太宽, 用户看到"几天没更新"时它不报)。
+  - **同批 FAIL 残留分类(勿重复排查)**：ccireg 页变 Cloudflare JS 挑战(failedChecks 混淆, html 直连拿 0 行, 需反爬通道)；zwcn/59cn/julyname/pskz 是 playwright 策略依赖远端服务, 环境恢复后 recrawl 自动好; netzone 已修(URL 加 www 前缀即可, 原 301 页面被当解析源)。
+  - **ccireg.com 的 Cloudflare 挑战特征**：curl 返回 200/11KB, 但页面 JS 含 `w='pdata',m='failedChecks',o='/z0f76a1d14fd21a8fb5fd0d03e0fdc3d3cedae52f'` —— 判定反爬升级用 `failedChecks` 关键字, 别当成"页面结构变了"去改解析。

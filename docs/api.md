@@ -55,7 +55,7 @@
 
 ## Cron
 
-`GET /api/cron/crawl` 由 Vercel Cron 每日 03:00 UTC 调用，`GET /api/cron/backfill` 每 5 分钟推进回填一批。两者都要求至少 32 字符的 `CRON_SECRET`，并以恒时比较校验 `Authorization: Bearer ...`；未配置密钥时拒绝请求。5 分钟 Cron 频率需要支持分钟级 Cron 的 Vercel 计划。
+`GET /api/cron/crawl` 由 Vercel Cron 每日 03:00 UTC 调用，`GET /api/cron/backfill` 每日 03:30 UTC 以 Drain 模式推进回填(单次 tick 内循环推进多批，直到全部完成或达 240s 时间预算)。两者都要求至少 32 字符的 `CRON_SECRET`，并以恒时比较校验 `Authorization: Bearer ...`；未配置密钥时拒绝请求。回填采用每日一次 Cron 以兼容 Vercel Hobby 计划限制。
 
 ## 兼容性承诺
 

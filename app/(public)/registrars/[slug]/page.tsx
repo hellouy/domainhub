@@ -127,6 +127,7 @@ export default async function RegistrarPage({ params }: Props) {
                       price={p.registerPrice}
                       promotionPrice={p.promotionPrice}
                       promoCode={p.promoCode}
+                      promoCodes={p.promoCodes}
                       promotionEndsAt={p.promotionEndsAt}
                       currency={p.currency}
                     />
@@ -191,6 +192,7 @@ export default async function RegistrarPage({ params }: Props) {
                       price={p.registerPrice}
                       promotionPrice={p.promotionPrice}
                       promoCode={p.promoCode}
+                      promoCodes={p.promoCodes}
                       promotionEndsAt={p.promotionEndsAt}
                       currency={p.currency}
                     />

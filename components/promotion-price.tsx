@@ -9,12 +9,14 @@ export function PromotionPrice({
   price,
   promotionPrice,
   promoCode,
+  promoCodes,
   promotionEndsAt,
   currency,
 }: {
   price: string | null
   promotionPrice?: string | null
   promoCode?: string | null
+  promoCodes?: { code: string }[] | null
   promotionEndsAt?: Date | string | null
   currency: string
 }) {
@@ -48,6 +50,11 @@ export function PromotionPrice({
         {promoCode && (
           <span className="text-xs text-muted-foreground">
             {t("promo.code")}: <span className="font-mono text-foreground">{promoCode}</span>
+          </span>
+        )}
+        {promoCodes && promoCodes.length > 1 && (
+          <span className="text-xs text-muted-foreground" title={promoCodes.map((c) => c.code).join(", ")}>
+            +{promoCodes.length - 1} {t("promo.code")}
           </span>
         )}
       </div>

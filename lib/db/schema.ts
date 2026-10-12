@@ -1,5 +1,6 @@
 import {
   boolean,
+  customType,
   integer,
   jsonb,
   numeric,
@@ -9,6 +10,19 @@ import {
   timestamp,
   unique,
 } from "drizzle-orm/pg-core"
+
+/** bytea 二进制列：用于注册商 favicon 缓存等小体积二进制数据 */
+export const bytea = customType<{ data: Buffer; driverData: Buffer }>({
+  dataType() {
+    return "bytea"
+  },
+  fromDriver(value) {
+    return Buffer.isBuffer(value) ? value : Buffer.from(String(value), "binary")
+  },
+  toDriver(value) {
+    return value
+  },
+})
 
 export const adminLoginAttempts = pgTable("admin_login_attempts", {
   ipHash: text("ip_hash").primaryKey(),
@@ -40,6 +54,12 @@ export const registrars = pgTable("registrars", {
   adapterVersion: text("adapter_version"),
   /** 采集优先级（数字越小越优先） */
   priority: integer("priority"),
+  /** favicon 二进制缓存（bytea），命中时直接返回，无需外部存储 */
+  faviconData: bytea("favicon_data"),
+  /** favicon 内容类型（image/png 等） */
+  faviconContentType: text("favicon_content_type"),
+  /** favicon 缓存更新时间 */
+  faviconUpdatedAt: timestamp("favicon_updated_at", { withTimezone: true }),
 })
 
 export const tlds = pgTable("tlds", {
@@ -81,6 +101,8 @@ export const prices = pgTable(
     promotionPrice: numeric("promotion_price", { precision: 10, scale: 2 }),
     /** 优惠码（公开来源），空=无 */
     promoCode: text("promo_code"),
+    /** 多优惠码数组：[{code, promotionPrice?, promotionEndsAt?, sourceUrl?}]，promoCode 列为主码（第一个/最优惠） */
+    promoCodes: jsonb("promo_codes"),
     /** 促销截止时间（UTC），空=长期/未知 */
     promotionEndsAt: timestamp("promotion_ends_at", { withTimezone: true }),
     sourceUrl: text("source_url"),
@@ -100,6 +122,7 @@ export const priceHistory = pgTable("price_history", {
   // ---- 特价/优惠券维度（deals-and-coupons）----
   promotionPrice: numeric("promotion_price", { precision: 10, scale: 2 }),
   promoCode: text("promo_code"),
+  promoCodes: jsonb("promo_codes"),
   promotionEndsAt: timestamp("promotion_ends_at", { withTimezone: true }),
   recordedAt: timestamp("recorded_at", { withTimezone: true }).notNull().defaultNow(),
 })

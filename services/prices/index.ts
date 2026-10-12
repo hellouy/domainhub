@@ -29,6 +29,12 @@ import { computeRegistrarScore } from "@/lib/registrar-score"
 
 const num = (v: string | null): number | null => (v === null ? null : Number.parseFloat(v))
 
+/** jsonb(unknown) → 结构化的多码数组；非数组输入视为 null */
+const asPromoCodes = (v: unknown): import("@/lib/db/seed-fallbacks").PromoCodesRow[] | null => {
+  if (!Array.isArray(v)) return null
+  return v as import("@/lib/db/seed-fallbacks").PromoCodesRow[]
+}
+
 type QueryDataSourceState = { source: "database" | "seed"; checkedAt: string | null }
 let queryDataSourceState: QueryDataSourceState = { source: "database", checkedAt: null }
 
@@ -150,6 +156,7 @@ export async function queryPrices(filter: { registrar?: string; tld?: string; li
           transferPrice: prices.transferPrice,
           promotionPrice: prices.promotionPrice,
           promoCode: prices.promoCode,
+          promoCodes: prices.promoCodes,
           promotionEndsAt: prices.promotionEndsAt,
           sourceUrl: prices.sourceUrl,
           updatedAt: prices.updatedAt,
@@ -167,6 +174,7 @@ export async function queryPrices(filter: { registrar?: string; tld?: string; li
         renewPrice: num(r.renewPrice),
         transferPrice: num(r.transferPrice),
         promotionPrice: num(r.promotionPrice),
+        promoCodes: asPromoCodes(r.promoCodes),
       }))
     },
     () => seedPricesRows(filter),
@@ -200,6 +208,7 @@ export async function queryHistory(filter: {
           transferPrice: priceHistory.transferPrice,
           promotionPrice: priceHistory.promotionPrice,
           promoCode: priceHistory.promoCode,
+          promoCodes: priceHistory.promoCodes,
           promotionEndsAt: priceHistory.promotionEndsAt,
           recordedAt: priceHistory.recordedAt,
         })
@@ -216,6 +225,7 @@ export async function queryHistory(filter: {
         renewPrice: num(r.renewPrice),
         transferPrice: num(r.transferPrice),
         promotionPrice: num(r.promotionPrice),
+        promoCodes: asPromoCodes(r.promoCodes),
       }))
     },
     () => [],
@@ -258,6 +268,7 @@ export async function queryDeals(filter: {
           transferPrice: prices.transferPrice,
           promotionPrice: prices.promotionPrice,
           promoCode: prices.promoCode,
+          promoCodes: prices.promoCodes,
           promotionEndsAt: prices.promotionEndsAt,
           sourceUrl: prices.sourceUrl,
           updatedAt: prices.updatedAt,
@@ -280,6 +291,7 @@ export async function queryDeals(filter: {
         renewPrice: num(r.renewPrice),
         transferPrice: num(r.transferPrice),
         promotionPrice: num(r.promotionPrice),
+        promoCodes: asPromoCodes(r.promoCodes),
       }))
     },
     () => [],
@@ -302,6 +314,7 @@ export async function queryCheapest(tld: string, limit = 20) {
           transferPrice: prices.transferPrice,
           promotionPrice: prices.promotionPrice,
           promoCode: prices.promoCode,
+          promoCodes: prices.promoCodes,
           promotionEndsAt: prices.promotionEndsAt,
           effectivePrice: sql<string>`CASE WHEN ${prices.promotionPrice} IS NOT NULL AND ${prices.promotionPrice} < ${prices.registerPrice} THEN ${prices.promotionPrice} ELSE ${prices.registerPrice} END`,
         })
@@ -322,6 +335,7 @@ export async function queryCheapest(tld: string, limit = 20) {
           transferPrice: num(r.transferPrice),
           promotionPrice: num(r.promotionPrice),
           effectivePrice: num(r.effectivePrice),
+          promoCodes: asPromoCodes(r.promoCodes),
         })),
       }
     },

@@ -1,5 +1,4 @@
-import { get, list, put } from "@vercel/blob"
-import { and, eq } from "drizzle-orm"
+import { and, eq, isNull, or } from "drizzle-orm"
 import { NextResponse } from "next/server"
 import { db } from "@/lib/db"
 import { registrars } from "@/lib/db/schema"
@@ -59,18 +58,20 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
 
   try {
     const [registrar] = await db
-      .select({ website: registrars.website })
+      .select({
+        website: registrars.website,
+        faviconData: registrars.faviconData,
+        faviconContentType: registrars.faviconContentType,
+      })
       .from(registrars)
       .where(and(eq(registrars.slug, slug), eq(registrars.isActive, true)))
       .limit(1)
 
     if (!registrar) return notFound()
 
-    const cachedBlobs = await list({ prefix: `registrar-favicons/${slug}.`, limit: 10 })
-    const cachedIcon = cachedBlobs.blobs.find((blob) => blob.pathname.startsWith(`registrar-favicons/${slug}.`))
-    if (cachedIcon) {
-      const cachedFile = await get(cachedIcon.pathname, { access: "public" })
-      if (cachedFile?.stream) return imageResponse(cachedFile.stream, cachedFile.blob.contentType)
+    // 命中 DB 缓存直接返回（immutable 一年）
+    if (registrar.faviconData && registrar.faviconContentType) {
+      return imageResponse(new Uint8Array(registrar.faviconData), registrar.faviconContentType)
     }
 
     const hostname = getHostname(registrar.website)
@@ -94,13 +95,20 @@ export async function GET(_request: Request, { params }: { params: Promise<{ slu
     const icon = Buffer.from(await response.arrayBuffer())
     if (icon.length === 0 || icon.length > MAX_ICON_BYTES) return notFound()
 
-    const blob = await put(`registrar-favicons/${slug}.${extension}`, icon, {
-      access: "public",
-      addRandomSuffix: false,
-      allowOverwrite: true,
-      cacheControlMaxAge: 31536000,
-      contentType,
-    })
+    // 写入 DB 缓存
+    await db
+      .update(registrars)
+      .set({
+        faviconData: icon,
+        faviconContentType: contentType,
+        faviconUpdatedAt: new Date(),
+      })
+      .where(
+        and(
+          eq(registrars.slug, slug),
+          or(isNull(registrars.faviconData), isNull(registrars.faviconUpdatedAt)),
+        ),
+      )
 
     return imageResponse(new Uint8Array(icon), contentType)
   } catch (error) {
