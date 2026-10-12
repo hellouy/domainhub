@@ -15,9 +15,9 @@
  *
  * 建议: 通过 crontab 每日执行(本地 browser-worker 常驻)。
  */
-import { eq } from "drizzle-orm"
+import { and, eq } from "drizzle-orm"
 import { db } from "@/lib/db"
-import { registrars } from "@/lib/db/schema"
+import { prices, registrars } from "@/lib/db/schema"
 import { getRegisteredAdapter, listRegisteredAdapters } from "@/packages/registry"
 import "@/adapters"
 import { runCrawlWithSdk } from "@/services/crawl"
@@ -47,6 +47,22 @@ async function main() {
         targets.push({ slug: a.slug, id: r.id })
       }
     }
+  }
+  // 全量轮按"最久未更新优先"排序: 即便被外部队列/超时截断, 也能先补刷新最旧的注册商,
+  // 避免顺序固定导致尾部注册商永远排不上更新。
+  if (all && targets.length > 0) {
+    const lastUpd = new Map<string, number>()
+    const rows = await db
+      .select({ slug: registrars.slug, lastUpd: prices.updatedAt })
+      .from(registrars)
+      .leftJoin(prices, and(eq(prices.registrarId, registrars.id), eq(registrars.isActive, true)))
+      .where(eq(registrars.isActive, true))
+    for (const row of rows) {
+      const t = row.lastUpd?.getTime() ?? Number.POSITIVE_INFINITY
+      const cur = lastUpd.get(row.slug)
+      if (cur === undefined || t > cur) lastUpd.set(row.slug, t)
+    }
+    targets.sort((a, b) => (lastUpd.get(a.slug) ?? Number.POSITIVE_INFINITY) - (lastUpd.get(b.slug) ?? Number.POSITIVE_INFINITY))
   }
   if (targets.length === 0) {
     console.log("没有匹配的注册商")

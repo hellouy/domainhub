@@ -42,8 +42,8 @@ fi
 echo "--- 恢复卡死 running 队列项 ---" >> "$LOG"
 npx tsx -e "import { recoverStaleRunning } from '@/packages/scheduler'; recoverStaleRunning(30*60*1000).then(n => console.log('恢复:', n)).catch(e => console.error(e.message))" >> "$LOG" 2>&1 || true
 
-# 全量采集: 所有激活注册商(playwright + 直连), 每轮 88 家约 30-60 分钟; timeout 防挂起阻塞调度循环
-timeout 7200 npx tsx scripts/recrawl-browser-registrars.ts --all >> "$LOG" 2>&1 || echo "补采失败: $?" >> "$LOG"
+# 全量采集: 所有激活注册商(playwright + 直连), 每轮 95 家约 60-120 分钟; timeout 防挂起阻塞调度循环
+timeout 21600 npx tsx scripts/recrawl-browser-registrars.ts --all >> "$LOG" 2>&1 || echo "补采失败: $?" >> "$LOG"
 
 # 兜底补采: 全量轮之后仍有过期(>7 天)的注册商(某轮采集静默失败等), 立即定向重试
 STALE_SLUGS=$(npx tsx scripts/list-stale-slugs.ts 2>/dev/null | tail -1 || true)

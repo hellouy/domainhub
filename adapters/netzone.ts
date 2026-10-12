@@ -11,7 +11,7 @@
 
 import { defineAdapter, type AdapterContext, type RawPrice } from "@/packages/adapter-sdk"
 
-const URL = "https://netzone.ch/de/domainregistrierung"
+const URL = "https://www.netzone.ch/de/domainregistrierung"
 
 function num(s: string): number | null {
   const m = s.replace(/\s/g, "").match(/([\d]+(?:[.,]\d+)?)/)
