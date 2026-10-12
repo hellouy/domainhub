@@ -9,6 +9,7 @@ import { T, RelativeTime, RegistrarDescription } from "@/components/i18n-text"
 import { RegistrarIcon } from "@/components/registrar-favicon"
 import { getPricesForRegistrar, getRegistrarBySlug } from "@/lib/db/queries"
 import { normalizeUrl, withRegistrarReferral } from "@/lib/utils"
+import { getActivePromotionPrice } from "@/lib/promotion"
 
 export const revalidate = 300
 
@@ -109,51 +110,76 @@ export default async function RegistrarPage({ params }: Props) {
           <T k="registrar.allPrices" /> ({priceRows.length})
         </h2>
         <div className="divide-y divide-border border border-border md:hidden">
-          {priceRows.map((p) => (
-            <article key={p.priceId} className="flex flex-col gap-3 p-3">
-              <div className="flex items-center justify-between gap-3">
-                <Link href={`/tld/${p.tld}`} className="font-mono font-semibold hover:text-primary">
-                  .{p.tld}
-                </Link>
-                <span className="shrink-0 text-xs text-muted-foreground">
-                  <T k="th.updated" /> <RelativeTime date={p.updatedAt} />
-                </span>
-              </div>
-              <dl className="grid grid-cols-2 gap-x-4 gap-y-3">
-                <div className="min-w-0">
-                  <dt className="text-xs text-muted-foreground"><T k="th.register" /></dt>
-                  <dd className="mt-1 truncate font-mono text-sm tabular-nums">
-                    <PromotionPrice
-                      price={p.registerPrice}
-                      promotionPrice={p.promotionPrice}
-                      promoCode={p.promoCode}
-                      promoCodes={p.promoCodes}
-                      promotionEndsAt={p.promotionEndsAt}
-                      currency={p.currency}
-                    />
-                  </dd>
-                </div>
-                <div className="min-w-0">
-                  <dt className="text-xs text-muted-foreground"><T k="th.renew" /></dt>
-                  <dd className="mt-1 truncate font-mono text-sm tabular-nums"><Money value={p.renewPrice} from={p.currency} /></dd>
-                </div>
-                <div className="min-w-0">
-                  <dt className="text-xs text-muted-foreground"><T k="th.transfer" /></dt>
-                  <dd className="mt-1 truncate font-mono text-sm tabular-nums"><Money value={p.transferPrice} from={p.currency} /></dd>
-                </div>
-                <div className="min-w-0">
-                  <dt className="text-xs text-muted-foreground"><T k="th.promo" /></dt>
-                  <dd className="mt-1 truncate font-mono text-sm tabular-nums">
-                    {p.promotionPrice != null ? (
-                      <span className="font-semibold text-primary"><Money value={p.promotionPrice} from={p.currency} /></span>
+          {priceRows.map((p) => {
+            const activePromo = getActivePromotionPrice(p.registerPrice, p.promotionPrice, p.promotionEndsAt)
+            const codes = p.promoCodes?.map((c) => c.code) ?? (p.promoCode ? [p.promoCode] : [])
+            return (
+              <article key={p.priceId} className="flex flex-col gap-3 px-4 py-4">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex min-w-0 flex-col gap-1">
+                    <Link
+                      href={`/tld/${p.tld}`}
+                      className="truncate font-mono text-lg font-semibold leading-tight hover:text-primary"
+                    >
+                      .{p.tld}
+                    </Link>
+                    <span className="text-xs text-muted-foreground">
+                      <RelativeTime date={p.updatedAt} />
+                    </span>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end gap-0.5 font-mono tabular-nums">
+                    <span className="text-[11px] font-sans text-muted-foreground">
+                      <T k="th.register" />
+                    </span>
+                    {activePromo !== null ? (
+                      <>
+                        <span className="text-lg font-semibold leading-tight text-primary">
+                          <Money value={activePromo} from={p.currency} />
+                        </span>
+                        <span className="text-xs text-muted-foreground line-through">
+                          <Money value={p.registerPrice} from={p.currency} />
+                        </span>
+                      </>
                     ) : (
-                      <span className="text-muted-foreground">—</span>
+                      <span className="text-lg font-semibold leading-tight">
+                        <Money value={p.registerPrice} from={p.currency} />
+                      </span>
                     )}
-                  </dd>
+                  </div>
                 </div>
-              </dl>
-            </article>
-          ))}
+
+                <dl className="flex items-center gap-6 text-sm">
+                  <div className="flex items-baseline gap-2">
+                    <dt className="text-xs text-muted-foreground"><T k="th.renew" /></dt>
+                    <dd className="font-mono tabular-nums"><Money value={p.renewPrice} from={p.currency} /></dd>
+                  </div>
+                  <div className="flex items-baseline gap-2">
+                    <dt className="text-xs text-muted-foreground"><T k="th.transfer" /></dt>
+                    <dd className="font-mono tabular-nums"><Money value={p.transferPrice} from={p.currency} /></dd>
+                  </div>
+                </dl>
+
+                {activePromo !== null && codes.length > 0 && (
+                  <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                    <span className="text-muted-foreground"><T k="promo.code" /></span>
+                    {codes.slice(0, 3).map((code) => (
+                      <span
+                        key={code}
+                        className="border border-dashed border-primary/40 bg-primary/5 px-1.5 py-0.5 font-mono text-primary"
+                      >
+                        {code}
+                      </span>
+                    ))}
+                    {codes.length > 3 && (
+                      <span className="text-muted-foreground" title={codes.join(", ")}>
+                        +{codes.length - 3}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </article>
+            )
+          })}
         </div>
         <div className="hidden overflow-x-auto border border-border md:block">
           <table className="w-full min-w-[720px] border-collapse text-sm">
