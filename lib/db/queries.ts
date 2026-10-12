@@ -125,6 +125,57 @@ export async function getTldsWithMinPrice(onlyPopular = false) {
   )
 }
 
+export type TldPriceFloor = {
+  /** 与首页同一规则的最低首年价（含生效促销），USD */
+  lowestUsd: number | null
+  /** 全网最低「常规」注册价（不计促销），USD；优惠必须低于它才算优惠 */
+  standardUsd: number | null
+}
+
+/**
+ * 每个后缀的价格底线，规则与 getTldsWithMinPrice / getTldBestQuotes 完全一致，
+ * 供优惠页判断"是否真的便宜"，保证全站对同一后缀给出同一个最低价。
+ */
+export async function getTldPriceFloors(): Promise<Map<string, TldPriceFloor>> {
+  return safeQuery(
+    "getTldPriceFloors",
+    async () => {
+      const hasActivePromotion = sql<boolean>`(
+        ${prices.promotionPrice} IS NOT NULL
+        AND (${prices.promotionEndsAt} IS NULL OR ${prices.promotionEndsAt} >= now())
+        AND ${prices.registerPrice} IS NOT NULL
+        AND ${prices.promotionPrice} > 0 AND ${prices.promotionPrice} < ${prices.registerPrice})`
+      const effective = sql<string>`CASE WHEN ${hasActivePromotion} THEN ${prices.promotionPrice} ELSE ${prices.registerPrice} END`
+      const effectiveUsd = await usdEquivalentExpr(effective)
+      const standardUsd = await usdEquivalentExpr(prices.registerPrice)
+      const rows = await db
+        .select({
+          tld: tlds.tld,
+          lowestUsd: min(
+            sql<string>`CASE WHEN ${notPlaceholder(prices.registerPrice)} AND (${effectiveUsd} >= 1 OR ${hasActivePromotion}) THEN ${effectiveUsd} ELSE NULL END`,
+          ),
+          standardUsd: min(
+            sql<string>`CASE WHEN ${notPlaceholder(prices.registerPrice)} AND ${standardUsd} >= 1 THEN ${standardUsd} ELSE NULL END`,
+          ),
+        })
+        .from(prices)
+        .innerJoin(registrars, and(eq(registrars.id, prices.registrarId), eq(registrars.isActive, true)))
+        .innerJoin(tlds, eq(tlds.id, prices.tldId))
+        .groupBy(tlds.tld)
+      return new Map(
+        rows.map((r) => [
+          r.tld,
+          {
+            lowestUsd: r.lowestUsd == null ? null : Number(r.lowestUsd),
+            standardUsd: r.standardUsd == null ? null : Number(r.standardUsd),
+          },
+        ]),
+      )
+    },
+    new Map(),
+  )
+}
+
   export type TldBestQuote = {
   tld: string
   type: string

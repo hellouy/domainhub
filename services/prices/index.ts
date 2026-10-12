@@ -26,6 +26,9 @@ import {
   seedTldsWithMinPrice,
 } from "@/lib/db/seed-fallbacks"
 import { computeRegistrarScore } from "@/lib/registrar-score"
+import { getTldPriceFloors } from "@/lib/db/queries"
+import { getUsdRates } from "@/lib/fx"
+import { usablePriceUsd } from "@/lib/pricing"
 
 const num = (v: string | null): number | null => (v === null ? null : Number.parseFloat(v))
 
@@ -272,27 +275,65 @@ export async function queryDeals(filter: {
           promotionEndsAt: prices.promotionEndsAt,
           sourceUrl: prices.sourceUrl,
           updatedAt: prices.updatedAt,
+          isPopular: tlds.isPopular,
+          popularity: tlds.popularity,
         })
         .from(prices)
         .innerJoin(registrars, eq(prices.registrarId, registrars.id))
         .innerJoin(tlds, eq(prices.tldId, tlds.id))
         .where(and(...conditions))
-        .orderBy(
-          desc(tlds.isPopular),
-          desc(tlds.popularity),
-          sql`(${prices.promotionPrice} / NULLIF(${prices.registerPrice}, 0)) ASC`,
-          desc(prices.updatedAt),
-        )
-        .limit(limit)
 
-      return rows.map((r) => ({
-        ...r,
-        registerPrice: num(r.registerPrice),
-        renewPrice: num(r.renewPrice),
-        transferPrice: num(r.transferPrice),
-        promotionPrice: num(r.promotionPrice),
-        promoCodes: asPromoCodes(r.promoCodes),
-      }))
+      const [rates, floors] = await Promise.all([getUsdRates(), getTldPriceFloors()])
+      // 价格容差：汇率折算有舍入，0.5% 内视为同价
+      const TOLERANCE = 1.005
+
+      const deals = rows.flatMap((r) => {
+        const registerPrice = num(r.registerPrice)
+        const promotionPrice = num(r.promotionPrice)
+        const promoCodes = asPromoCodes(r.promoCodes)
+        const hasPromotion = promotionPrice != null && registerPrice != null && promotionPrice > 0 && promotionPrice < registerPrice
+        const offer = hasPromotion ? promotionPrice : registerPrice
+        const offerUsd = usablePriceUsd(offer, r.currency, rates, {
+          isPromotion: hasPromotion,
+          rawRegister: r.registerPrice,
+        })
+        if (offerUsd == null) return []
+
+        // 同一后缀、同一汇率下，优惠价必须不高于全网常规最低价，否则不是真优惠
+        const floor = floors.get(r.tld)
+        if (floor?.standardUsd != null && offerUsd > floor.standardUsd * TOLERANCE) return []
+        const isMarketLowest = floor?.lowestUsd != null && offerUsd <= floor.lowestUsd * TOLERANCE
+
+        const { isPopular, popularity, ...rest } = r
+        return [
+          {
+            ...rest,
+            registerPrice,
+            renewPrice: num(r.renewPrice),
+            transferPrice: num(r.transferPrice),
+            promotionPrice: hasPromotion ? promotionPrice : null,
+            promoCodes,
+            offerUsd,
+            isMarketLowest,
+            savingsVsMarketPct:
+              floor?.standardUsd != null && floor.standardUsd > 0
+                ? Math.max(0, Math.round((1 - offerUsd / floor.standardUsd) * 100))
+                : 0,
+            _isPopular: isPopular,
+            _popularity: popularity,
+          },
+        ]
+      })
+
+      deals.sort(
+        (a, b) =>
+          Number(b._isPopular) - Number(a._isPopular) ||
+          (b._popularity ?? 0) - (a._popularity ?? 0) ||
+          a.tld.localeCompare(b.tld) ||
+          a.offerUsd - b.offerUsd,
+      )
+
+      return deals.slice(0, limit).map(({ _isPopular, _popularity, ...deal }) => deal)
     },
     () => [],
   )
@@ -316,28 +357,42 @@ export async function queryCheapest(tld: string, limit = 20) {
           promoCode: prices.promoCode,
           promoCodes: prices.promoCodes,
           promotionEndsAt: prices.promotionEndsAt,
-          effectivePrice: sql<string>`CASE WHEN ${prices.promotionPrice} IS NOT NULL AND ${prices.promotionPrice} < ${prices.registerPrice} THEN ${prices.promotionPrice} ELSE ${prices.registerPrice} END`,
         })
         .from(prices)
         .innerJoin(registrars, eq(prices.registrarId, registrars.id))
         .innerJoin(tlds, eq(prices.tldId, tlds.id))
         .where(and(eq(registrars.isActive, true), eq(tlds.tld, t)))
-        .orderBy(sql`CASE WHEN ${prices.promotionPrice} IS NOT NULL AND ${prices.promotionPrice} < ${prices.registerPrice} THEN ${prices.promotionPrice} ELSE COALESCE(${prices.registerPrice}, 0) END`)
-        .limit(Math.min(limit, 50))
 
-      return {
-        tld: t,
-        count: rows.length,
-        data: rows.map((r) => ({
+      // 与首页/详情页同一规则：只认生效中的促销，按同一汇率折算 USD 后排序，过滤占位价
+      const rates = await getUsdRates()
+      const ranked = rows.flatMap((r) => {
+        const registerPrice = num(r.registerPrice)
+        const promotionPrice = num(r.promotionPrice)
+        const ends = r.promotionEndsAt ? new Date(r.promotionEndsAt).getTime() : null
+        const hasPromotion =
+          promotionPrice != null && registerPrice != null && promotionPrice > 0 &&
+          promotionPrice < registerPrice && (ends == null || ends >= Date.now())
+        const effectivePrice = hasPromotion ? promotionPrice : registerPrice
+        const effectiveUsd = usablePriceUsd(effectivePrice, r.currency, rates, {
+          isPromotion: hasPromotion,
+          rawRegister: r.registerPrice,
+        })
+        if (effectiveUsd == null) return []
+        return [{
           ...r,
-          registerPrice: num(r.registerPrice),
+          registerPrice,
           renewPrice: num(r.renewPrice),
           transferPrice: num(r.transferPrice),
-          promotionPrice: num(r.promotionPrice),
-          effectivePrice: num(r.effectivePrice),
+          promotionPrice: hasPromotion ? promotionPrice : null,
+          effectivePrice,
+          effectiveUsd: Math.round(effectiveUsd * 100) / 100,
           promoCodes: asPromoCodes(r.promoCodes),
-        })),
-      }
+        }]
+      })
+      ranked.sort((a, b) => a.effectiveUsd - b.effectiveUsd)
+      const data = ranked.slice(0, Math.min(limit, 50))
+
+      return { tld: t, count: data.length, data }
     },
     () => ({ tld: normalizeTld(tld), count: 0, data: [] }),
   )

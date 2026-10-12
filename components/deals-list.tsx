@@ -21,6 +21,8 @@ type Deal = {
   promotionEndsAt: Date | string | null
   sourceUrl: string | null
   registrarWebsite: string | null
+  isMarketLowest?: boolean
+  savingsVsMarketPct?: number
 }
 
 const DEALS_PAGE_SIZE = 48
@@ -185,9 +187,12 @@ export function DealsList({ deals }: { deals: Deal[] }) {
                   {deal.registrarName}
                 </Link>
               </div>
-              <Badge variant="secondary" className="shrink-0">
-                {codes.length > 0 ? t("deals.codeLabel") : t("promo.label")}
-              </Badge>
+              <div className="flex shrink-0 flex-col items-end gap-1.5">
+                {deal.isMarketLowest && <Badge className="shrink-0">{t("deals.marketLowest")}</Badge>}
+                <Badge variant="secondary" className="shrink-0">
+                  {codes.length > 0 ? t("deals.codeLabel") : t("promo.label")}
+                </Badge>
+              </div>
             </div>
 
             <div className="flex flex-wrap items-end justify-between gap-3 border-y border-border py-3">
@@ -205,7 +210,14 @@ export function DealsList({ deals }: { deals: Deal[] }) {
                   <span className="text-xs leading-relaxed text-muted-foreground">{t("deals.codeOnlyPrice")}</span>
                 )}
               </div>
-              {discount > 0 && <span className="text-sm font-medium text-muted-foreground">−{discount}%</span>}
+              {(deal.savingsVsMarketPct ?? 0) > 0 ? (
+                <span className="text-right text-xs leading-relaxed text-muted-foreground">
+                  {t("deals.vsMarket")}{" "}
+                  <span className="font-mono text-sm font-semibold text-primary">{deal.savingsVsMarketPct}%</span>
+                </span>
+              ) : (
+                discount > 0 && <span className="text-sm font-medium text-muted-foreground">−{discount}%</span>
+              )}
             </div>
 
             <div className="flex flex-wrap items-center justify-between gap-3">
