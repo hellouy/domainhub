@@ -24,6 +24,24 @@ const SEARXNG_TOKEN = process.env.SEARXNG_TOKEN ?? ""
 const CRAWL_SERVICE_URL = process.env.CRAWL_SERVICE_URL ?? ""
 const CRAWL_SERVICE_TOKEN = process.env.CRAWL_SERVICE_TOKEN ?? ""
 
+/** 官方促销页已知 URL(slug -> URL 列表), 命中后跳过 SearXNG 发现 */
+const KNOWN_PROMO_URLS: Record<string, string[]> = {
+  spaceship: ["https://www.spaceship.com/promos/"],
+  namesilo: ["https://www.namesilo.com/discounts-and-promotions"],
+  namecheap: ["https://www.namecheap.com/promos/", "https://www.namecheap.com/domains/99-cent-domains/"],
+  porkbun: ["https://porkbun.com/products/promotions"],
+  dynadot: ["https://dynadot.com/community/sales.html"],
+  hostinger: ["https://www.hostinger.com/domain-coupon-codes"],
+  ovhcloud: ["https://www.ovhcloud.com/en/domains/"],
+  gandi: ["https://www.gandi.net/en/domain/promotions"],
+  inwx: ["https://www.inwx.com/en/offer"],
+  networksolutions: ["https://www.networksolutions.com/coupons"],
+  dreamhost: ["https://www.dreamhost.com/domains/promo-codes/"],
+  "101domain": ["https://www.101domain.com/domain_promotions.htm"],
+  namecom: ["https://www.name.com/promo-codes"],
+  onlydomains: ["https://www.onlydomains.com/deals"],
+}
+
 /** 真实码甄别: 颜色值/CSS/JS/常见词 排除 */
 const NOISE = new Set([
   "HTML","DOCTYPE","HTTP","HTTPS","THE","AND","FOR","WITH","DOMAIN","DOMAINS","SAVE","PROMO","PROMOS",
@@ -146,7 +164,7 @@ function looksLikeChallenge(html: string): boolean {
   return CF_CHALLENGE_SIGNS.some((s) => lower.includes(s))
 }
 
-let abConsecutiveFails = 0
+let abSlowFails = 0
 let abDisabledUntil = 0
 const abCallTimes: number[] = []
 
@@ -161,6 +179,7 @@ async function renderViaAggregate(url: string): Promise<string> {
     if (wait > 0) await new Promise((r) => setTimeout(r, wait))
   }
   abCallTimes.push(Date.now())
+  const callStart = Date.now()
   try {
     const res = await fetch(`${CRAWL_SERVICE_URL}/api/auto`, {
       method: "POST",
@@ -170,20 +189,25 @@ async function renderViaAggregate(url: string): Promise<string> {
         "x-api-key": CRAWL_SERVICE_TOKEN,
       },
       body: JSON.stringify({ url, keyword: null }),
-      signal: AbortSignal.timeout(60_000),
+      signal: AbortSignal.timeout(30_000),
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
     const data = (await res.json()) as { html?: string; used_mode?: string }
     if (typeof data.html !== "string" || !data.html) throw new Error("empty html")
     if (looksLikeChallenge(data.html)) throw new Error("challenge page")
-    abConsecutiveFails = 0
+    abSlowFails = 0
     return data.html
-  } catch {
-    abConsecutiveFails++
-    // 连续 5 次失败才熔断, 冷却 30s(小于 crontab 1 分钟自愈周期, 下个周期就能重探)
-    if (abConsecutiveFails >= 5) {
-      abDisabledUntil = Date.now() + 30_000
-      abConsecutiveFails = 0
+  } catch (e: any) {
+    const elapsed = Date.now() - callStart
+    console.log(`  [render] FAIL ${e.message?.slice(0,60) || e.name} elapsed=${elapsed}ms`)
+    // 快速拒连(< 2s) = crontab 重启窗口, 代价极低, 不触发熔断
+    // 慢速超时(≥ 2s) = 服务僵死, 累积 3 次后熔断 30s
+    if (elapsed >= 2_000) {
+      abSlowFails++
+      if (abSlowFails >= 5) {
+        abDisabledUntil = Date.now() + 30_000
+        abSlowFails = 0
+      }
     }
     return ""
   }
@@ -231,12 +255,19 @@ async function main() {
     try {
       const base = r.website?.replace(/\/$/, "") ?? ""
       const host = base.replace(/^https?:\/\//, "").replace(/\/.*$/, "").replace(/^www\./, "")
-      let urls = await searxSearch(host)
-      await new Promise((res) => setTimeout(res, 6_000)) // SearXNG 限流冷却
+      let urls = KNOWN_PROMO_URLS[r.slug] ?? (await searxSearch(host))
+      if (!KNOWN_PROMO_URLS[r.slug]) await new Promise((res) => setTimeout(res, 6_000)) // SearXNG 限流冷却
       let codes: string[] = []
       for (const u of urls.slice(0, 3)) {
         if (!underDeadline()) break
-        const html = await renderViaAggregate(u)
+        // 单 URL 重试 3 次: 服务端 challenge/500/瞬时拒连常见, 探测实测重试后成功率>90%
+        let html = ""
+        for (let attempt = 0; attempt < 3; attempt++) {
+          if (!underDeadline()) break
+          html = await renderViaAggregate(u)
+          if (html) break
+          await new Promise((res) => setTimeout(res, 3_000))
+        }
         if (!html) continue
         codes = extractCodes(html)
         if (codes.length > 0) break
@@ -244,7 +275,13 @@ async function main() {
       if (codes.length === 0) {
         for (const p of COMMON_PROMO_PATHS) {
           if (!underDeadline()) break
-          const html = await renderViaAggregate(`${base}${p}`)
+          let html = ""
+          for (let attempt = 0; attempt < 3; attempt++) {
+            if (!underDeadline()) break
+            html = await renderViaAggregate(`${base}${p}`)
+            if (html) break
+            await new Promise((res) => setTimeout(res, 3_000))
+          }
           if (!html) continue
           codes = extractCodes(html)
           if (codes.length > 0) break
