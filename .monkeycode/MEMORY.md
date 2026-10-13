@@ -39,7 +39,8 @@ Entries discovered by the Agent during task execution should follow this format:
   - runner 采集落库以 `tlds` 表为白名单: 后缀不在表里直接 skip（"未收录后缀"日志）。新增后缀须先插 tlds 表（unicode 明文，不带点），再重跑采集。
   - `findTldCell` 已支持 Unicode IDN（`[\p{L}\p{N}-]`）；此前 ASCII 正则会静默丢弃中文后缀行（.中国/.公司等），排查"页面有价库里没价"先查此函数。
   - tlds.type 曾大规模错标：2 字母后缀 287 个标成 gTLD，前台 ccTLD tab 只显示 11 个。已修正（2字母纯字母必为 ccTLD，IANA gTLD 最少 3 字符）。
-  - 浏览器服务与 8090 聚合服务过载时（502 队列已满/CDP 超时），SSR 直连类适配器不受影响；westcn/juming/59cn/zwcn 等 playwright 依赖家须等服务恢复重跑。
+  - 浏览器服务与 8090 聚合服务过载时（502 队列已满/CDP 超时），SSR 直连类适配器不受影响；westcn/juming/59cn/zwcn 等 playwright 依赖家须等服务恢复重跑。两服务独立部署、恢复不同步（曾出现 8090 已恢复而浏览器服务仍 502），排查时分别探活。
+  - 万网（wanwand 低代码页）接入走 antiBot 策略经 8090 聚合渲染即可（used_mode=crawl），无需浏览器服务；页内促销双值"促销价 原价"顺序与 parseDualPrice 假设相反，用 normalizeCells 反转（table-adapter 价格列已修为统一走 normalizeCells）。
   - 123reg/alibabacloud 均纯 SPA 无内部 JSON，已置 inactive 待接入（id=1931/1933）。
 
 [Project Knowledge Summary]
