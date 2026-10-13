@@ -3,6 +3,7 @@ import { db } from "@/lib/db"
 import { crawlJobs, prices, registrars, tlds } from "@/lib/db/schema"
 import { computeRegistrarScore, type RegistrarScoreBreakdown } from "@/lib/registrar-score"
 import { getUsdRates } from "@/lib/fx"
+import { PLACEHOLDER_MAX } from "@/lib/pricing"
 import {
   seedActiveRegistrars,
   seedPricesForRegistrar,
@@ -59,17 +60,20 @@ export async function getStats(): Promise<StatsRow> {
  */
 async function usdEquivalentExpr(price: SQLWrapper = prices.registerPrice): Promise<SQL<string>> {
   const rates = await getUsdRates()
-  const currencies = ["EUR", "CHF", "GBP", "JPY", "SEK", "NOK", "NZD", "CAD", "CNY", "AUD", "HKD", "SGD"]
   const cases: SQL[] = []
-  for (const c of currencies) {
-    const r = rates[c]
-    if (r && r > 0) cases.push(sql`WHEN ${c} THEN ${sql.raw((1 / r).toFixed(6))}`)
+  for (const [c, r] of Object.entries(rates)) {
+    if (c === "USD" || !/^[A-Z]{3}$/.test(c) || !(r > 0)) continue
+    cases.push(sql`WHEN ${c} THEN ${sql.raw((1 / r).toPrecision(8))}`)
   }
+  // Unknown currencies must yield NULL, never be treated as USD (e.g. 1 NGN ≠ $1).
   return sql<string>`${price} * (CASE ${prices.currency}
   WHEN 'USD' THEN 1
   ${sql.join(cases, sql` `)}
-  ELSE 1 END)`
+  ELSE NULL END)`
 }
+
+/** Scraped "1.00" values are placeholders, not real prices; shared with lib/pricing.ts. */
+const notPlaceholder = (price: SQLWrapper) => sql`${price} > ${PLACEHOLDER_MAX}`
 
 /**
  * 全部后缀 + 每个后缀的最低注册价（实时汇率折算 USD，仅统计启用的注册商）。
@@ -84,7 +88,7 @@ export async function getTldsWithMinPrice(onlyPopular = false) {
       ${prices.promotionPrice} IS NOT NULL
       AND (${prices.promotionEndsAt} IS NULL OR ${prices.promotionEndsAt} >= now())
       AND ${prices.registerPrice} IS NOT NULL
-      AND ${prices.promotionPrice} < ${prices.registerPrice}`
+      AND ${prices.promotionPrice} > 0 AND ${prices.promotionPrice} < ${prices.registerPrice}`
     const effectiveRegisterPrice = sql<string>`CASE
       WHEN ${hasActivePromotion} THEN ${prices.promotionPrice}
       ELSE ${prices.registerPrice}
@@ -98,7 +102,7 @@ export async function getTldsWithMinPrice(onlyPopular = false) {
           isPopular: tlds.isPopular,
           popularity: tlds.popularity,
           minRegister: min(
-            sql<string>`CASE WHEN ${usdEquivalent} >= 1 OR ${hasActivePromotion} THEN ${usdEquivalent} ELSE NULL END`,
+            sql<string>`CASE WHEN ${notPlaceholder(prices.registerPrice)} AND (${usdEquivalent} >= 1 OR ${hasActivePromotion}) THEN ${usdEquivalent} ELSE NULL END`,
           ),
           registrarCount: count(prices.id),
         })
@@ -121,7 +125,145 @@ export async function getTldsWithMinPrice(onlyPopular = false) {
   )
 }
 
-/** 启用的注册商列表 + 支持后缀数 + 推荐分（覆盖/促销/完整度/能力/健康加权） */
+export type TldPriceFloor = {
+  /** 与首页同一规则的最低首年价（含生效促销），USD */
+  lowestUsd: number | null
+  /** 全网最低「常规」注册价（不计促销），USD；优惠必须低于它才算优惠 */
+  standardUsd: number | null
+}
+
+/**
+ * 每个后缀的价格底线，规则与 getTldsWithMinPrice / getTldBestQuotes 完全一致，
+ * 供优惠页判断"是否真的便宜"，保证全站对同一后缀给出同一个最低价。
+ */
+export async function getTldPriceFloors(): Promise<Map<string, TldPriceFloor>> {
+  return safeQuery(
+    "getTldPriceFloors",
+    async () => {
+      const hasActivePromotion = sql<boolean>`(
+        ${prices.promotionPrice} IS NOT NULL
+        AND (${prices.promotionEndsAt} IS NULL OR ${prices.promotionEndsAt} >= now())
+        AND ${prices.registerPrice} IS NOT NULL
+        AND ${prices.promotionPrice} > 0 AND ${prices.promotionPrice} < ${prices.registerPrice})`
+      const effective = sql<string>`CASE WHEN ${hasActivePromotion} THEN ${prices.promotionPrice} ELSE ${prices.registerPrice} END`
+      const effectiveUsd = await usdEquivalentExpr(effective)
+      const standardUsd = await usdEquivalentExpr(prices.registerPrice)
+      const rows = await db
+        .select({
+          tld: tlds.tld,
+          lowestUsd: min(
+            sql<string>`CASE WHEN ${notPlaceholder(prices.registerPrice)} AND (${effectiveUsd} >= 1 OR ${hasActivePromotion}) THEN ${effectiveUsd} ELSE NULL END`,
+          ),
+          standardUsd: min(
+            sql<string>`CASE WHEN ${notPlaceholder(prices.registerPrice)} AND ${standardUsd} >= 1 THEN ${standardUsd} ELSE NULL END`,
+          ),
+        })
+        .from(prices)
+        .innerJoin(registrars, and(eq(registrars.id, prices.registrarId), eq(registrars.isActive, true)))
+        .innerJoin(tlds, eq(tlds.id, prices.tldId))
+        .groupBy(tlds.tld)
+      return new Map(
+        rows.map((r) => [
+          r.tld,
+          {
+            lowestUsd: r.lowestUsd == null ? null : Number(r.lowestUsd),
+            standardUsd: r.standardUsd == null ? null : Number(r.standardUsd),
+          },
+        ]),
+      )
+    },
+    new Map(),
+  )
+}
+
+  export type TldBestQuote = {
+  tld: string
+  type: string
+  isPopular: boolean
+  registrarCount: number
+  /** 与 minRegister 同一条记录的原始数据，前台按同一汇率折算，保证首页与详情页一致 */
+  registrarSlug: string | null
+  registrarName: string | null
+  currency: string | null
+  registerPrice: string | null
+  renewPrice: string | null
+  promotionPrice: string | null
+  promotionEndsAt: string | null
+  promoCode: string | null
+  sourceUrl: string | null
+  }
+
+  /**
+   * 首页列表：每个后缀取「生效促销价优先、折算 USD 最低」的那一条完整报价。
+   * 选取规则与 getTldsWithMinPrice 完全一致（同一 effective 表达式、同样排除 < $1 的非促销占位价）。
+   */
+  export async function getTldBestQuotes(): Promise<TldBestQuote[]> {
+  const base = await getTldsWithMinPrice()
+  const fallback = base.map((t) => ({
+  tld: t.tld,
+  type: t.type,
+  isPopular: t.isPopular,
+  registrarCount: Number(t.registrarCount),
+  registrarSlug: null,
+  registrarName: null,
+  currency: t.minRegister != null ? "USD" : null,
+  registerPrice: t.minRegister != null ? String(t.minRegister) : null,
+  renewPrice: null,
+  promotionPrice: null,
+  promotionEndsAt: null,
+  promoCode: null,
+  sourceUrl: null,
+  }))
+  return safeQuery(
+  "getTldBestQuotes",
+  async () => {
+  const hasActivePromotion = sql<boolean>`(
+  ${prices.promotionPrice} IS NOT NULL
+  AND (${prices.promotionEndsAt} IS NULL OR ${prices.promotionEndsAt} >= now())
+  AND ${prices.registerPrice} IS NOT NULL
+  AND ${prices.promotionPrice} > 0 AND ${prices.promotionPrice} < ${prices.registerPrice})`
+  const effective = sql<string>`CASE WHEN ${hasActivePromotion} THEN ${prices.promotionPrice} ELSE ${prices.registerPrice} END`
+  const usd = await usdEquivalentExpr(effective)
+  const best = await db
+  .selectDistinctOn([prices.tldId], {
+  tldId: prices.tldId,
+  registrarSlug: registrars.slug,
+  registrarName: registrars.name,
+  currency: prices.currency,
+  registerPrice: prices.registerPrice,
+  renewPrice: prices.renewPrice,
+  promotionPrice: prices.promotionPrice,
+  promotionEndsAt: prices.promotionEndsAt,
+  promoCode: prices.promoCode,
+  sourceUrl: prices.sourceUrl,
+  })
+  .from(prices)
+  .innerJoin(registrars, and(eq(registrars.id, prices.registrarId), eq(registrars.isActive, true)))
+  .where(sql`${usd} IS NOT NULL AND ${notPlaceholder(prices.registerPrice)} AND (${usd} >= 1 OR ${hasActivePromotion})`)
+  .orderBy(prices.tldId, asc(usd))
+  const byId = new Map(best.map((b) => [b.tldId, b]))
+  return base.map((t, i) => {
+  const b = byId.get(t.id)
+  if (!b) return fallback[i]
+  return {
+  ...fallback[i],
+  registrarSlug: b.registrarSlug,
+  registrarName: b.registrarName,
+  currency: b.currency,
+  registerPrice: b.registerPrice,
+  renewPrice: b.renewPrice,
+  promotionPrice: b.promotionPrice,
+  promotionEndsAt: b.promotionEndsAt ? new Date(b.promotionEndsAt).toISOString() : null,
+  promoCode: b.promoCode,
+  sourceUrl: b.sourceUrl,
+  }
+  })
+  },
+  fallback,
+  )
+  }
+
+  /** 启用的注册商列表 + 支持后缀数 + 推荐分（覆盖/促销/完整度/能力/健康加权） */
 export type ActiveRegistrarRow = {
   id: number
   slug: string

@@ -7,7 +7,7 @@ export function getActivePromotionPrice(
 
   const baseAmount = Number(price)
   const promotionAmount = Number(promotionPrice)
-  if (!Number.isFinite(baseAmount) || !Number.isFinite(promotionAmount) || promotionAmount < 0 || promotionAmount >= baseAmount) {
+  if (!Number.isFinite(baseAmount) || !Number.isFinite(promotionAmount) || promotionAmount <= 0 || promotionAmount >= baseAmount) {
     return null
   }
 

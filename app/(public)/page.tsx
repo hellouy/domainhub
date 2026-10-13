@@ -4,26 +4,19 @@ import { HomeHero } from "@/components/home-hero"
 import { TldExplorer } from "@/components/tld-explorer"
 import { T, RegistrarDescription } from "@/components/i18n-text"
 import { RegistrarIcon } from "@/components/registrar-favicon"
-import { getActiveRegistrars, getStats, getTldsWithMinPrice } from "@/lib/db/queries"
+import { getActiveRegistrars, getStats, getTldBestQuotes, getTldsWithMinPrice } from "@/lib/db/queries"
 
 export const revalidate = 300
 
 export default async function HomePage() {
-  const [stats, allTlds, registrarList] = await Promise.all([
+  const [stats, allTlds, quotes, registrarList] = await Promise.all([
     getStats(),
     getTldsWithMinPrice(),
+    getTldBestQuotes(),
     getActiveRegistrars(),
   ])
   /** 已验证后缀：至少有一条真实采集价格记录 */
-  const verifiedTlds = allTlds
-    .filter((t) => t.registrarCount > 0 && t.minRegister !== null)
-    .map((t) => ({
-      tld: t.tld,
-      type: t.type,
-      isPopular: t.isPopular,
-      minRegister: t.minRegister,
-      registrarCount: t.registrarCount,
-    }))
+  const verifiedTlds = quotes.filter((q) => q.registrarCount > 0 && Number(q.registerPrice) > 0)
   const searchOptions = allTlds.map((t) => ({
     tld: t.tld,
     type: t.type,
