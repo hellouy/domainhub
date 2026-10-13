@@ -211,17 +211,18 @@ export function createTableAdapter(config: TableAdapterConfig) {
       const [tld, tldIdx] = tldHit
       if (seen.has(tld)) continue
       // 收集 TLD 列之后的数字单元格(双值列同时取标准价与促销价)
+      // 价格列同样经过 normalizeCells(仅作用于本行、保持列数不变)
       const priceValues: (number | null)[] = []
       const promoValues: (number | null)[] = []
-      for (let i = tldIdx + 1; i < cells.length; i++) {
+      for (let i = tldIdx + 1; i < normCells.length; i++) {
         const idx = i - (tldIdx + 1)
         const role = effective.columnOrder[idx]
         if (role && dualColumns.has(role)) {
-          const [main, promo] = parseDualPrice(cells[i], effective.numberFormat)
+          const [main, promo] = parseDualPrice(normCells[i], effective.numberFormat)
           priceValues.push(main)
           promoValues.push(promo)
         } else {
-          priceValues.push(parsePrice(cells[i], effective.numberFormat))
+          priceValues.push(parsePrice(normCells[i], effective.numberFormat))
           promoValues.push(null)
         }
       }
