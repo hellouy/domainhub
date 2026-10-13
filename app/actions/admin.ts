@@ -17,6 +17,8 @@ import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { headers } from "next/headers"
+import { getQueue } from "@/packages/queue"
+import { drainQueue } from "@/packages/scheduler"
 
 async function requireAdmin() {
   if (!(await isAdminAuthenticated())) throw new Error("未授权")
@@ -57,24 +59,80 @@ export async function adminLogout() {
 
 export async function triggerCrawl(registrarId: number) {
   await requireAdmin()
-  const result = await runCrawlJob(registrarId)
+  const [registrar] = await db
+    .select({ id: registrars.id, priority: registrars.priority })
+    .from(registrars)
+    .where(eq(registrars.id, registrarId))
+    .limit(1)
+  if (!registrar) throw new Error("注册商不存在")
+  await getQueue().enqueue({
+    registrarId: registrar.id,
+    priority: registrar.priority ?? 100,
+    trigger: "manual",
+  })
+  const result = await drainQueue(
+    async (id) => {
+      const res = await runCrawlJob(id)
+      return { ok: res.ok, error: res.error }
+    },
+    { maxJobs: 1, budgetMs: 14_000, targetRegistrarId: registrar.id },
+  )
   revalidatePath("/admin")
   revalidatePath("/admin/crawls")
   revalidatePath("/", "layout")
-  return result
+  if (result.processed === 0) {
+    return {
+      jobId: 0,
+      ok: false,
+      message: "该注册商已有任务在队列中排队，将在后台依次执行",
+      totalTlds: 0,
+      updated: 0,
+      skipped: 0,
+      durationMs: 0,
+      error: "队列繁忙，任务已排队待执行",
+    }
+  }
+  return {
+    jobId: 0,
+    ok: true,
+    message:
+      result.succeeded > 0
+        ? `采集完成：成功 ${result.succeeded} 家`
+        : "任务已开始执行，结果请到「采集任务」查看",
+    totalTlds: 0,
+    updated: 0,
+    skipped: 0,
+    durationMs: 0,
+  }
 }
 
 export async function triggerCrawlAll() {
   await requireAdmin()
   const active = await db.select().from(registrars).where(eq(registrars.isActive, true))
-  const results = []
+  const queue = getQueue()
   for (const r of active) {
-    results.push(await runCrawlJob(r.id))
+    await queue.enqueue({ registrarId: r.id, priority: r.priority ?? 100, trigger: "manual" })
   }
+  const result = await drainQueue(
+    async (id) => {
+      const res = await runCrawlJob(id)
+      return { ok: res.ok, error: res.error }
+    },
+    { maxJobs: 4, budgetMs: 12_000 },
+  )
+  const pending = await queue.pendingCount()
   revalidatePath("/admin")
   revalidatePath("/admin/crawls")
   revalidatePath("/", "layout")
-  return results
+  return Array.from({ length: 1 }, () => ({
+    jobId: 0,
+    ok: true,
+    message: `已入队 ${active.length} 家注册商；本次完成 ${result.processed} 家，队列中还有 ${pending} 家待执行`,
+    totalTlds: 0,
+    updated: 0,
+    skipped: 0,
+    durationMs: 0,
+  }))
 }
 
 export async function toggleRegistrarActive(registrarId: number, isActive: boolean) {

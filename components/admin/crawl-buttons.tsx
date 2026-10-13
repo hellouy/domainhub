@@ -21,7 +21,8 @@ export function CrawlAllButton() {
           startTransition(async () => {
             const results = await triggerCrawlAll()
             const ok = results.filter((r) => r.ok).length
-            setMessage(`完成：${ok}/${results.length} 个注册商采集成功`)
+            const first = results[0]?.message
+            setMessage(first ?? `完成：${ok}/${results.length} 个注册商已处理`)
             router.refresh()
           })
         }

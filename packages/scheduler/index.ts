@@ -75,10 +75,10 @@ export async function recoverStaleRunning(
  */
 export async function drainQueue(
   runJob: (registrarId: number) => Promise<{ ok: boolean; error?: string }>,
-  options?: { maxJobs?: number; budgetMs?: number },
+  options?: { maxJobs?: number; budgetMs?: number; targetRegistrarId?: number },
 ): Promise<{ processed: number; succeeded: number; failed: number }> {
   const queue = getQueue()
-  const maxJobs = options?.maxJobs ?? 20
+  const maxJobs = options?.maxJobs ?? 60
   const budgetMs = options?.budgetMs ?? 250_000
   const startedAt = Date.now()
 
@@ -89,7 +89,9 @@ export async function drainQueue(
   while (processed < maxJobs && Date.now() - startedAt < budgetMs) {
     // 先恢复卡死项, 再取任务(每轮最多恢复一次, 恢复本身不占任务预算)
     if (processed === 0) await recoverStaleRunning()
-    const item = await queue.dequeue()
+    const item = await queue.dequeue(
+      options?.targetRegistrarId ? { registrarId: options.targetRegistrarId } : undefined,
+    )
     if (!item) break
     processed++
     try {

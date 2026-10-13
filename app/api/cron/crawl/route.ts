@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
       const res = await runCrawlJob(registrarId)
       return { ok: res.ok, error: res.error }
     },
-    { budgetMs: 270_000 },
+    { budgetMs: 280_000 },
   )
 
   return NextResponse.json({ enqueued, ...result })

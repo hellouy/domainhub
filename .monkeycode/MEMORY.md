@@ -171,6 +171,8 @@ Entries discovered by the Agent during task execution should follow this format:
 - Category: Operations & Deployment
 - Instructions:
   - 生产与本地 DB 连接角色不同：本地 `.env.local` 的 DATABASE_URL 是表 owner `tldbi_app`（全权限）；Vercel 生产用 tldbi_POSTGRES_URL（Supabase pooler）以 `postgres` 角色运行，对 registrars 等表**只有 SELECT 无 UPDATE/INSERT**。Vercel 上任何写操作若遇 `permission denied for table X`，用本地连接 `GRANT SELECT, INSERT, UPDATE, DELETE ON TABLE X TO postgres` 后即可生效，无需改代码或环境变量。
+  - **2026-10-12 全量授权**：后台三问题（站点设置保存/采集/价格同步失败）根因即生产 postgres 角色对 11 张表+13 序列全缺写权限，已 `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO postgres` + `GRANT USAGE, SELECT ON ALL SEQUENCES` + `ALTER DEFAULT PRIVILEGES`（防新建表复发）；此逻辑已固化进 `scripts/setup-db.ts` DDL 尾部（含 prices 缺失的 `promo_codes jsonb` 列）。
+  - **后台采集超时根因**：单家采集平均 32s（最慢 openprovider 237s），远超 serverless server action 15s 限制，同步跑必然超时。已改 `triggerCrawl`/`triggerCrawlAll` 为「入队 + 预算内 drain」：入队后 14s/12s 预算内跑 1-4 家，剩余任务留在 crawl_queue 由 cron（每日 /api/cron/crawl，drain budgetMs=280s）与本地 local-sync 消化；`drainQueue` 增 `targetRegistrarId` 精确单家采集，`dequeue` 支持按 registrar 过滤，默认 maxJobs 20→60。
   - Next.js App Router 下划线前缀目录（如 `api/_diag`）是私有文件夹**不参与路由**，404；诊断路由须用普通命名（如 `api/diag`）。
   - drizzle/pg 查询中 `column === value` 不会生成 WHERE（Column 对象 !== 字符串得 false 被忽略，返回全表 limit 1 错行），必须用 `eq(column, value)`。
   - pg 驱动 bytea 默认返回 Buffer，drizzle customType 的 fromDriver/toDriver 直接透传 Buffer 即可 roundtrip。

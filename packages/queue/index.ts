@@ -41,7 +41,7 @@ export interface CrawlQueueService {
   /** 入队（同一注册商已有 pending 任务时去重，返回已有项） */
   enqueue: (options: EnqueueOptions) => Promise<QueueItem>
   /** 取出下一个待执行项并标记为 running（按优先级 + 计划时间） */
-  dequeue: () => Promise<QueueItem | null>
+  dequeue: (filter?: { registrarId?: number }) => Promise<QueueItem | null>
   /** 标记完成 */
   complete: (id: number, jobId?: number) => Promise<void>
   /** 标记失败：未达最大尝试次数则重新入队（retrying），否则终止（failed） */
@@ -95,13 +95,16 @@ export const dbQueue: CrawlQueueService = {
     return toItem(row)
   },
 
-  async dequeue() {
+  async dequeue(filter?: { registrarId?: number }) {
     // 原子领取：UPDATE ... WHERE id = (SELECT ... FOR UPDATE SKIP LOCKED)
+    const whereRegistrar = filter?.registrarId
+      ? sql`AND registrar_id = ${filter.registrarId}`
+      : sql``
     const rows = await db.execute(sql`
       UPDATE crawl_queue SET status = 'running', started_at = NOW(), attempts = attempts + 1
       WHERE id = (
         SELECT id FROM crawl_queue
-        WHERE status IN ('pending', 'retrying') AND scheduled_at <= NOW()
+        WHERE status IN ('pending', 'retrying') AND scheduled_at <= NOW() ${whereRegistrar}
         ORDER BY priority ASC, scheduled_at ASC
         LIMIT 1
         FOR UPDATE SKIP LOCKED

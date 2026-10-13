@@ -91,9 +91,11 @@ ALTER TABLE crawl_jobs ADD COLUMN IF NOT EXISTS metrics jsonb;
 -- ---- deals-and-coupons：促销/优惠券维度（幂等加列）----
 ALTER TABLE prices ADD COLUMN IF NOT EXISTS promotion_price numeric(10,2);
 ALTER TABLE prices ADD COLUMN IF NOT EXISTS promo_code text;
+ALTER TABLE prices ADD COLUMN IF NOT EXISTS promo_codes jsonb;
 ALTER TABLE prices ADD COLUMN IF NOT EXISTS promotion_ends_at timestamptz;
 ALTER TABLE price_history ADD COLUMN IF NOT EXISTS promotion_price numeric(10,2);
 ALTER TABLE price_history ADD COLUMN IF NOT EXISTS promo_code text;
+ALTER TABLE price_history ADD COLUMN IF NOT EXISTS promo_codes jsonb;
 ALTER TABLE price_history ADD COLUMN IF NOT EXISTS promotion_ends_at timestamptz;
 
 -- ---- Sprint 5 平台化新表（与 lib/db/schema.ts 对齐）----
@@ -213,6 +215,14 @@ CREATE INDEX IF NOT EXISTS idx_prices_tld ON prices (tld_id);
 CREATE INDEX IF NOT EXISTS idx_prices_registrar ON prices (registrar_id);
 CREATE INDEX IF NOT EXISTS idx_price_history_pair ON price_history (registrar_id, tld_id, recorded_at);
 CREATE INDEX IF NOT EXISTS idx_crawl_logs_job ON crawl_logs (job_id);
+
+-- ---- 生产角色写权限（Vercel tldbi_POSTGRES_URL 以 postgres 角色运行）----
+-- 生产连接对表仅有 SELECT 权限，会导致后台保存设置/采集任务/价格同步等写操作
+-- 报 permission denied。此处为全部表、序列授权，并设置默认权限防止新建表复发。
+GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO postgres;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO postgres;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO postgres;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public GRANT USAGE, SELECT ON SEQUENCES TO postgres;
 `
 
 // slug, 名称, 官网, 简介, ICANN 认证, 免费 WHOIS 隐私, DNSSEC, 支付方式
