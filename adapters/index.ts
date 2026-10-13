@@ -123,6 +123,7 @@ import { active24Adapter } from "./active24"
 import { spaceshipAdapter } from "./spaceship"
 import { quyuAdapter } from "./quyu"
 import { aliyunAdapter } from "./aliyun"
+import { godaddyDdcAdapter } from "./godaddy-ddc"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -252,6 +253,7 @@ export const allAdapters = [
   spaceshipAdapter,
   quyuAdapter,
   aliyunAdapter,
+  godaddyDdcAdapter,
 ]
 
 for (const adapter of allAdapters) {
