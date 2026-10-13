@@ -170,7 +170,8 @@ export function findTldCell(cells: string[]): [string, number] | null {
   for (let i = 0; i < cells.length; i++) {
     const c = cells[i].trim()
     // TLD 单元格可能带后端备注(如 ".com（eNom）"),提取前导 tld 即可
-    const m = c.match(/^\.?([a-z0-9-]{2,20}(?:\.[a-z0-9-]{2,15}){0,2})(?:\s|$)/i)
+    // 字符类含 Unicode 字母/数字(\p{L}\p{N}),支持中文/日文等 IDN 后缀行(如 ".中国")
+    const m = c.match(/^\.?([\p{L}\p{N}-]{2,20}(?:\.[\p{L}\p{N}-]{2,15}){0,2})(?:\s|$)/u)
     if (m) {
       const tld = m[1].toLowerCase()
       if (/^\./.test(c) || (i === 0 && !/^\d+$/.test(tld))) {
