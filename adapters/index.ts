@@ -121,6 +121,7 @@ import { ueepaAdapter } from "./ueepa"
 import { cpiAdapter } from "./cpi"
 import { active24Adapter } from "./active24"
 import { spaceshipAdapter } from "./spaceship"
+import { quyuAdapter } from "./quyu"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -248,6 +249,7 @@ export const allAdapters = [
   forpsiAdapter,
   // 第十三批: Spaceship(USD, 定价 BFF API 批量重放)(2026-10-08)
   spaceshipAdapter,
+  quyuAdapter,
 ]
 
 for (const adapter of allAdapters) {
