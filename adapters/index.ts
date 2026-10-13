@@ -21,6 +21,7 @@ import { godaddyAdapter } from "./godaddy"
 import { namecheapAdapter } from "./namecheap"
 import { namecomAdapter } from "./namecom"
 import { netimAdapter } from "./netim"
+import { eurodnsAdapter } from "./eurodns"
 import { metanameAdapter } from "./metaname"
 import { onecomAdapter } from "./onecom"
 import { porkbunAdapter } from "./porkbun"
@@ -30,7 +31,6 @@ import { arubaAdapter } from "./aruba"
 import {
   amenAdapter,
   domeneshopAdapter,
-  eurodnsAdapter,
   hoverAdapter,
 internetbsAdapter,
   loopiaAdapter,

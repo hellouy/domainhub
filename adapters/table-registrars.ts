@@ -38,15 +38,6 @@ export const internetbsAdapter = createTableAdapter({
   columnOrder: ["register", "transfer", "renew"],
 })
 
-export const eurodnsAdapter = createTableAdapter({
-  slug: "eurodns",
-  name: "EuroDNS",
-  website: "https://www.eurodns.com",
-  currency: "EUR",
-  urls: ["https://www.eurodns.com/domain-extensions"],
-  columnOrder: ["register", "renew", "transfer"],
-})
-
 export const registercomAdapter = createTableAdapter({
   slug: "registercom",
   name: "Register.com",
