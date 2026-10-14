@@ -213,28 +213,70 @@ async function renderViaAggregate(url: string): Promise<string> {
   }
 }
 
-/** 通用码落库: 映射该注册商全部 TLD 行(对象数组去重合并, 首码为主码) */
+/** TLD 特定码(slug -> code -> tld): 只写入对应后缀行, 避免污染全部 TLD 行 */
+const TLD_CODE_MAP: Record<string, Record<string, string>> = {
+  spaceship: { COM67: "com", NET19: "net", IO85: "io", XYZ52: "xyz", SPSR86: "top" },
+  namecheap: { NETDEAL1168: "net", NEWCOM679: "com", NCSIREG26: "si" },
+}
+
+/** 产品码(非域名促销, 如 VPN/托管/邮箱): 不写入域名价格行 */
+const PRODUCT_CODES: Record<string, Set<string>> = {
+  spaceship: new Set(["FASTVPN", "HOSTING", "SPACEMAIL", "WORDPRESS"]),
+}
+
+/** 将一组码按后缀写入 prices 行; TLD 特定码只写对应后缀行, 其余为站级码写全部行 */
 async function persistCodes(registrarId: number, slug: string, codes: string[]): Promise<number> {
   if (codes.length === 0) return 0
-  const objs = codes.map((c) => ({ code: c }))
-  const codesJson = JSON.stringify(objs)
-  const res = await db.execute(sql`
-    UPDATE prices
-    SET promo_codes = (
-      SELECT jsonb_agg(DISTINCT x) FROM jsonb_array_elements(
-        COALESCE(promo_codes, '[]'::jsonb) || ${codesJson}::jsonb
-      ) x
-    ),
-    promo_code = COALESCE(
-      (SELECT (x->>'code') FROM jsonb_array_elements(
-        COALESCE(promo_codes, '[]'::jsonb) || ${codesJson}::jsonb
-      ) x WHERE x->>'code' IS NOT NULL ORDER BY x->>'code' LIMIT 1),
-      promo_code
-    ),
-    updated_at = NOW()
-    WHERE registrar_id = ${registrarId}
-  `)
-  return res.rowCount ?? 0
+  const tldMap = TLD_CODE_MAP[slug] ?? {}
+  const productSet = PRODUCT_CODES[slug] ?? new Set<string>()
+  const siteWide = codes.filter((c) => !productSet.has(c) && !Object.prototype.hasOwnProperty.call(tldMap, c))
+  if (siteWide.length === 0 && codes.length > 0 && Object.keys(tldMap).length === 0) return 0
+
+  let total = 0
+  // 1) 站级码 -> 全部 TLD 行
+  if (siteWide.length > 0) {
+    const objs = siteWide.map((c) => ({ code: c }))
+    const res = await db.execute(sql`
+      UPDATE prices
+      SET promo_codes = (
+        SELECT jsonb_agg(DISTINCT x) FROM jsonb_array_elements(
+          COALESCE(promo_codes, '[]'::jsonb) || ${JSON.stringify(objs)}::jsonb
+        ) x
+      ),
+      promo_code = COALESCE(
+        (SELECT (x->>'code') FROM jsonb_array_elements(
+          COALESCE(promo_codes, '[]'::jsonb) || ${JSON.stringify(objs)}::jsonb
+        ) x WHERE x->>'code' IS NOT NULL ORDER BY x->>'code' LIMIT 1),
+        promo_code
+      ),
+      updated_at = NOW()
+      WHERE registrar_id = ${registrarId}
+    `)
+    total += res.rowCount ?? 0
+  }
+  // 2) TLD 特定码 -> 对应后缀行
+  for (const [code, tld] of Object.entries(tldMap)) {
+    if (!codes.includes(code)) continue
+    const res = await db.execute(sql`
+      UPDATE prices
+      SET promo_codes = (
+        SELECT jsonb_agg(DISTINCT x) FROM jsonb_array_elements(
+          COALESCE(promo_codes, '[]'::jsonb) || ${JSON.stringify([{ code }])}::jsonb
+        ) x
+      ),
+      promo_code = COALESCE(
+        (SELECT (x->>'code') FROM jsonb_array_elements(
+          COALESCE(promo_codes, '[]'::jsonb) || ${JSON.stringify([{ code }])}::jsonb
+        ) x WHERE x->>'code' IS NOT NULL ORDER BY x->>'code' LIMIT 1),
+        promo_code
+      ),
+      updated_at = NOW()
+      WHERE registrar_id = ${registrarId}
+        AND tld_id = (SELECT id FROM tlds WHERE tld = ${tld})
+    `)
+    total += res.rowCount ?? 0
+  }
+  return total
 }
 
 async function main() {
