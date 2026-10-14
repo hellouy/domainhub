@@ -122,6 +122,7 @@ import { cpiAdapter } from "./cpi"
 import { active24Adapter } from "./active24"
 import { spaceshipAdapter } from "./spaceship"
 import { quyuAdapter } from "./quyu"
+import { truehostCloudAdapter } from "./truehost-cloud"
 import { aliyunAdapter } from "./aliyun"
 
 export const allAdapters = [
@@ -252,6 +253,7 @@ export const allAdapters = [
   spaceshipAdapter,
   quyuAdapter,
   aliyunAdapter,
+  truehostCloudAdapter,
 ]
 
 for (const adapter of allAdapters) {
