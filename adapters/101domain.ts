@@ -33,6 +33,26 @@ export const domain101Adapter = defineAdapter({
         const token = process.env.BROWSER_SERVICE_TOKEN ?? ""
         const out: unknown[] = []
         const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
+        // pricing.htm 是 div 网格（li.pricelist-row），需按 label 定位价格，通用提取脚本取不到
+        const pricingScript = (() => {
+          return `(() => {
+            const out = []
+            for (const el of document.querySelectorAll('li.pricelist-row')) {
+              const link = el.querySelector('.pricelist-row--link')
+              const tldRaw = (link?.textContent || '').trim().replace(/^\\./,'').toLowerCase()
+              if (!/^[a-z0-9-]{2,20}(?:\\.[a-z0-9-]{2,15}){0,2}$/.test(tldRaw)) continue
+              const parseV = (sel) => {
+                const n = el.querySelector(sel)
+                const t = (n?.textContent || '').replace(/[^0-9.,]/g,'').trim()
+                if (!t) return null
+                const v = parseFloat(t.replace(/,/g,''))
+                return Number.isFinite(v) && v > 0 && v < 1000000 ? Math.round(v*100)/100 : null
+              }
+              out.push({ tld: tldRaw, register: parseV('.price-current'), renew: parseV('.price-renew'), transfer: parseV('.price-transfer') })
+            }
+            return JSON.stringify(out)
+          })()`
+        })()
         for (const u of [PRICING_URL, GTLD_URL]) {
           let extracted: unknown[] | null = null
           let lastErr = ""
@@ -42,7 +62,12 @@ export const domain101Adapter = defineAdapter({
             const res = await ctx.fetch(`${base}/render`, {
               method: "POST",
               headers: { "Content-Type": "application/json", Accept: "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-              body: JSON.stringify({ url: u, extract: "extract-json", waitForTimeoutMs: 25_000 }),
+              body: JSON.stringify({
+                url: u,
+                extract: "extract-json",
+                waitForTimeoutMs: 25_000,
+                ...(u === PRICING_URL ? { script: pricingScript } : {}),
+              }),
             })
             try {
               const data = (await res.json()) as { ok?: boolean; extracted?: unknown[]; error?: string }

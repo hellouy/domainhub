@@ -130,17 +130,23 @@ async function antiBotStrategyFetch(def: StrategyDefinition, ctx: AdapterContext
     signal: AbortSignal.timeout(opts.timeoutMs ?? 90_000),
   })
   if (!res.ok) throw new Error(`聚合抓取服务返回 HTTP ${res.status}`)
-  const data = (await res.json()) as {
+  const raw = (await res.json()) as {
+    ok?: boolean
+    error?: string
+    data?: { url?: string; html?: string; used_mode?: string; error?: string }
     url?: string
     html?: string
     used_mode?: string
-    error?: string
   }
-  if (typeof data.html !== "string" || data.html.length === 0) {
-    throw new Error(data.error ?? "聚合抓取服务未返回 html")
+  // 兼容两种返回结构: 顶层 html(旧) 或 data.html(聚合服务当前格式)
+  const inner = raw.data && typeof raw.data === "object" ? raw.data : null
+  const html = inner?.html ?? raw.html
+  const usedMode = inner?.used_mode ?? raw.used_mode
+  if (typeof html !== "string" || html.length === 0) {
+    throw new Error(inner?.error ?? raw.error ?? "聚合抓取服务未返回 html")
   }
-  await ctx.log("info", `聚合抓取服务 used_mode=${data.used_mode ?? "?"}，${data.html.length} 字节`)
-  return data.html
+  await ctx.log("info", `聚合抓取服务 used_mode=${usedMode ?? "?"}，${html.length} 字节`)
+  return html
 }
 
 /** 默认 parse：Parser 平台自动识别格式，要求数据已是 RawPrice 形状 */
