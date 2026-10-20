@@ -26,7 +26,7 @@ const CRAWL_SERVICE_TOKEN = process.env.CRAWL_SERVICE_TOKEN ?? ""
 
 /** 官方促销页已知 URL(slug -> URL 列表), 命中后跳过 SearXNG 发现 */
 const KNOWN_PROMO_URLS: Record<string, string[]> = {
-  spaceship: ["https://www.spaceship.com/promos/"],
+  spaceship: ["https://www.spaceship.com/zh/promos/", "https://www.spaceship.com/promos/"],
   namesilo: ["https://www.namesilo.com/discounts-and-promotions"],
   namecheap: ["https://www.namecheap.com/promos/", "https://www.namecheap.com/domains/99-cent-domains/"],
   porkbun: ["https://porkbun.com/products/promotions"],
@@ -133,6 +133,57 @@ function extractCodes(html: string): string[] {
   return [...codes]
 }
 
+/** 结构化促销条目：某后缀的促销价/优惠码/原价/折扣率 */
+export interface StructuredDeal {
+  tld: string
+  code?: string
+  promotionPrice?: number
+  oldPrice?: number
+  discountPct?: number
+}
+
+/**
+ * 结构化促销卡解析（spaceship 官方促销页 data-zid="dealCard" 布局等）：
+ *   卡片含 TLD + 促销价 + 划线原价 + 优惠码按钮（gb-button__text）。
+ * 非该布局返回 null，调用方回退通用 extractCodes。
+ * 仅保留注册类域名卡（剔除转移/托管/邮箱等产品卡）。
+ */
+export function extractStructuredDeals(html: string): StructuredDeal[] | null {
+  if (!html.includes('data-zid="dealCard"')) return null
+  const cards = html.split(/(?=<div data-zid="dealCard")/)
+  const deals: StructuredDeal[] = []
+  for (const card of cards) {
+    if (!card.includes("promos-deal-card__footer")) continue
+    const title = card.match(/(?:data-zid="dealCardTitle"[^>]*>)([^<]+)</)?.[1]?.trim()
+    const name = card.match(/data-zid="dealCardName"[^>]*>\s*<span[^>]*>([^<]+)</)?.[1]?.trim()
+    const priceRaw = card.match(/promos-deal-card__price" data-zid="dealCardPrice"[^>]*>[\s\S]*?\$\s*([\d.,]+)/)?.[1]
+    const oldRaw = card.match(/promos-deal-card__price-old" data-zid="dealCardPrice"[^>]*>[\s\S]*?\$\s*([\d.,]+)/)?.[1]
+    const btn = card.match(/data-zid="promoCode"[^>]*>([\s\S]*?)<\/button>/)
+    let code = ""
+    if (btn) {
+      const txt = btn[1].replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim()
+      const m = txt.match(/[A-Za-z0-9]{3,20}/)
+      if (m) code = m[0].toUpperCase()
+    }
+    const tld = title?.match(/^\.([a-z0-9]{2,63})$/i)?.[1]
+    if (!tld) continue
+    if (/transfer|转移/.test((name ?? "").toLowerCase())) continue // 只收集注册类促销
+    const deal: StructuredDeal = { tld }
+    if (code && code.length >= 3 && code.length <= 20 && !NOISE.has(code)) deal.code = code
+    const price = priceRaw ? parseFloat(priceRaw) : NaN
+    const old = oldRaw ? parseFloat(oldRaw) : NaN
+    if (!Number.isNaN(price)) {
+      deal.promotionPrice = price
+      if (!Number.isNaN(old) && old > 0) {
+        deal.oldPrice = old
+        deal.discountPct = Math.round((1 - price / old) * 100)
+      }
+    }
+    deals.push(deal)
+  }
+  return deals.length ? deals : null
+}
+
 async function searxSearch(host: string): Promise<string[]> {
   const q = `site:${host} promo code OR promos OR deals OR coupons`
   for (let attempt = 0; attempt < 3; attempt++) {
@@ -213,6 +264,38 @@ async function renderViaAggregate(url: string): Promise<string> {
   }
 }
 
+/** 本地 browser-worker(8840) 渲染, 作为聚合服务故障时的降级通道 */
+async function renderViaLocal(url: string): Promise<string> {
+  const workerUrl = process.env.BROWSER_SERVICE_URL ?? "http://127.0.0.1:8840"
+  const token = process.env.BROWSER_SERVICE_TOKEN ?? ""
+  try {
+    const res = await fetch(`${workerUrl}/render`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      },
+      body: JSON.stringify({ url, extract: "html", scrollToBottom: true, waitForTimeoutMs: 25_000 }),
+      signal: AbortSignal.timeout(35_000),
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const j = (await res.json()) as { html?: string }
+    if (typeof j.html !== "string" || !j.html) throw new Error("empty html")
+    if (looksLikeChallenge(j.html)) throw new Error("challenge page")
+    return j.html
+  } catch (e: any) {
+    console.log(`  [render:local] FAIL ${e.message?.slice(0, 60) || e.name}`)
+    return ""
+  }
+}
+
+/** 渲染主通道: 聚合服务优先, 失败回退本地 worker */
+async function renderPage(url: string): Promise<string> {
+  const html = await renderViaAggregate(url)
+  if (html) return html
+  return renderViaLocal(url)
+}
+
 /** TLD 特定码(slug -> code -> tld): 只写入对应后缀行, 避免污染全部 TLD 行 */
 const TLD_CODE_MAP: Record<string, Record<string, string>> = {
   spaceship: { COM67: "com", NET19: "net", IO85: "io", XYZ52: "xyz", SPSR86: "top" },
@@ -279,6 +362,63 @@ async function persistCodes(registrarId: number, slug: string, codes: string[]):
   return total
 }
 
+/**
+ * 结构化促销落库：按 TLD 精确写入促销价/优惠码/原价/sourceUrl。
+ * 促销价须低于标准注册价才写（防脏数据），否则只保留码与来源。
+ * 返回更新的行数。
+ */
+export async function persistStructuredDeals(
+  registrarId: number,
+  deals: StructuredDeal[],
+  sourceUrl: string,
+): Promise<number> {
+  let total = 0
+  for (const d of deals) {
+    const entry: Record<string, unknown> = { code: d.code ?? null }
+    if (d.promotionPrice != null) entry.promotionPrice = d.promotionPrice
+    if (d.oldPrice != null) entry.oldPrice = d.oldPrice
+    if (d.discountPct != null) entry.discountPct = d.discountPct
+    entry.sourceUrl = sourceUrl
+    const res = await db.execute(sql`
+      UPDATE prices
+      SET promo_codes = (
+        SELECT COALESCE(
+          (SELECT jsonb_agg(t.x) FROM (
+            SELECT x FROM jsonb_array_elements(COALESCE(prices.promo_codes, '[]'::jsonb)) x
+            WHERE x->>'code' IS DISTINCT FROM ${d.code ?? null}
+          ) t) || jsonb_build_array(${JSON.stringify(entry)}::jsonb),
+          jsonb_build_array(${JSON.stringify(entry)}::jsonb)
+        )
+      ),
+      promo_code = COALESCE(
+        (SELECT x->>'code' FROM jsonb_array_elements(
+          (SELECT COALESCE(
+            (SELECT jsonb_agg(t.x) FROM (
+              SELECT x FROM jsonb_array_elements(COALESCE(prices.promo_codes, '[]'::jsonb)) x
+              WHERE x->>'code' IS DISTINCT FROM ${d.code ?? null}
+            ) t) || jsonb_build_array(${JSON.stringify(entry)}::jsonb),
+            jsonb_build_array(${JSON.stringify(entry)}::jsonb)
+          ))
+        ) x WHERE x->>'code' IS NOT NULL
+        ORDER BY (x->>'promotionPrice')::numeric ASC NULLS LAST, x->>'code' LIMIT 1),
+        promo_code
+      ),
+      promotion_price = CASE
+        WHEN ${d.promotionPrice}::numeric IS NOT NULL
+         AND ${d.promotionPrice}::numeric < register_price
+        THEN ${d.promotionPrice}::numeric
+        ELSE promotion_price
+      END,
+      source_url = ${sourceUrl},
+      updated_at = NOW()
+      WHERE registrar_id = ${registrarId}
+        AND tld_id = (SELECT id FROM tlds WHERE tld = ${d.tld})
+    `)
+    total += res.rowCount ?? 0
+  }
+  return total
+}
+
 async function main() {
   const args = process.argv.slice(2)
   const regs = await db.select().from(registrars).where(eq(registrars.isActive, true))
@@ -300,20 +440,34 @@ async function main() {
       let urls = KNOWN_PROMO_URLS[r.slug] ?? (await searxSearch(host))
       if (!KNOWN_PROMO_URLS[r.slug]) await new Promise((res) => setTimeout(res, 6_000)) // SearXNG 限流冷却
       let codes: string[] = []
+      let structuredHit = false
       for (const u of urls.slice(0, 3)) {
         if (!underDeadline()) break
         // 每 URL 只试一次: Redis 缓存已覆盖之前探测过的 URL,一次命中即可
         // 失败则快速跳过,避免堆积在 rate limit 队列
-        const html = await renderViaAggregate(u)
+        const html = await renderPage(u)
         if (!html) continue
+        // 优先结构化解析（优惠码+促销价+原价）, 失败才回退通用码提取
+        const deals = extractStructuredDeals(html)
+        if (deals && deals.length) {
+          const updated = await persistStructuredDeals(r.id, deals, u)
+          if (updated > 0) {
+            structuredHit = true
+            codes = deals.filter((d) => d.code).map((d) => d.code as string)
+            withCodes++
+            console.log(`OK   ${r.slug.padEnd(16)} 结构化促销 ${deals.length} 卡(含码${codes.length}个) 落库=${updated} 行 (${((Date.now()-regStart)/1000).toFixed(0)}s)`)
+          }
+          break
+        }
         codes = extractCodes(html)
         if (codes.length > 0) break
       }
+      if (structuredHit) continue
       if (codes.length === 0) {
         // common paths 只试前 3 个(原 9 个),减少调用量
         for (const p of COMMON_PROMO_PATHS.slice(0, 3)) {
           if (!underDeadline()) break
-          const html = await renderViaAggregate(`${base}${p}`)
+          const html = await renderPage(`${base}${p}`)
           if (!html) continue
           codes = extractCodes(html)
           if (codes.length > 0) break

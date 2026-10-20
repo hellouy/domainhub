@@ -19,3 +19,6 @@ node_modules
 # Local runtime & debug artifacts
 logs/
 scripts/tmp-audit/
+
+# tsc incremental build cache
+*.tsbuildinfo
