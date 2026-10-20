@@ -147,7 +147,7 @@
 | spaceship | https://www.spaceship.com/domain-search/ |
 | 101domain | https://www.101domain.com/pricing.htm |
 | cloudns | https://www.cloudns.net/domains/ |
-| pskz | https://www.ps.kz/domains |
+| pskz | https://www.ps.kz/domains（直连 122KB 无表格, 必走渲染; 汇率计算 `9 590 тг/жыл`） |
 | westcn | https://www.west.cn/web/price/domainpricelist |
 | afrihost | https://www.afrihost.com/domains |
 | julyname | https://julyname.com/price.htm |
@@ -241,3 +241,40 @@ crontab -e
 10. **更新语义**: skip(价格一致)也会刷新 updated_at — updated_at 表示"最近检查时间"。
 11. **后台常驻服务**必须 `timeout: 0` 启动, 否则超时被杀。
 12. **ccireg 类 Cloudflare JS 挑战**: 特征 `failedChecks` 关键字, 别当"页面结构变了"去改解析。
+
+## 7. 服务器环境豁免清单与依赖校验(2026-10-14 实测)
+
+> 服务器跑 `--all` 后 97 家成功。以下 3 家失败各有独立根因, 均非适配器 bug,
+> 无需回滚代码; 但服务器侧需按依赖条件排障。供运维参照。
+
+| slug | 上游可采性(本环境直连) | 服务器失败根因与判定 | 服务器处置 |
+|---|---|---|---|
+| **one** | ✅ 列表/单价 REST 均 200 | 业务层返回 `TopDomain not found`(平台对服务器出口 IP 的风控/区域拒绝), 与连接无关 | 换服务器出口 IP/代理; 确认 one.com 支持的区域; 或用 `country` 参数试其他区域 |
+| **domaincostclub** | ✅ HTTP 200, 329KB | 服务器→站点连接中断, 90s 渲染无法完成(CDN 对服务器 IP 限流或中间链路问题) | 等待站点恢复; 换出口; 服务器可用 `?` 参数不影响直连 |
+| **godaddy** | ⚠️ 需穿盾 | `private-api`(无 Key)→ `anti-bot`(需 8090 聚合服务)。服务器未配 `CRAWL_SERVICE_URL` 时裸 HTML 穿不过 Cloudflare 盾 → 超时 | 服务器填 GoDaddy 官方 API Key(developer.godaddy.com); 或部署聚合反爬服务指向 `CRAWL_SERVICE_URL` |
+
+### 7.1 服务器依赖自检命令
+
+```bash
+# 直连型源(约 90 家)连通性抽查: one/domaincostclub 上游是否可达
+curl -sS -o /dev/null -w "%{http_code}\n" -A "Mozilla/5.0" "https://www.one.com/rest/tlds/.com/display-prices/?country=GB"
+curl -sS -o /dev/null -w "%{http_code}\n" "https://www.domaincostclub.com/pricing.dhtml"
+
+# playwright 型(PS.kz 等 11 家): 必须 BROWSER_SERVICE_URL 指向健康 worker
+curl -sS -X POST "$BROWSER_SERVICE_URL/render" \
+  -H "Content-Type: application/json" -H "Authorization: Bearer $BROWSER_SERVICE_TOKEN" \
+  -d '{"url":"https://www.ps.kz/domains","extract":"html","scrollToBottom":true,"waitForTimeoutMs":12000}'
+# 期望: {"ok":true,...含 <tr>}. 若 "浏览器服务队列已满"(502)= worker 卡死需重启
+
+# anti-bot 型(godaddy 等): 必须 CRAWL_SERVICE_URL 指向可用 8090 聚合服务
+curl -sS "$CRAWL_SERVICE_URL/health"
+```
+
+### 7.2 服务器缺依赖时的降级口径
+
+- 服务器**没有 worker/8090** 时, `--all` 仍安全: playwright/anti-bot 主策略注册商
+  会失败但**不影响直连型**; 失败 job 进 crawl_jobs 标记 failed, 不污染 prices 表。
+- 上述 3 家在服务器**可接受豁免**(数据新鲜度会落后, 待条件满足后由
+  `npx tsx scripts/recrawl-browser-registrars.ts one domaincostclub godaddy` 单独补采)。
+- PS.kz 的 URL `https://www.ps.kz/domains` 确认存在直连 122KB 无表格的 JS 渲染页,
+  服务器没有 worker 时必然失败, 属预期, 不算回归。
