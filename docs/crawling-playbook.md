@@ -210,22 +210,34 @@ SEARXNG_BASE_URL=...
 SEARXNG_TOKEN=...
 ```
 
-## 5. 服务器采集运行方式
+## 5b. 促销码采集现状与运行方式(2026-10-21 调研)
+
+`scripts/collect-promo-codes.ts` 独立于价格采集运行, 将注册商官方促销码写入 `prices.promo_codes`/`promo_code`, 结构化源还会写 `promotion_price`。
 
 ```bash
-# 安装依赖(用 pnpm, 项目是 pnpm workspace)
-pnpm install
-
-# 单家或指定多家
-npx tsx scripts/recrawl-browser-registrars.ts namecheap truehost-cloud porkbun
-
-# 全量活跃注册商(约 60-120 分钟, 按最久未更新优先)
-npx tsx scripts/recrawl-browser-registrars.ts --all
-
-# 每日定时: 服务器 crontab 或 local-sync.sh(内含 worker 自愈)
-crontab -e
-0 3 * * * cd /workspace && ./scripts/local-sync.sh >> logs/local-sync.log 2>&1
+# 指定多家(推荐: 只跑已知有促销页的源, 全量 100 家约 6-7 小时)
+npx tsx --env-file=.env.local scripts/collect-promo-codes.ts spaceship namecheap inwx
 ```
+
+### 各源现状(批量调研结论)
+
+| 源 | 状态 | 说明 |
+|---|---|---|
+| spaceship | ✅ 结构化 | `/zh/promos/` 官方促销页, TLD→码→促销价(extractStructuredDeals), 已验证落库 |
+| namecheap | ✅ 站级码 | `/promos/` 页面 JSON `coupons` 字段为当期码(T0 通道优先), 主码 SPRNGDMNS 等; 产品码(托管/VPS/SSL)由 PRODUCT_CODES 过滤 |
+| inwx | ✅ 通用 | `/en/offer` JS 注入价, 仅抓到码(L26), 无结构化价 |
+| ovhcloud | ⚠️ | 域名价格页无促销结构 |
+| namesilo/networksolutions/hostinger/dreamhost | ⚠️ | URL 存在但反爬占位页(Service Disruption/Error/Go Online), 重试可成 |
+| gandi/101domain/porkbun/dynadot/namecom/onlydomains | ❌ | 官方促销页已下线/改版(404), 已从 KNOWN_PROMO_URLS 移除, 走 SearXNG 发现 + common paths 探测 |
+
+### 关键实现要点
+
+1. **KNOWN_PROMO_URLS 只保留有效 URL**, 失效的走 SearXNG + common paths, 避免每轮白请求 404。
+2. **T0 通道**: 优先提取页面数据层 JSON `coupons":"..."` 字段的码(当期码, 最可靠), 排在提取结果最前, 成为主码 promo_code。
+3. **主码选择**: 本次采集码前置拼接 `objs || promo_codes`, 主码取数组首元素(最新当期码)。
+4. **产品码过滤**: PRODUCT_CODES[slug] 里的非域名码(托管/VPS/SSL)写入时从现有数组剔除, 避免污染域名价格行。
+5. **站级码**写全部 TLD 行, **TLD 特定码**(TLD_CODE_MAP)只写对应后缀行。
+6. **结构化源**促销价须低于标准注册价才写(persistStructuredDeals 防脏数据)。
 
 ## 6. 经验精华(踩坑总结)
 

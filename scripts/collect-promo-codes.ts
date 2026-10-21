@@ -28,18 +28,20 @@ const CRAWL_SERVICE_TOKEN = process.env.CRAWL_SERVICE_TOKEN ?? ""
 const KNOWN_PROMO_URLS: Record<string, string[]> = {
   spaceship: ["https://www.spaceship.com/zh/promos/", "https://www.spaceship.com/promos/"],
   namesilo: ["https://www.namesilo.com/discounts-and-promotions"],
-  namecheap: ["https://www.namecheap.com/promos/", "https://www.namecheap.com/domains/99-cent-domains/"],
-  porkbun: ["https://porkbun.com/products/promotions"],
-  dynadot: ["https://dynadot.com/community/sales.html"],
+  namecheap: ["https://www.namecheap.com/promos/"],
   hostinger: ["https://www.hostinger.com/domain-coupon-codes"],
   ovhcloud: ["https://www.ovhcloud.com/en/domains/"],
-  gandi: ["https://www.gandi.net/en/domain/promotions"],
   inwx: ["https://www.inwx.com/en/offer"],
   networksolutions: ["https://www.networksolutions.com/coupons"],
   dreamhost: ["https://www.dreamhost.com/domains/promo-codes/"],
-  "101domain": ["https://www.101domain.com/domain_promotions.htm"],
-  namecom: ["https://www.name.com/promo-codes"],
-  onlydomains: ["https://www.onlydomains.com/deals"],
+  /* 以下官方促销页 2026-10 已下线/改版, 移除避免每轮白请求 404:
+     gandi /en/domain/promotions(Page Not Found)
+     101domain /domain_promotions.htm(404)
+     porkbun /products/promotions(404)
+     dynadot /community/sales.html(404)
+     namecom /promo-codes(404)
+     onlydomains /deals(Page not found)
+     namecheap /domains/99-cent-domains/(404, 已并入 /promos/ 月度码) */
 }
 
 /** 真实码甄别: 颜色值/CSS/JS/常见词 排除 */
@@ -84,6 +86,14 @@ function extractCodes(html: string): string[] {
 
   const isCleanCode = (c: string): boolean =>
     c.length >= 3 && c.length <= 20 && c === c.toUpperCase() && !NOISE.has(c) && !/^\d+$/.test(c)
+
+  // T0: 页面数据层 coupons 字段优先 (JSON 标注的当期码, 比 DOM 文本最可靠, 排在 Set 最前)
+  for (const m of text.matchAll(/"coupons"\s*:\s*"([^"]+)"/g)) {
+    for (const part of m[1].split(",")) {
+      const code = part.trim().toUpperCase()
+      if (isCleanCode(code)) codes.add(code)
+    }
+  }
 
   // T1: 价格紧邻 —— <CODE> 紧跟 $price (最可靠, 误报极低)
   for (const m of text.matchAll(/\b([A-Z][A-Z0-9]{2,19})\s+\$[\d,.]+/g)) {
@@ -305,6 +315,11 @@ const TLD_CODE_MAP: Record<string, Record<string, string>> = {
 /** 产品码(非域名促销, 如 VPN/托管/邮箱): 不写入域名价格行 */
 const PRODUCT_CODES: Record<string, Set<string>> = {
   spaceship: new Set(["FASTVPN", "HOSTING", "SPACEMAIL", "WORDPRESS"]),
+  // namecheap coupons 字段中非域名产品(托管/VPS/SSL/建站/社交): 不写域名价格行
+  namecheap: new Set([
+    "SHAREDHOSTING", "VPSHOSTING", "DEDICATEDSERVERS", "SITEMAKERTRIAL", "EASYWPTRIAL",
+    "RELATESOCIAL", "RELATEADS", "DOMAINVAULT", "AUTO_MULTI_YEAR_SSL",
+  ]),
 }
 
 /** 将一组码按后缀写入 prices 行; TLD 特定码只写对应后缀行, 其余为站级码写全部行 */
@@ -319,17 +334,23 @@ async function persistCodes(registrarId: number, slug: string, codes: string[]):
   // 1) 站级码 -> 全部 TLD 行
   if (siteWide.length > 0) {
     const objs = siteWide.map((c) => ({ code: c }))
+    const keepSql = productSet.size
+      ? `(SELECT jsonb_agg(value) FROM jsonb_array_elements(COALESCE(promo_codes, '[]'::jsonb))
+         WHERE NOT (value->>'code' IN (${[...productSet].map((c) => `'${c}'`).join(",")})))`
+      : `COALESCE(promo_codes, '[]'::jsonb)`
     const res = await db.execute(sql`
       UPDATE prices
       SET promo_codes = (
-        SELECT jsonb_agg(DISTINCT x) FROM jsonb_array_elements(
-          COALESCE(promo_codes, '[]'::jsonb) || ${JSON.stringify(objs)}::jsonb
-        ) x
+        SELECT jsonb_agg(DISTINCT value) FROM jsonb_array_elements(
+          ${JSON.stringify(objs)}::jsonb || ${sql.raw(keepSql)}
+        ) WITH ORDINALITY
       ),
       promo_code = COALESCE(
-        (SELECT (x->>'code') FROM jsonb_array_elements(
-          COALESCE(promo_codes, '[]'::jsonb) || ${JSON.stringify(objs)}::jsonb
-        ) x WHERE x->>'code' IS NOT NULL ORDER BY x->>'code' LIMIT 1),
+        (SELECT value->>'code' FROM jsonb_array_elements(
+          ${JSON.stringify(objs)}::jsonb || COALESCE(promo_codes, '[]'::jsonb)
+        ) WITH ORDINALITY WHERE value->>'code' IS NOT NULL
+        ORDER BY ordinality
+        LIMIT 1),
         promo_code
       ),
       updated_at = NOW()
@@ -343,14 +364,16 @@ async function persistCodes(registrarId: number, slug: string, codes: string[]):
     const res = await db.execute(sql`
       UPDATE prices
       SET promo_codes = (
-        SELECT jsonb_agg(DISTINCT x) FROM jsonb_array_elements(
-          COALESCE(promo_codes, '[]'::jsonb) || ${JSON.stringify([{ code }])}::jsonb
-        ) x
+        SELECT jsonb_agg(DISTINCT value) FROM jsonb_array_elements(
+          ${JSON.stringify([{ code }])}::jsonb || COALESCE(promo_codes, '[]'::jsonb)
+        ) WITH ORDINALITY
       ),
       promo_code = COALESCE(
-        (SELECT (x->>'code') FROM jsonb_array_elements(
-          COALESCE(promo_codes, '[]'::jsonb) || ${JSON.stringify([{ code }])}::jsonb
-        ) x WHERE x->>'code' IS NOT NULL ORDER BY x->>'code' LIMIT 1),
+        (SELECT value->>'code' FROM jsonb_array_elements(
+          ${JSON.stringify([{ code }])}::jsonb || COALESCE(promo_codes, '[]'::jsonb)
+        ) WITH ORDINALITY WHERE value->>'code' IS NOT NULL
+        ORDER BY ordinality
+        LIMIT 1),
         promo_code
       ),
       updated_at = NOW()
