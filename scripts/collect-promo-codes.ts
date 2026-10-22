@@ -44,6 +44,13 @@ const KNOWN_PROMO_URLS: Record<string, string[]> = {
      namecheap /domains/99-cent-domains/(404, 已并入 /promos/ 月度码) */
 }
 
+/* 已确认官方页面无促销码、且普通价格页会误报 JS 常量/串站码的注册商:
+   cloudflare(误提 namecheap NEWCOM648, 串站)
+   register4less(误提键盘事件 JS 常量 KEYDOWN/KEYUP)
+   dreamhost(误提页面版本标记 L41/L44/L48/L91)
+   跳过可避免每轮误报污染, 未来页面改版出现真促销再手动移除 */
+const NO_PROMO_REGISTRARS = new Set(["cloudflare", "register4less", "dreamhost"])
+
 /** 真实码甄别: 颜色值/CSS/JS/常见词 排除 */
 const NOISE = new Set([
   "HTML","DOCTYPE","HTTP","HTTPS","THE","AND","FOR","WITH","DOMAIN","DOMAINS","SAVE","PROMO","PROMOS",
@@ -453,6 +460,10 @@ async function main() {
   let withCodes = 0
   const COMMON_PROMO_PATHS = ["/promos", "/promocodes", "/promo", "/deals", "/offers", "/domain/sales", "/sales", "/special-offers", "/promotions"]
   for (const r of targets) {
+    if (NO_PROMO_REGISTRARS.has(r.slug)) {
+      console.log(`SKIP ${r.slug.padEnd(16)} 已确认无官方促销码(跳过防误报)`)
+      continue
+    }
     const regStart = Date.now()
     // 单家硬性上限 4 分钟: 避免单家卡死拖垮整轮(9 路径 × 最坏 ~25s)
     const REG_DEADLINE = 4 * 60_000

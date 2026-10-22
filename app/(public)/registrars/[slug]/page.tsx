@@ -9,7 +9,7 @@ import { T, RelativeTime, RegistrarDescription } from "@/components/i18n-text"
 import { RegistrarIcon } from "@/components/registrar-favicon"
 import { getPricesForRegistrar, getRegistrarBySlug } from "@/lib/db/queries"
 import { normalizeUrl, withRegistrarReferral } from "@/lib/utils"
-import { getActivePromotionPrice } from "@/lib/promotion"
+import { getActivePromotionPrice, getTldSpecificCodes } from "@/lib/promotion"
 
 export const revalidate = 300
 
@@ -112,7 +112,7 @@ export default async function RegistrarPage({ params }: Props) {
         <div className="divide-y divide-border border border-border md:hidden">
           {priceRows.map((p) => {
             const activePromo = getActivePromotionPrice(p.registerPrice, p.promotionPrice, p.promotionEndsAt)
-            const codes = p.promoCodes?.map((c) => c.code) ?? (p.promoCode ? [p.promoCode] : [])
+            const codes = getTldSpecificCodes(p.promoCodes, p.promoCode)
             return (
               <article key={p.priceId} className="flex flex-col gap-3 px-4 py-4">
                 <div className="flex items-start justify-between gap-4">

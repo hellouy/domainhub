@@ -8,6 +8,7 @@ import { useCurrency, useLocale } from "@/components/providers"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn, normalizeUrl, withRegistrarReferral } from "@/lib/utils"
+import { getTldSpecificCodes } from "@/lib/promotion"
 
 type Deal = {
   registrar: string
@@ -138,14 +139,8 @@ export function DealsList({ deals }: { deals: Deal[] }) {
           deal.promotionPrice !== null && original > 0
             ? Math.round((1 - offer / original) * 100)
             : 0
-        const codes =
-          deal.promoCodes && deal.promoCodes.length > 0
-            ? deal.promoCodes
-                .map((c) => c.code)
-                .filter((v): v is string => Boolean(v))
-            : deal.promoCode
-              ? [deal.promoCode]
-              : []
+        // 只显示该后缀专属码: 优先带促销价的 TLD 专属码(去重); 无则显示主码单个
+        const codes = getTldSpecificCodes(deal.promoCodes, deal.promoCode)
         const endsAt = deal.promotionEndsAt
           ? new Intl.DateTimeFormat(locale === "zh" ? "zh-CN" : "en-US", {
               year: "numeric",
