@@ -4,16 +4,23 @@ import { HomeHero } from "@/components/home-hero"
 import { TldExplorer } from "@/components/tld-explorer"
 import { T, RegistrarDescription } from "@/components/i18n-text"
 import { RegistrarIcon } from "@/components/registrar-favicon"
-import { getActiveRegistrars, getStats, getTldBestQuotes, getTldsWithMinPrice } from "@/lib/db/queries"
+import {
+  getActiveRegistrars,
+  getStats,
+  getTldBestQuotes,
+  getTldsWithMinPrice,
+  getUpcomingGtlds,
+} from "@/lib/db/queries"
 
 export const revalidate = 300
 
 export default async function HomePage() {
-  const [stats, allTlds, quotes, registrarList] = await Promise.all([
+  const [stats, allTlds, quotes, registrarList, upcoming] = await Promise.all([
     getStats(),
     getTldsWithMinPrice(),
     getTldBestQuotes(),
     getActiveRegistrars(),
+    getUpcomingGtlds(),
   ])
   /** 已验证后缀：至少有一条真实采集价格记录 */
   const verifiedTlds = quotes.filter((q) => q.registrarCount > 0 && Number(q.registerPrice) > 0)
@@ -44,7 +51,7 @@ export default async function HomePage() {
               <T k="section.explorer" />
             </h2>
           </div>
-          <TldExplorer tlds={verifiedTlds} />
+          <TldExplorer tlds={verifiedTlds} upcoming={upcoming} />
         </div>
       </section>
 

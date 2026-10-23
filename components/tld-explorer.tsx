@@ -9,7 +9,7 @@ import { getActivePromotionPrice } from "@/lib/promotion"
 import { cn, normalizeUrl, withRegistrarReferral } from "@/lib/utils"
 import { useCurrency, useLocale } from "@/components/providers"
 import type { DictKey } from "@/lib/i18n"
-import type { TldBestQuote } from "@/lib/db/queries"
+import type { TldBestQuote, UpcomingTld } from "@/lib/db/queries"
 
 export type ExplorerTld = TldBestQuote
 
@@ -195,6 +195,53 @@ function QuoteRow({ q }: { q: ExplorerTld }) {
   )
 }
 
+/** 新顶级（申请中/待开放）行：无价格，展示状态、申请方、预计开放日期与来源。 */
+function NewGRow({ item }: { item: UpcomingTld }) {
+  const { t } = useLocale()
+  const statusKey = `explorer.newg.status.${item.launchStatus ?? "applied"}` as DictKey
+  const kindKey = item.launchType ? (`explorer.newg.kind.${item.launchType}` as DictKey) : null
+  const dateLabel = item.launchDate ? item.launchDate.slice(0, 10) : t("explorer.newg.pending")
+
+  return (
+    <li className="flex flex-col gap-1 px-3 py-3 md:grid md:grid-cols-[9rem_7rem_minmax(0,1fr)_8rem_2.5rem] md:items-center md:gap-x-4 md:px-4">
+      <div className="flex min-w-0 items-center gap-2">
+        <span className="truncate font-mono text-base font-semibold md:text-lg">.{item.tld}</span>
+        {kindKey && (
+          <span className="shrink-0 border border-border px-1 text-[10px] font-medium text-muted-foreground">
+            {t(kindKey)}
+          </span>
+        )}
+        <span className="ml-auto shrink-0 bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground md:hidden">
+          {t(statusKey)}
+        </span>
+      </div>
+      <span className="hidden md:block">
+        <span className="bg-secondary px-1.5 py-0.5 text-xs text-secondary-foreground">{t(statusKey)}</span>
+      </span>
+      <span className="min-w-0 truncate text-xs text-muted-foreground md:text-sm">{item.applicant || "—"}</span>
+      <span className="text-xs text-muted-foreground md:text-sm">
+        <span className="md:hidden">{t("explorer.newg.openDate")}: </span>
+        <span className="font-mono tabular-nums">{dateLabel}</span>
+      </span>
+      <span className="hidden justify-end md:flex">
+        {item.sourceUrl ? (
+          <a
+            href={item.sourceUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label={t("explorer.newg.source")}
+            className="flex size-9 items-center justify-center text-muted-foreground hover:text-primary"
+          >
+            <ExternalLink aria-hidden="true" className="size-4" />
+          </a>
+        ) : (
+          <ChevronRight aria-hidden="true" className="size-4 text-muted-foreground" />
+        )}
+      </span>
+    </li>
+  )
+}
+
 type CheapestQuote = {
   registrar: string
   registrarName: string
@@ -284,7 +331,7 @@ function QuotePanel({ tld }: { tld: string }) {
  * TldExplorer —— 首页后缀比价列表。
  * 一行一个后缀：最低首年价 + 注册商 + 优惠码，点击整行进入完整比价页。
  */
-export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
+export function TldExplorer({ tlds, upcoming = [] }: { tlds: ExplorerTld[]; upcoming?: UpcomingTld[] }) {
   const { t } = useLocale()
   const { rates } = useCurrency()
   const [tab, setTab] = useState("popular")
@@ -292,7 +339,10 @@ export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
   const [query, setQuery] = useState("")
   const [visible, setVisible] = useState(PAGE_SIZE)
 
-  const filtered = useMemo(() => {
+  const isNewG = tab === "newG"
+
+  const filteredQuotes = useMemo(() => {
+    if (isNewG) return []
     const q = query.trim().toLowerCase().replace(/^\.+/, "")
     let list = tlds
     if (q) {
@@ -310,9 +360,20 @@ export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
       list = [...list].sort((a, b) => usd(a) - usd(b))
     }
     return list
-  }, [tlds, tab, sort, query, rates])
+  }, [tlds, tab, sort, query, rates, isNewG])
 
-  const shown = filtered.slice(0, visible)
+  const filteredUpcoming = useMemo(() => {
+    if (!isNewG) return []
+    const q = query.trim().toLowerCase().replace(/^\.+/, "")
+    if (!q) return upcoming
+    const starts = upcoming.filter((x) => x.tld.toLowerCase().startsWith(q))
+    const contains = upcoming.filter((x) => !x.tld.toLowerCase().startsWith(q) && x.tld.toLowerCase().includes(q))
+    return [...starts, ...contains]
+  }, [upcoming, query, isNewG])
+
+  const total = isNewG ? filteredUpcoming.length : filteredQuotes.length
+  const shownQuotes = filteredQuotes.slice(0, visible)
+  const shownUpcoming = filteredUpcoming.slice(0, visible)
 
   function selectTab(key: string) {
     setTab(key)
@@ -370,58 +431,73 @@ export function TldExplorer({ tlds }: { tlds: ExplorerTld[] }) {
 
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs text-muted-foreground">
-          {filtered.length} {t("explorer.hint")}
+          {total} {t(isNewG ? "explorer.newg.hint" : "explorer.hint")}
         </p>
-        <div className="flex shrink-0 border border-border text-xs" role="group" aria-label="排序">
-          {(["popular", "price"] as const).map((s) => (
-            <button
-              key={s}
-              type="button"
-              aria-pressed={sort === s}
-              onClick={() => setSort(s)}
-              className={cn(
-                "px-2.5 py-1 font-medium transition-colors",
-                sort === s ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground",
-              )}
-            >
-              {t(s === "popular" ? "explorer.sort.popular" : "explorer.sort.price")}
-            </button>
-          ))}
-        </div>
+        {!isNewG && (
+          <div className="flex shrink-0 border border-border text-xs" role="group" aria-label="排序">
+            {(["popular", "price"] as const).map((s) => (
+              <button
+                key={s}
+                type="button"
+                aria-pressed={sort === s}
+                onClick={() => setSort(s)}
+                className={cn(
+                  "px-2.5 py-1 font-medium transition-colors",
+                  sort === s ? "bg-foreground text-background" : "text-muted-foreground hover:text-foreground",
+                )}
+              >
+                {t(s === "popular" ? "explorer.sort.popular" : "explorer.sort.price")}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
 
-      {filtered.length === 0 ? (
+      {total === 0 ? (
         <p className="border border-border bg-card p-8 text-center text-sm text-muted-foreground">
           {t("explorer.empty")}
         </p>
       ) : (
         <div className="border border-border bg-card">
-          <div
-            aria-hidden="true"
-            className="hidden grid-cols-[8rem_10rem_minmax(0,1fr)_9rem_6rem_2.75rem] gap-x-4 border-b border-border px-4 py-2 text-xs font-medium text-muted-foreground md:grid"
-          >
-            <span>{t("explorer.col.tld")}</span>
-            <span>{t("explorer.col.price")}</span>
-            <span>{t("explorer.col.registrar")}</span>
-            <span>{t("explorer.col.coupon")}</span>
-            <span>{t("explorer.col.renew")}</span>
-            <span />
-          </div>
+          {isNewG ? (
+            <div
+              aria-hidden="true"
+              className="hidden grid-cols-[9rem_7rem_minmax(0,1fr)_8rem_2.5rem] gap-x-4 border-b border-border px-4 py-2 text-xs font-medium text-muted-foreground md:grid"
+            >
+              <span>{t("explorer.col.tld")}</span>
+              <span>{t("explorer.col.status")}</span>
+              <span>{t("explorer.col.applicant")}</span>
+              <span>{t("explorer.col.launch")}</span>
+              <span />
+            </div>
+          ) : (
+            <div
+              aria-hidden="true"
+              className="hidden grid-cols-[8rem_10rem_minmax(0,1fr)_9rem_6rem_2.75rem] gap-x-4 border-b border-border px-4 py-2 text-xs font-medium text-muted-foreground md:grid"
+            >
+              <span>{t("explorer.col.tld")}</span>
+              <span>{t("explorer.col.price")}</span>
+              <span>{t("explorer.col.registrar")}</span>
+              <span>{t("explorer.col.coupon")}</span>
+              <span>{t("explorer.col.renew")}</span>
+              <span />
+            </div>
+          )}
           <ul className="divide-y divide-border">
-            {shown.map((q) => (
-              <QuoteRow key={q.tld} q={q} />
-            ))}
+            {isNewG
+              ? shownUpcoming.map((item) => <NewGRow key={item.tld} item={item} />)
+              : shownQuotes.map((q) => <QuoteRow key={q.tld} q={q} />)}
           </ul>
         </div>
       )}
 
-      {filtered.length > visible && (
+      {total > visible && (
         <button
           type="button"
           onClick={() => setVisible((v) => v + PAGE_SIZE * 2)}
           className="mx-auto border border-border bg-card px-6 py-2.5 text-sm font-medium transition-colors hover:border-primary hover:text-primary"
         >
-          {t("explorer.showMore").replace("{n}", String(filtered.length - visible))}
+          {t("explorer.showMore").replace("{n}", String(total - visible))}
         </button>
       )}
     </div>

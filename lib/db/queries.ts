@@ -1,4 +1,4 @@
-import { and, asc, count, desc, eq, max, min, sql, type SQL, type SQLWrapper } from "drizzle-orm"
+import { and, asc, count, desc, eq, max, min, ne, sql, type SQL, type SQLWrapper } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { crawlJobs, prices, registrars, tlds } from "@/lib/db/schema"
 import { computeRegistrarScore, type RegistrarScoreBreakdown } from "@/lib/registrar-score"
@@ -43,7 +43,7 @@ export async function getStats(): Promise<StatsRow> {
       const [row] = await db
         .select({
           registrarCount: sql<number>`(SELECT count(*) FROM ${registrars} WHERE ${registrars.isActive} = true)`,
-          tldCount: sql<number>`(SELECT count(*) FROM ${tlds} WHERE ${tlds.isValid} = true)`,
+          tldCount: sql<number>`(SELECT count(*) FROM ${tlds} WHERE ${tlds.isValid} = true AND ${tlds.type} <> 'newG')`,
           priceCount: sql<number>`(SELECT count(*) FROM ${prices})`,
           lastUpdated: sql<string | null>`(SELECT max(${prices.updatedAt}) FROM ${prices})`,
         })
@@ -115,7 +115,9 @@ export async function getTldsWithMinPrice(onlyPopular = false) {
           ),
         )
         .where(
-          onlyPopular ? and(eq(tlds.isValid, true), eq(tlds.isPopular, true)) : eq(tlds.isValid, true),
+          onlyPopular
+            ? and(eq(tlds.isValid, true), eq(tlds.isPopular, true), ne(tlds.type, "newG"))
+            : and(eq(tlds.isValid, true), ne(tlds.type, "newG")),
         )
         .groupBy(tlds.id)
         .orderBy(desc(tlds.popularity), desc(count(prices.id)), asc(tlds.tld))
@@ -263,7 +265,45 @@ export async function getTldPriceFloors(): Promise<Map<string, TldPriceFloor>> {
   )
   }
 
-  /** 启用的注册商列表 + 支持后缀数 + 推荐分（覆盖/促销/完整度/能力/健康加权） */
+  /**
+   * 新顶级（newG）申请列表：来自 ICANN 申请数据（sync-new-gtlds 维护），
+   * 为尚未开放注册的后缀，含申请机构、状态、预计开放日期与来源链接。
+   */
+  export type UpcomingTld = {
+    tld: string
+    launchStatus: string | null
+    launchDate: string | null
+    launchType: string | null
+    applicant: string | null
+    sourceUrl: string | null
+  }
+
+  export async function getUpcomingGtlds(): Promise<UpcomingTld[]> {
+    return safeQuery(
+      "getUpcomingGtlds",
+      async () => {
+        const rows = await db
+          .select({
+            tld: tlds.tld,
+            launchStatus: tlds.launchStatus,
+            launchDate: tlds.launchDate,
+            launchType: tlds.launchType,
+            applicant: tlds.applicant,
+            sourceUrl: tlds.sourceUrl,
+          })
+          .from(tlds)
+          .where(and(eq(tlds.isValid, true), eq(tlds.type, "newG")))
+          .orderBy(asc(tlds.tld))
+        return rows.map((r) => ({
+          ...r,
+          launchDate: r.launchDate ? new Date(r.launchDate).toISOString() : null,
+        }))
+      },
+      [],
+    )
+  }
+
+/** 启用的注册商列表 + 支持后缀数 + 推荐分（覆盖/促销/完整度/能力/健康加权） */
 export type ActiveRegistrarRow = {
   id: number
   slug: string

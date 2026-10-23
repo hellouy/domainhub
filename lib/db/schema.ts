@@ -73,6 +73,17 @@ export const tlds = pgTable("tlds", {
   isValid: boolean("is_valid").notNull().default(true),
   /** 热度分（越大越靠前；0 为普通后缀） */
   popularity: integer("popularity").notNull().default(0),
+  // ---- 新顶级 (newG) 申请信息（仅 type='newG' 使用，来自 ICANN 申请数据）----
+  /** 开放状态码：applied | evaluating | contracted | launching（供前台展示） */
+  launchStatus: text("launch_status"),
+  /** 预计/已公布开放日期，空=待定 */
+  launchDate: timestamp("launch_date", { withTimezone: true }),
+  /** 申请类别码：general | community | geo | idn */
+  launchType: text("launch_type"),
+  /** 申请机构名称 */
+  applicant: text("applicant"),
+  /** ICANN 申请信息来源链接 */
+  sourceUrl: text("source_url"),
 })
 
 /** 汇率缓存：单行 USD 基准，来自 exchangerate-api.com，智能过期刷新 */

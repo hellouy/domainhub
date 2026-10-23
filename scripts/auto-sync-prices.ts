@@ -19,6 +19,7 @@
 import { Pool } from "pg"
 import { readFileSync, readdirSync, writeFileSync } from "node:fs"
 import { join } from "node:path"
+import { classifyDelegated } from "../lib/tld-classify"
 
 interface PriceRow {
   tld: string
@@ -117,12 +118,15 @@ async function sync(pool: Pool, doc: { collectedAt: string; registrars: Record<s
       for (const p of r.prices) {
         const tld = p.tld.toLowerCase()
         if (tldIds.has(tld)) continue
+        // 有价格的后缀必然已上线/可注册：按 2 字母/IDN ccTLD 规则归类，其余为通用，
+        // 绝不硬编码 gTLD（否则国家后缀会被误标，是新顶级 tab 空数据的根因之一）。
+        const type = classifyDelegated(tld)
         const res = await client.query(
           `INSERT INTO tlds (tld, type, is_valid)
-           VALUES ($1, 'gTLD', true)
+           VALUES ($1, $2, true)
            ON CONFLICT (tld) DO NOTHING
            RETURNING id`,
-          [tld],
+          [tld, type],
         )
         if (res.rows.length === 0) {
           const { rows } = await client.query(`SELECT id FROM tlds WHERE tld = $1`, [tld])
