@@ -13,11 +13,19 @@ import { defineAdapter, type RawPrice } from "@/packages/adapter-sdk"
 
 const API_URL = "https://api.porkbun.com/api/json/v3/pricing/get"
 
+interface PorkbunCoupon {
+  code?: string
+  type?: string
+  amount?: string | number
+  price?: string | number
+  expires?: string | null
+}
+
 interface PorkbunPricingEntry {
   registration?: string
   renewal?: string
   transfer?: string
-  coupons?: unknown[]
+  coupons?: PorkbunCoupon[]
 }
 
 interface PorkbunResponse {
@@ -72,14 +80,32 @@ export const porkbunAdapter = defineAdapter({
         }
         const prices: RawPrice[] = []
         for (const [tld, entry] of Object.entries(data.pricing)) {
-          const hasCoupon = Array.isArray(entry.coupons) && entry.coupons.length > 0
+          const coupons = Array.isArray(entry.coupons) ? entry.coupons.filter((c) => c.code) : []
+          const promoCodes = coupons.length > 0
+            ? coupons.map((c) => {
+                const promoPrice = c.price != null ? Number(c.price) : c.amount != null ? Number(c.amount) : null
+                return {
+                  code: c.code!,
+                  promotionPrice: Number.isFinite(promoPrice) ? promoPrice : null,
+                  promotionEndsAt: c.expires ?? null,
+                }
+              })
+            : null
+          const firstCode = promoCodes?.[0]?.code ?? null
+          const firstPromoPrice = promoCodes?.[0]?.promotionPrice ?? null
+          const firstEndsAt = promoCodes?.[0]?.promotionEndsAt ?? null
+
           prices.push({
             tld,
             registerPrice: entry.registration ?? null,
             renewPrice: entry.renewal ?? null,
             transferPrice: entry.transfer ?? null,
             currency: "USD",
-            promotion: hasCoupon,
+            promotion: coupons.length > 0,
+            promoCode: firstCode,
+            promoCodes,
+            promotionPrice: firstPromoPrice,
+            promotionEndsAt: firstEndsAt,
             sourceUrl: API_URL,
           })
         }

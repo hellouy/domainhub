@@ -34,6 +34,12 @@ const KNOWN_PROMO_URLS: Record<string, string[]> = {
   inwx: ["https://www.inwx.com/en/offer"],
   networksolutions: ["https://www.networksolutions.com/coupons"],
   dreamhost: ["https://www.dreamhost.com/domains/promo-codes/"],
+  dotwee: ["https://www.dotwee.com/promotions"],
+  easyspace: ["https://www.easyspace.com/promotions"],
+  joker: ["https://www.joker.com/promotions"],
+  julyname: ["https://julyname.com/promo"],
+  connectreseller: ["https://www.connectreseller.com/promotions"],
+  domaincostclub: ["https://www.domaincostclub.com/promotions"],
   /* 以下官方促销页 2026-10 已下线/改版, 移除避免每轮白请求 404:
      gandi /en/domain/promotions(Page Not Found)
      101domain /domain_promotions.htm(404)
@@ -88,7 +94,13 @@ const PRICE_INDICATORS = /\$[\d,.]+|\/yr|\/year|\/month|\/mo\b|\d{1,3}%\s*off|di
  *  T4 纯大写 token + 强促销上下文 (code: WELCOME / at checkout)
  *  每层独立提取, 合集去重后过滤噪音 */
 function extractCodes(html: string): string[] {
-  const text = html.replace(/<[^>]+>/g, " ").replace(/&amp;/g, "&").replace(/\s+/g, " ")
+  const text = html
+    .replace(/<script[\s\S]*?<\/script>/gi, " ")
+    .replace(/<style[\s\S]*?<\/style>/gi, " ")
+    .replace(/<meta[^>]*>/gi, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/\s+/g, " ")
   const codes = new Set<string>()
 
   const isCleanCode = (c: string): boolean =>
