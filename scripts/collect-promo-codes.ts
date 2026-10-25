@@ -87,6 +87,9 @@ const NOISE = new Set([
 /** 价格指示关键词(码邻近时高可信) */
 const PRICE_INDICATORS = /\$[\d,.]+|\/yr|\/year|\/month|\/mo\b|\d{1,3}%\s*off|discount|deal|promo|coupon|save\s+\$|special\s+offer/i
 
+/** 货币前缀+金额(如 RM49 / R99 / SGD10): 是价格而非促销码, 提取时一律排除 */
+const CURRENCY_AMOUNT = /^(?:R|RM|MYR|SGD|USD|IDR|PHP|THB|VND|INR|NGN|ZAR|AED|SAR|EGP|TRY|BRL|MXN|ARS|PEN|CLP|COP|HKD|TWD|KRW|JPY|CNY|EUR|GBP)S?\d+$/
+
 /** 从 HTML 提取促销码 —— 多层策略:
  *  T1 价格邻近: <CODE> $price (spaceship 风格: DOMAINS COM67 $3.60 /yr)
  *  T2 字母+数字混合 token + 价格邻近 (通用布局)
@@ -104,7 +107,8 @@ function extractCodes(html: string): string[] {
   const codes = new Set<string>()
 
   const isCleanCode = (c: string): boolean =>
-    c.length >= 3 && c.length <= 20 && c === c.toUpperCase() && !NOISE.has(c) && !/^\d+$/.test(c)
+    c.length >= 3 && c.length <= 20 && c === c.toUpperCase() && !NOISE.has(c) && !/^\d+$/.test(c) &&
+    !CURRENCY_AMOUNT.test(c)
 
   // T0: 页面数据层 coupons 字段优先 (JSON 标注的当期码, 比 DOM 文本最可靠, 排在 Set 最前)
   for (const m of text.matchAll(/"coupons"\s*:\s*"([^"]+)"/g)) {
@@ -269,14 +273,21 @@ async function renderViaAggregate(url: string): Promise<string> {
         "x-api-key": CRAWL_SERVICE_TOKEN,
       },
       body: JSON.stringify({ url, keyword: null }),
-      signal: AbortSignal.timeout(30_000),
+      signal: AbortSignal.timeout(45_000),
     })
     if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const data = (await res.json()) as { html?: string; used_mode?: string }
-    if (typeof data.html !== "string" || !data.html) throw new Error("empty html")
-    if (looksLikeChallenge(data.html)) throw new Error("challenge page")
+    // 聚合服务返回两种结构: 顶层 {html} 或嵌套 {ok,data:{html,level}}; 统一取 html
+    const payload = (await res.json()) as {
+      html?: string
+      used_mode?: string
+      data?: { html?: string; used_mode?: string; level?: string }
+    }
+    const data = payload.data ?? payload
+    const html = data.html
+    if (typeof html !== "string" || !html) throw new Error("empty html")
+    if (looksLikeChallenge(html)) throw new Error("challenge page")
     abSlowFails = 0
-    return data.html
+    return html
   } catch (e: any) {
     const elapsed = Date.now() - callStart
     console.log(`  [render] FAIL ${e.message?.slice(0,60) || e.name} elapsed=${elapsed}ms`)
