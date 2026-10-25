@@ -124,6 +124,7 @@ import { spaceshipAdapter } from "./spaceship"
 import { quyuAdapter } from "./quyu"
 import { truehostCloudAdapter } from "./truehost-cloud"
 import { aliyunAdapter } from "./aliyun"
+import { zcomAdapter } from "./zcom"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -254,6 +255,7 @@ export const allAdapters = [
   quyuAdapter,
   aliyunAdapter,
   truehostCloudAdapter,
+  zcomAdapter,
 ]
 
 for (const adapter of allAdapters) {
