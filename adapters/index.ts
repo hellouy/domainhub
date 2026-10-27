@@ -126,6 +126,7 @@ import { truehostCloudAdapter } from "./truehost-cloud"
 import { aliyunAdapter } from "./aliyun"
 import { zcomAdapter } from "./zcom"
 import { nameslinkAdapter } from "./nameslink"
+import { nordnameAdapter } from "./nordname"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -258,6 +259,7 @@ export const allAdapters = [
   truehostCloudAdapter,
   zcomAdapter,
   nameslinkAdapter,
+  nordnameAdapter,
 ]
 
 for (const adapter of allAdapters) {
