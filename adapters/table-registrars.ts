@@ -343,3 +343,35 @@ export const alibabacloudAdapter = createTableAdapter({
   browser: { waitForTimeoutMs: 25_000, scrollToBottom: true },
   owner: "Data Team",
 })
+
+export const reg123Adapter = createTableAdapter({
+  slug: "123reg",
+  name: "123 Reg",
+  website: "https://www.123-reg.co.uk",
+  currency: "GBP",
+  numberFormat: "en",
+  // 公开价目仅 new-gtlds 页的 gTLD 列表(17 行, div 表格, 非 <table>):
+  // [data-cy="row-title"] = TLD, [data-cy="body-column"] = First Year Price | Renewal Price
+  // 直连 HTML 无 <table>, 需 playwright + 自定义脚本提取 div 行
+  urls: ["https://www.123-reg.co.uk/domain-names/new-gtlds/"],
+  columnOrder: ["register", "renew"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
+  browser: {
+    waitForTimeoutMs: 25_000,
+    scrollToBottom: true,
+    script: `(() => {
+  const rows = document.querySelectorAll('[data-cy="table-row"]')
+  const out = []
+  for (const r of rows) {
+    const tldEl = r.querySelector('[data-cy="row-title"]')
+    const cells = [...r.querySelectorAll('[data-cy="body-column"]')]
+    const tld = (tldEl?.innerText || '').trim().toLowerCase().replace(/^\\./, '')
+    if (!tld) continue
+    const nums = cells.map(c => { const v = parseFloat(c.innerText.replace(/[^\\d.]/g, '')); return Number.isFinite(v) && v > 0 ? v : null })
+    out.push({ tld, register: nums[0] ?? null, renew: nums[1] ?? null })
+  }
+  return JSON.stringify(out)
+})()`,
+  },
+  owner: "Data Team",
+})

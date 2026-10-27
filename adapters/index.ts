@@ -57,6 +57,7 @@ internetbsAdapter,
   barberoAdapter,
   webnicAdapter,
   alibabacloudAdapter,
+  reg123Adapter,
 } from "./table-registrars"
 import { pskzAdapter } from "./pskz"
 import { julynameAdapter, cny59Adapter, zwcnAdapter } from "./cny-registrars"
@@ -249,6 +250,7 @@ export const allAdapters = [
   // 第十三批: webnic(USD, 1139 行 SSR 全量价目表) + alibabacloud(USD, 374 行 JS 渲染)(2026-10-27)
   webnicAdapter,
   alibabacloudAdapter,
+  reg123Adapter,
   // 第十批: PS.kz(KZT, 哈萨克坚戈, 浏览器渲染)(2026-10-07)
   pskzAdapter,
   // 第十一批: 中文注册商三件套 julyname/59.cn/zw.cn(CNY, 浏览器渲染)(2026-10-07)
