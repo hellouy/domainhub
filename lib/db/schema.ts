@@ -319,3 +319,45 @@ export type RegistrarCapability = typeof registrarCapabilities.$inferSelect
 export type DiscoveryMetadataRow = typeof discoveryMetadata.$inferSelect
 export type CrawlQueueItem = typeof crawlQueue.$inferSelect
 export type AdapterRule = typeof adapterRules.$inferSelect
+
+/**
+ * 广告位：支持文字 / 图片广告，按位置投放，中英双语，定时上下线。
+ * 一个位置(position)可有多条广告，前台按 weight 随机/轮播展示当前生效广告。
+ */
+export const adSlots = pgTable("ad_slots", {
+  id: serial("id").primaryKey(),
+  /** 投放位置标识：home-search / tld-detail-top / registrar-detail-top / list-sidebar 等 */
+  position: text("position").notNull(),
+  /** 广告类型：text | image */
+  type: text("type").notNull().default("text"),
+  /** 文字广告：标题(中) */
+  titleZh: text("title_zh").notNull().default(""),
+  /** 文字广告：标题(英) */
+  titleEn: text("title_en").notNull().default(""),
+  /** 文字广告：副文案(中) */
+  subtitleZh: text("subtitle_zh").notNull().default(""),
+  /** 文字广告：副文案(英) */
+  subtitleEn: text("subtitle_en").notNull().default(""),
+  /** 图片广告：图片 URL（image 类型必填） */
+  imageUrl: text("image_url"),
+  /** 图片广告：alt 文本 */
+  imageAlt: text("image_alt"),
+  /** 点击跳转链接 */
+  linkUrl: text("link_url").notNull().default(""),
+  /** 是否新窗口打开 */
+  openInNewTab: boolean("open_in_new_tab").notNull().default(true),
+  /** rel 属性（默认 sponsored noopener） */
+  rel: text("rel").notNull().default("sponsored noopener"),
+  /** 权重（越大越优先展示，同位置多条时按权重分配） */
+  weight: integer("weight").notNull().default(1),
+  /** 是否启用 */
+  isActive: boolean("is_active").notNull().default(true),
+  /** 上线时间（空=立即） */
+  startsAt: timestamp("starts_at", { withTimezone: true }),
+  /** 下线时间（空=长期） */
+  endsAt: timestamp("ends_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
+export type AdSlotRow = typeof adSlots.$inferSelect

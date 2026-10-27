@@ -1,7 +1,7 @@
 "use server"
 
 import { db } from "@/lib/db"
-import { registrars, siteSettings } from "@/lib/db/schema"
+import { registrars, siteSettings, adSlots } from "@/lib/db/schema"
 import {
   clearAdminLoginFailures,
   createAdminSession,
@@ -13,6 +13,7 @@ import {
 } from "@/lib/admin-auth"
 import { runCrawlJob } from "@/lib/crawler/runner"
 import { invalidateSiteSettings } from "@/lib/site-settings"
+import { invalidateAds } from "@/lib/ads"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
@@ -194,5 +195,114 @@ export async function updateSiteSettings(
   } catch (error) {
     console.error("[v0] 保存站点设置失败:", error)
     return { error: "保存失败，请重试" }
+  }
+}
+
+/** 新建广告位 */
+export async function createAd(
+  _prevState: { ok?: boolean; error?: string } | null,
+  formData: FormData,
+): Promise<{ ok?: boolean; error?: string }> {
+  await requireAdmin()
+  const str = (k: string) => String(formData.get(k) ?? "").trim()
+
+  const position = str("position")
+  const type = str("type") || "text"
+  const linkUrl = str("linkUrl")
+
+  if (!position) return { error: "投放位置为必填项" }
+
+  try {
+    await db.insert(adSlots).values({
+      position,
+      type,
+      titleZh: str("titleZh"),
+      titleEn: str("titleEn"),
+      subtitleZh: str("subtitleZh"),
+      subtitleEn: str("subtitleEn"),
+      imageUrl: str("imageUrl") || null,
+      imageAlt: str("imageAlt") || null,
+      linkUrl,
+      openInNewTab: formData.get("openInNewTab") !== "false",
+      rel: str("rel") || "sponsored noopener",
+      weight: Number(formData.get("weight") ?? 1) || 1,
+      isActive: formData.get("isActive") !== "false",
+      startsAt: str("startsAt") ? new Date(str("startsAt")) : null,
+      endsAt: str("endsAt") ? new Date(str("endsAt")) : null,
+    })
+    invalidateAds()
+    revalidatePath("/admin/ads")
+    return { ok: true }
+  } catch (error) {
+    console.error("[v0] 创建广告失败:", error)
+    return { error: "创建失败，请重试" }
+  }
+}
+
+/** 更新广告位 */
+export async function updateAd(
+  _prevState: { ok?: boolean; error?: string } | null,
+  formData: FormData,
+): Promise<{ ok?: boolean; error?: string }> {
+  await requireAdmin()
+  const str = (k: string) => String(formData.get(k) ?? "").trim()
+  const id = Number(formData.get("id"))
+  if (!id) return { error: "缺少广告 ID" }
+
+  const position = str("position")
+  if (!position) return { error: "投放位置为必填项" }
+
+  try {
+    await db
+      .update(adSlots)
+      .set({
+        position,
+        type: str("type") || "text",
+        titleZh: str("titleZh"),
+        titleEn: str("titleEn"),
+        subtitleZh: str("subtitleZh"),
+        subtitleEn: str("subtitleEn"),
+        imageUrl: str("imageUrl") || null,
+        imageAlt: str("imageAlt") || null,
+        linkUrl: str("linkUrl"),
+        openInNewTab: formData.get("openInNewTab") !== "false",
+        rel: str("rel") || "sponsored noopener",
+        weight: Number(formData.get("weight") ?? 1) || 1,
+        isActive: formData.get("isActive") !== "false",
+        startsAt: str("startsAt") ? new Date(str("startsAt")) : null,
+        endsAt: str("endsAt") ? new Date(str("endsAt")) : null,
+        updatedAt: new Date(),
+      })
+      .where(eq(adSlots.id, id))
+    invalidateAds()
+    revalidatePath("/admin/ads")
+    return { ok: true }
+  } catch (error) {
+    console.error("[v0] 更新广告失败:", error)
+    return { error: "更新失败，请重试" }
+  }
+}
+
+/** 删除广告位 */
+export async function deleteAd(id: number) {
+  await requireAdmin()
+  try {
+    await db.delete(adSlots).where(eq(adSlots.id, id))
+    invalidateAds()
+    revalidatePath("/admin/ads")
+  } catch (error) {
+    console.error("[v0] 删除广告失败:", error)
+  }
+}
+
+/** 切换广告启用状态 */
+export async function toggleAdActive(id: number, isActive: boolean) {
+  await requireAdmin()
+  try {
+    await db.update(adSlots).set({ isActive, updatedAt: new Date() }).where(eq(adSlots.id, id))
+    invalidateAds()
+    revalidatePath("/admin/ads")
+  } catch (error) {
+    console.error("[v0] 切换广告状态失败:", error)
   }
 }

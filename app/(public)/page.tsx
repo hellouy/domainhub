@@ -11,16 +11,18 @@ import {
   getTldsWithMinPrice,
   getUpcomingGtlds,
 } from "@/lib/db/queries"
+import { getActiveAdsByPosition } from "@/lib/ads"
 
 export const revalidate = 300
 
 export default async function HomePage() {
-  const [stats, allTlds, quotes, registrarList, upcoming] = await Promise.all([
+  const [stats, allTlds, quotes, registrarList, upcoming, homeSearchAds] = await Promise.all([
     getStats(),
     getTldsWithMinPrice(),
     getTldBestQuotes(),
     getActiveRegistrars(),
     getUpcomingGtlds(),
+    getActiveAdsByPosition("home-search"),
   ])
   /** 已验证后缀：至少有一条真实采集价格记录 */
   const verifiedTlds = quotes.filter((q) => q.registrarCount > 0 && Number(q.registerPrice) > 0)
@@ -41,6 +43,7 @@ export default async function HomePage() {
           lastUpdatedISO: stats.lastUpdated ? new Date(stats.lastUpdated).toISOString() : null,
         }}
         searchOptions={searchOptions}
+        ads={homeSearchAds}
       />
 
       {/* 后缀浏览器：筛选 + 点击就地看价，零跳转 */}

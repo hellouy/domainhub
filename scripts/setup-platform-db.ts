@@ -112,6 +112,33 @@ const statements: Array<{ label: string; sql: string }> = [
       );
     `,
   },
+  {
+    label: "ad_slots 广告位表",
+    sql: `
+      CREATE TABLE IF NOT EXISTS ad_slots (
+        id serial PRIMARY KEY,
+        position text NOT NULL,
+        type text NOT NULL DEFAULT 'text',
+        title_zh text NOT NULL DEFAULT '',
+        title_en text NOT NULL DEFAULT '',
+        subtitle_zh text NOT NULL DEFAULT '',
+        subtitle_en text NOT NULL DEFAULT '',
+        image_url text,
+        image_alt text,
+        link_url text NOT NULL DEFAULT '',
+        open_in_new_tab boolean NOT NULL DEFAULT true,
+        rel text NOT NULL DEFAULT 'sponsored noopener',
+        weight integer NOT NULL DEFAULT 1,
+        is_active boolean NOT NULL DEFAULT true,
+        starts_at timestamptz,
+        ends_at timestamptz,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now()
+      );
+      CREATE INDEX IF NOT EXISTS idx_ad_slots_position_active
+        ON ad_slots (position, is_active);
+    `,
+  },
 ]
 
 async function main() {

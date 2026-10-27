@@ -8,6 +8,8 @@ import { T, TldType, DataUpdated } from "@/components/i18n-text"
 import { getPricesForTld, getTldByName, getTldLastUpdated, getTldsWithMinPrice } from "@/lib/db/queries"
 import { getUsdRates, type UsdRates } from "@/lib/fx"
 import { usablePriceUsd } from "@/lib/pricing"
+import { getActiveAdsByPosition } from "@/lib/ads"
+import { AdSlot } from "@/components/ad-slot"
 
 export const revalidate = 300
 
@@ -49,10 +51,11 @@ export default async function TldPage({ params }: Props) {
   const row = await getTldByName(decodeURIComponent(tld))
   if (!row) notFound()
 
-  const [priceRows, lastUpdated, rates] = await Promise.all([
+  const [priceRows, lastUpdated, rates, topAds] = await Promise.all([
     getPricesForTld(row.id),
     getTldLastUpdated(row.id),
     getUsdRates(),
+    getActiveAdsByPosition("tld-detail-top"),
   ])
 
   const minRegister = minUsdOf(
@@ -106,6 +109,7 @@ export default async function TldPage({ params }: Props) {
         <span aria-hidden="true"> / </span>
         <span className="text-foreground">.{row.tld}</span>
       </nav>
+      <AdSlot ads={topAds} />
 
       <header className="flex flex-col gap-2 md:gap-3">
         <p className="text-xs font-medium uppercase tracking-widest text-primary">

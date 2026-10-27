@@ -10,6 +10,8 @@ import { RegistrarIcon } from "@/components/registrar-favicon"
 import { getPricesForRegistrar, getRegistrarBySlug } from "@/lib/db/queries"
 import { normalizeUrl, withRegistrarReferral } from "@/lib/utils"
 import { getActivePromotionPrice, getTldSpecificCodes } from "@/lib/promotion"
+import { getActiveAdsByPosition } from "@/lib/ads"
+import { AdSlot } from "@/components/ad-slot"
 
 export const revalidate = 300
 
@@ -31,7 +33,10 @@ export default async function RegistrarPage({ params }: Props) {
   const row = await getRegistrarBySlug(slug)
   if (!row || !row.isActive) notFound()
 
-  const priceRows = await getPricesForRegistrar(row.id)
+  const [priceRows, topAds] = await Promise.all([
+    getPricesForRegistrar(row.id),
+    getActiveAdsByPosition("registrar-detail-top"),
+  ])
   const registrarUrl = withRegistrarReferral(normalizeUrl(row.website), "registrar_profile")
 
   const jsonLd = {
@@ -59,6 +64,7 @@ export default async function RegistrarPage({ params }: Props) {
         <span aria-hidden="true"> / </span>
         <span className="text-foreground">{row.name}</span>
       </nav>
+      <AdSlot ads={topAds} />
 
       <header className="flex flex-col gap-4">
         <div className="flex items-center gap-4">
