@@ -125,6 +125,7 @@ import { quyuAdapter } from "./quyu"
 import { truehostCloudAdapter } from "./truehost-cloud"
 import { aliyunAdapter } from "./aliyun"
 import { zcomAdapter } from "./zcom"
+import { nameslinkAdapter } from "./nameslink"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -256,6 +257,7 @@ export const allAdapters = [
   aliyunAdapter,
   truehostCloudAdapter,
   zcomAdapter,
+  nameslinkAdapter,
 ]
 
 for (const adapter of allAdapters) {
