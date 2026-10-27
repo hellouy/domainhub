@@ -20,6 +20,8 @@ export type SiteSettings = {
   descriptionEn: string
   footerDisclaimerZh: string
   footerDisclaimerEn: string
+  /** 启用的广告位置标识列表，null=全部启用 */
+  adPositionsEnabled: string[] | null
 }
 
 /** 内置默认值:数据库无记录或字段为空时回退到这里 */
@@ -37,6 +39,7 @@ export const SITE_SETTINGS_DEFAULTS: SiteSettings = {
     "tldbi.com aggregates real-time prices from major registrars like Cloudflare, Porkbun, Dynadot and Gandi across 1800+ TLDs — find the cheapest registrar for registration, renewal and transfer.",
   footerDisclaimerZh: "价格数据仅供参考，请以注册商官网为准。",
   footerDisclaimerEn: "Prices are for reference only. Please verify on the registrar's official site.",
+  adPositionsEnabled: null,
 }
 
 /** 把数据库行(可能有空字段)与默认值合并成完整设置 */
@@ -56,6 +59,9 @@ function mergeWithDefaults(row: SiteSettingsRow | undefined): SiteSettings {
     descriptionEn: pick(row.descriptionEn, SITE_SETTINGS_DEFAULTS.descriptionEn),
     footerDisclaimerZh: pick(row.footerDisclaimerZh, SITE_SETTINGS_DEFAULTS.footerDisclaimerZh),
     footerDisclaimerEn: pick(row.footerDisclaimerEn, SITE_SETTINGS_DEFAULTS.footerDisclaimerEn),
+    adPositionsEnabled: Array.isArray(row.adPositionsEnabled)
+      ? (row.adPositionsEnabled as string[])
+      : null,
   }
 }
 
@@ -86,4 +92,10 @@ export function localizedTitle(s: SiteSettings, locale: Locale) {
 /** 按语言取描述 */
 export function localizedDescription(s: SiteSettings, locale: Locale) {
   return locale === "en" ? s.descriptionEn : s.descriptionZh
+}
+
+/** 检查某个广告位置是否启用。adPositionsEnabled 为 null 时全部启用。 */
+export function isAdPositionEnabled(s: SiteSettings, position: string): boolean {
+  if (s.adPositionsEnabled === null) return true
+  return s.adPositionsEnabled.includes(position)
 }

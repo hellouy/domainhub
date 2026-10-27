@@ -14,6 +14,7 @@ import {
 import { runCrawlJob } from "@/lib/crawler/runner"
 import { invalidateSiteSettings } from "@/lib/site-settings"
 import { invalidateAds } from "@/lib/ads"
+import { ALL_AD_POSITIONS } from "@/lib/ad-positions"
 import { eq } from "drizzle-orm"
 import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
@@ -304,5 +305,43 @@ export async function toggleAdActive(id: number, isActive: boolean) {
     revalidatePath("/admin/ads")
   } catch (error) {
     console.error("[v0] 切换广告状态失败:", error)
+  }
+}
+
+/**
+ * 切换某广告位置的启用/禁用。
+ * 存储到 site_settings.ad_positions_enabled (jsonb 数)。
+ * null = 全部启用；有值 = 仅数组中的位置启用。
+ */
+export async function toggleAdPosition(position: string, enabled: boolean) {
+  await requireAdmin()
+  try {
+    const [row] = await db.select().from(siteSettings).where(eq(siteSettings.id, 1)).limit(1)
+    const current: string[] | null = (row?.adPositionsEnabled as string[] | null) ?? null
+
+    let next: string[] | null
+    if (current === null) {
+      // 当前全部启用 → 禁用某个位置 = 列出除它以外全部
+      next = enabled ? null : ALL_AD_POSITIONS.filter((p) => p !== position)
+    } else {
+      if (enabled) {
+        // 恢复某位置 → 如果全部都在列表里了，回到 null（全部启用）
+        const added = current.includes(position) ? current : [...current, position]
+        next = ALL_AD_POSITIONS.every((p) => added.includes(p)) ? null : added
+      } else {
+        next = current.filter((p) => p !== position)
+      }
+    }
+
+    await db
+      .update(siteSettings)
+      .set({ adPositionsEnabled: next as string[] | null, updatedAt: new Date() })
+      .where(eq(siteSettings.id, 1))
+
+    invalidateSiteSettings()
+    invalidateAds()
+    revalidatePath("/admin/ads")
+  } catch (error) {
+    console.error("[v0] 切换广告位置失败:", error)
   }
 }

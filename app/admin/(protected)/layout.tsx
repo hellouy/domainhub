@@ -5,6 +5,7 @@ import { adminLogout } from "@/app/actions/admin"
 import { Button } from "@/components/ui/button"
 import { AdminSidebar } from "@/components/admin/admin-nav"
 import { getSiteSettings } from "@/lib/site-settings"
+import { ExternalLink } from "lucide-react"
 
 export const metadata = { title: "后台管理" }
 
@@ -20,12 +21,25 @@ export default async function AdminLayout({ children }: { children: React.ReactN
     <div className="flex min-h-svh flex-col bg-background lg:flex-row">
       <AdminSidebar brandName={brandName} />
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="hidden items-center justify-end gap-2 border-b border-border bg-card px-6 py-3 lg:flex">
-          <form action={adminLogout}>
-            <Button type="submit" variant="outline" size="sm">
-              退出登录
-            </Button>
-          </form>
+        <header className="flex items-center justify-between gap-2 border-b border-border bg-card px-6 py-3">
+          <span className="hidden text-sm font-medium text-muted-foreground lg:block">
+            后台管理面板
+          </span>
+          <div className="flex items-center gap-3">
+            <a
+              href="/"
+              target="_blank"
+              className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-primary"
+            >
+              <ExternalLink className="size-3.5" aria-hidden />
+              前台
+            </a>
+            <form action={adminLogout}>
+              <Button type="submit" variant="outline" size="sm">
+                退出登录
+              </Button>
+            </form>
+          </div>
         </header>
         <main className="mx-auto w-full max-w-6xl flex-1 px-4 py-6 lg:px-6">{children}</main>
       </div>

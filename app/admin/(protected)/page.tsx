@@ -8,6 +8,11 @@ import {
   CircleX,
   TriangleAlert,
   Loader,
+  Megaphone,
+  Radio,
+  Settings,
+  KeyRound,
+  ArrowRight,
 } from "lucide-react"
 import { getAdminOverview, getRegistrarHealthRows } from "@/lib/db/admin-queries"
 import { getRecentJobs } from "@/lib/db/queries"
@@ -185,6 +190,50 @@ export default async function AdminDashboardPage() {
             )}
           </CardContent>
         </Card>
+      </div>
+
+      {/* 快捷操作 */}
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+        <Link
+          href="/admin/crawls"
+          className="group flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/30 hover:bg-accent"
+        >
+          <span className="flex size-9 items-center justify-center rounded-md bg-accent text-accent-foreground">
+            <Radio className="size-4" />
+          </span>
+          <span className="text-sm font-medium text-foreground">采集任务</span>
+          <ArrowRight className="ml-auto size-4 text-muted-foreground group-hover:text-primary" aria-hidden />
+        </Link>
+        <Link
+          href="/admin/ads"
+          className="group flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/30 hover:bg-accent"
+        >
+          <span className="flex size-9 items-center justify-center rounded-md bg-accent text-accent-foreground">
+            <Megaphone className="size-4" />
+          </span>
+          <span className="text-sm font-medium text-foreground">广告位</span>
+          <ArrowRight className="ml-auto size-4 text-muted-foreground group-hover:text-primary" aria-hidden />
+        </Link>
+        <Link
+          href="/admin/credentials"
+          className="group flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/30 hover:bg-accent"
+        >
+          <span className="flex size-9 items-center justify-center rounded-md bg-accent text-accent-foreground">
+            <KeyRound className="size-4" />
+          </span>
+          <span className="text-sm font-medium text-foreground">凭证</span>
+          <ArrowRight className="ml-auto size-4 text-muted-foreground group-hover:text-primary" aria-hidden />
+        </Link>
+        <Link
+          href="/admin/settings"
+          className="group flex items-center gap-3 rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/30 hover:bg-accent"
+        >
+          <span className="flex size-9 items-center justify-center rounded-md bg-accent text-accent-foreground">
+            <Settings className="size-4" />
+          </span>
+          <span className="text-sm font-medium text-foreground">站点设置</span>
+          <ArrowRight className="ml-auto size-4 text-muted-foreground group-hover:text-primary" aria-hidden />
+        </Link>
       </div>
     </div>
   )

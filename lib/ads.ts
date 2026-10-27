@@ -6,6 +6,7 @@ import { db } from "@/lib/db"
 import { adSlots, type AdSlotRow } from "@/lib/db/schema"
 import type { Locale } from "@/lib/i18n"
 import { AD_POSITIONS, positionLabel, type AdPosition } from "@/lib/ad-positions"
+import { getSiteSettings, isAdPositionEnabled } from "@/lib/site-settings"
 
 export { AD_POSITIONS, positionLabel, type AdPosition }
 
@@ -27,9 +28,12 @@ export type PublicAd = {
   rel: string
 }
 
-/** 取某位置当前生效的广告（按 weight 降序），带缓存 */
+/** 取某位置当前生效的广告（按 weight 降序），带缓存。位置未启用时返回空数组。 */
 export const getActiveAdsByPosition = unstable_cache(
   async (position: string): Promise<PublicAd[]> => {
+    const settings = await getSiteSettings()
+    if (!isAdPositionEnabled(settings, position)) return []
+
     const now = new Date()
     const rows = await db
       .select()

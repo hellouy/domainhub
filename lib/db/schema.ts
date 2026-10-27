@@ -274,6 +274,8 @@ export const siteSettings = pgTable("site_settings", {
   descriptionEn: text("description_en").notNull().default(""),
   footerDisclaimerZh: text("footer_disclaimer_zh").notNull().default(""),
   footerDisclaimerEn: text("footer_disclaimer_en").notNull().default(""),
+  /** 广告位开关：jsonb 数组，存储启用的 position 标识，如 ["home-search","tld-detail-top"]。null=全部启用 */
+  adPositionsEnabled: jsonb("ad_positions_enabled"),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
 })
 

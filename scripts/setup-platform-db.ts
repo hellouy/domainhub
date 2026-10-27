@@ -139,6 +139,13 @@ const statements: Array<{ label: string; sql: string }> = [
         ON ad_slots (position, is_active);
     `,
   },
+  {
+    label: "site_settings 增列 ad_positions_enabled",
+    sql: `
+      ALTER TABLE site_settings
+        ADD COLUMN IF NOT EXISTS ad_positions_enabled jsonb;
+    `,
+  },
 ]
 
 async function main() {
