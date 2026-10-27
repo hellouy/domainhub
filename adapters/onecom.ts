@@ -3,9 +3,10 @@
  * ------------------------------------------------------------
  * 所有权: Data Team
  *
- * 数据源结论(2026-07):
+ * 数据源结论(2026-10):
  * 1. embedded-json: 域名价格页为 Next.js App Router,
- *    价格以 self.__next_f 流式内嵌(含 firstYearPrice/renewalPrice) ✓ 首选
+ *    价格以 self.__next_f 流式内嵌，字段为 fullPriceExclCurrencyAsString /
+ *    rebatePriceExclCurrencyAsString（2026-07 的 firstYearPrice/renewalPrice 已废弃）
  */
 
 import { defineAdapter, type RawPrice } from "@/packages/adapter-sdk"
@@ -17,8 +18,8 @@ export const onecomAdapter = defineAdapter({
   name: "one.com",
   website: "https://www.one.com",
   owner: "Data Team",
-  version: "1.0.0",
-  parserVersion: "1.0.0",
+  version: "1.1.0",
+  parserVersion: "1.1.0",
   currency: "USD",
   priority: 60,
   capabilities: {
@@ -47,33 +48,36 @@ export const onecomAdapter = defineAdapter({
         return res.text()
       },
       parse(raw): RawPrice[] {
-        // Next.js 流式数据: \"tld\":\".xyz\" ... \"firstYearPrice\":0.99 ... \"renewalPrice\":19.99
-        // 转义形式与非转义形式都尝试
+        // Next.js 流式数据, 转义引号还原
         const text = raw.replace(/\\"/g, '"')
         const prices: RawPrice[] = []
         const seen = new Set<string>()
+
+        // 新格式: "tld":".com", ... "fullPriceExclCurrencyAsString":"21.99", "rebatePriceExclCurrencyAsString":"7.99"
+        // fallback 块内含 tld + data 对象
         const re =
-          /"tld"\s*:\s*"\.?([a-z0-9.-]{2,30})"[^{}]*?"firstYearPrice"\s*:\s*([\d.]+)[^{}]*?"renewalPrice"\s*:\s*([\d.]+)/g
+          /"tld"\s*:\s*"\.?([a-z0-9.-]{2,30})"[^{}]*?"fullPriceExclCurrencyAsString"\s*:\s*"([\d.]+)"[^{}]*?"rebatePriceExclCurrencyAsString"\s*:\s*"([\d.]+)"/g
         let m: RegExpExecArray | null
         while ((m = re.exec(text)) !== null) {
           const tld = m[1].toLowerCase()
           if (seen.has(tld)) continue
           seen.add(tld)
-          const firstYear = Number.parseFloat(m[2])
-          const renew = Number.parseFloat(m[3])
+          const fullPrice = Number.parseFloat(m[2])
+          const rebate = Number.parseFloat(m[3])
           prices.push({
             tld,
-            registerPrice: renew,
-            renewPrice: renew,
-            ...(firstYear < renew ? { promotionPrice: firstYear } : {}),
+            registerPrice: fullPrice,
+            renewPrice: fullPrice,
+            ...(rebate < fullPrice ? { promotionPrice: rebate } : {}),
             currency: "USD",
             sourceUrl: PAGE_URL,
           })
         }
-        // 宽松模式: renewalPrice 在 firstYearPrice 前面的情况
+
+        // 宽松模式: fullPrice 在 rebate 之后
         if (prices.length === 0) {
           const re2 =
-            /"tld"\s*:\s*"\.?([a-z0-9.-]{2,30})"[^{}]*?"(?:renewalPrice|price)"\s*:\s*([\d.]+)/g
+            /"tld"\s*:\s*"\.?([a-z0-9.-]{2,30})"[^{}]*?"fullPriceExclCurrencyAsString"\s*:\s*"([\d.]+)"/g
           while ((m = re2.exec(text)) !== null) {
             const tld = m[1].toLowerCase()
             if (seen.has(tld)) continue
@@ -86,6 +90,28 @@ export const onecomAdapter = defineAdapter({
             })
           }
         }
+
+        // 旧格式兜底: firstYearPrice / renewalPrice
+        if (prices.length === 0) {
+          const re3 =
+            /"tld"\s*:\s*"\.?([a-z0-9.-]{2,30})"[^{}]*?"firstYearPrice"\s*:\s*([\d.]+)[^{}]*?"renewalPrice"\s*:\s*([\d.]+)/g
+          while ((m = re3.exec(text)) !== null) {
+            const tld = m[1].toLowerCase()
+            if (seen.has(tld)) continue
+            seen.add(tld)
+            const firstYear = Number.parseFloat(m[2])
+            const renew = Number.parseFloat(m[3])
+            prices.push({
+              tld,
+              registerPrice: renew,
+              renewPrice: renew,
+              ...(firstYear < renew ? { promotionPrice: firstYear } : {}),
+              currency: "USD",
+              sourceUrl: PAGE_URL,
+            })
+          }
+        }
+
         if (prices.length === 0) throw new Error("one.com 页面未找到内嵌价格数据")
         return prices
       },

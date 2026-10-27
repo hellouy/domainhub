@@ -36,6 +36,7 @@ export const internetbsAdapter = createTableAdapter({
   currency: "USD",
   urls: ["https://internetbs.net/en/domain-name-registrations/pricelist.html"],
   columnOrder: ["register", "transfer", "renew"],
+  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true },
 })
 
 export const registercomAdapter = createTableAdapter({
@@ -45,6 +46,7 @@ export const registercomAdapter = createTableAdapter({
   currency: "USD",
   urls: ["https://www.register.com/domains/domain-pricing"],
   columnOrder: ["register", "renew", "transfer"],
+  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true },
 })
 
 export const loopiaAdapter = createTableAdapter({
@@ -80,8 +82,9 @@ export const netcupAdapter = createTableAdapter({
   website: "https://www.netcup.com",
   currency: "EUR",
   numberFormat: "eu",
-  urls: ["https://www.netcup.com/en/domain"],
+  urls: ["https://www.netcup.com/en/domain/domain-endings-tlds"],
   columnOrder: ["register", "renew", "transfer"],
+  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true },
 })
 
 export const lwsAdapter = createTableAdapter({
@@ -140,8 +143,9 @@ export const amenAdapter = createTableAdapter({
   website: "https://www.amen.fr",
   currency: "EUR",
   numberFormat: "fr",
-  urls: ["https://www.amen.fr/noms-de-domaine/"],
+  urls: ["https://www.amen.fr/nom-de-domaine/"],
   columnOrder: ["register", "renew", "transfer"],
+  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true },
 })
 
 export const transipAdapter = createTableAdapter({
@@ -150,8 +154,9 @@ export const transipAdapter = createTableAdapter({
   website: "https://www.transip.nl",
   currency: "EUR",
   numberFormat: "eu",
-  urls: ["https://www.transip.nl/domein-registreren/"],
+  urls: ["https://www.transip.nl/domeinnamen"],
   columnOrder: ["register", "renew", "transfer"],
+  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true },
 })
 
 export const xserverAdapter = createTableAdapter({
