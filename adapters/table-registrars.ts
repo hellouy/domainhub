@@ -316,3 +316,30 @@ export const networksolutionsAdapter = createTableAdapter({
 })
 
 
+
+export const webnicAdapter = createTableAdapter({
+  slug: "webnic",
+  name: "Webnic",
+  website: "https://www.webnic.cc",
+  currency: "USD",
+  // 主表: Extensions | Register | Renewal | Transfer | Restoration Fees (约 1139 行)
+  // 其余 3 个表为按年促销表(Year | Promotion Price | Normal Price), rowFilter 已排除
+  urls: ["https://www.webnic.cc/domain-pricing/"],
+  columnOrder: ["register", "renew", "transfer", "skip"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
+  owner: "Data Team",
+})
+
+export const alibabacloudAdapter = createTableAdapter({
+  slug: "alibabacloud",
+  name: "Alibaba Cloud",
+  website: "https://www.alibabacloud.com",
+  currency: "USD",
+  // 主表: TLD(374) | Registration | Renewal | Transfer | Redemption
+  // 页面为 JS 渲染(直连 HTML 无表格), 配置 browser 降级
+  urls: ["https://www.alibabacloud.com/domain/pricing"],
+  columnOrder: ["register", "renew", "transfer", "skip"],
+  rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
+  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true },
+  owner: "Data Team",
+})

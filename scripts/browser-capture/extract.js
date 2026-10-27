@@ -30,7 +30,13 @@
 
   // 1) 表格
   for (const tr of document.querySelectorAll('table tr')) {
-    const cells = [...tr.querySelectorAll('td,th')].map((c) => c.innerText.trim())
+    const cells = [...tr.querySelectorAll('td,th')].map((c) => {
+      // 去除促销/状态徽章(如 ".accountant New" 中的 "New"), 徽章与 TLD 无空格分隔,
+      // 直接读 innerText 会污染 tld("accountantNew")
+      const clone = c.cloneNode(true)
+      clone.querySelectorAll('span[class*="tag"],span[class*="badge"],span[class*="label"],em,sup').forEach((n) => n.remove())
+      return clone.innerText.trim()
+    })
     if (cells.length < 2) continue
     let tld = null
     let tldIdx = -1
