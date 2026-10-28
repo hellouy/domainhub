@@ -1,7 +1,6 @@
 "use client"
 
 import { useActionState, useState } from "react"
-import { useRouter } from "next/navigation"
 import { Plus, Pencil, X } from "lucide-react"
 import { createAd, updateAd } from "@/app/actions/admin"
 import { AD_POSITIONS } from "@/lib/ad-positions"
@@ -15,13 +14,11 @@ export function AdFormDialog(props: Props) {
   const [open, setOpen] = useState(false)
   const action = props.mode === "create" ? createAd : updateAd
   const [state, formAction, pending] = useActionState(action, null)
-  const router = useRouter()
 
   const ad = props.mode === "edit" ? props.ad : null
 
   if (state?.ok) {
     setOpen(false)
-    router.refresh()
   }
 
   return (
