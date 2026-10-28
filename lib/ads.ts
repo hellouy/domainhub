@@ -51,7 +51,8 @@ export const getActiveAdsByPosition = unstable_cache(
 
     return rows.map(toPublic)
   },
-  ["ad-slots-by-position-v1"],
+  // 动态 cache key：Next.js 从函数参数自动生成，不同 position 有独立缓存
+  undefined as unknown as string[],
   { tags: [ADS_TAG] },
 )
 
