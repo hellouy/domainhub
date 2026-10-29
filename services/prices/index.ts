@@ -144,7 +144,7 @@ export async function queryPrices(filter: { registrar?: string; tld?: string; li
   return withFallback(
     "queryPrices",
     async () => {
-      const conditions = [eq(registrars.isActive, true)]
+      const conditions = [eq(registrars.isActive, true), eq(tlds.isValid, true)]
       if (filter.registrar) conditions.push(eq(registrars.slug, filter.registrar))
       if (filter.tld) conditions.push(eq(tlds.tld, normalizeTld(filter.tld)))
 
@@ -249,6 +249,7 @@ export async function queryDeals(filter: {
         sql`${prices.registerPrice} IS NOT NULL`,
         sql`((${prices.promotionPrice} IS NOT NULL AND ${prices.promotionPrice} >= 0 AND ${prices.promotionPrice} < ${prices.registerPrice}) OR (${prices.promoCode} IS NOT NULL AND btrim(${prices.promoCode}) <> ''))`,
         eq(registrars.isActive, true),
+        eq(tlds.isValid, true),
       ]
       if (filter.registrar) conditions.push(eq(registrars.slug, filter.registrar))
       if (filter.tld) conditions.push(eq(tlds.tld, normalizeTld(filter.tld)))

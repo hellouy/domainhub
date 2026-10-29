@@ -4,6 +4,8 @@ import { useMemo, useRef, useState } from "react"
 import { useRouter } from "next/navigation"
 import { Search } from "lucide-react"
 import { useCurrency, useLocale } from "@/components/providers"
+import { TldLabel } from "@/components/tld-label"
+import { tldToUnicode } from "@/lib/tld-display"
 
 export type TldSearchOption = {
   tld: string
@@ -25,10 +27,13 @@ export function TldSearch({ options }: { options: TldSearchOption[] }) {
     if (!normalized) return options.slice(0, 6)
 
     return options
-      .filter((option) => option.tld.startsWith(normalized))
+      .filter((option) => {
+        const unicode = tldToUnicode(option.tld).toLowerCase()
+        return option.tld.startsWith(normalized) || unicode.startsWith(normalized)
+      })
       .sort((a, b) => {
-        const aIsExact = a.tld === normalized
-        const bIsExact = b.tld === normalized
+        const aIsExact = a.tld === normalized || tldToUnicode(a.tld).toLowerCase() === normalized
+        const bIsExact = b.tld === normalized || tldToUnicode(b.tld).toLowerCase() === normalized
         if (aIsExact !== bIsExact) return aIsExact ? -1 : 1
         return a.tld.length - b.tld.length || a.tld.localeCompare(b.tld)
       })
@@ -43,7 +48,9 @@ export function TldSearch({ options }: { options: TldSearchOption[] }) {
   function submit() {
     if (!normalized) return
 
-    const exactMatch = options.find((option) => option.tld === normalized)
+    const exactMatch = options.find(
+      (option) => option.tld === normalized || tldToUnicode(option.tld).toLowerCase() === normalized,
+    )
     if (exactMatch) {
       go(exactMatch.tld)
     } else if (suggestions.length > 0) {
@@ -99,7 +106,9 @@ export function TldSearch({ options }: { options: TldSearchOption[] }) {
                 onClick={() => go(s.tld)}
                 className="flex w-full items-center justify-between px-4 py-2.5 text-left hover:bg-accent"
               >
-                <span className="font-mono text-sm font-medium">.{s.tld}</span>
+                <span className="font-mono text-sm font-medium">
+                  <TldLabel tld={s.tld} />
+                </span>
                 <span className="text-xs text-muted-foreground">
                   {s.minRegister ? `最低 ${money(s.minRegister, "USD")}` : "暂无价格"}
                 </span>

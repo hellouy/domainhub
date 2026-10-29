@@ -20,6 +20,7 @@ import { Label } from "@/components/ui/label"
 import { Switch } from "@/components/ui/switch"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { tldTypeLabel } from "@/lib/format"
+import { TldLabel } from "@/components/tld-label"
 
 export type TldRow = {
   id: number
@@ -164,7 +165,9 @@ export function TldTable({ rows }: { rows: TldRow[] }) {
               <TableCell className="text-center">
                 <PopularToggle row={r} />
               </TableCell>
-              <TableCell className="font-mono font-medium text-foreground">{r.tld}</TableCell>
+              <TableCell className="font-mono font-medium text-foreground">
+                <TldLabel tld={r.tld} withDot={false} />
+              </TableCell>
               <TableCell>
                 <Badge variant="secondary">{tldTypeLabel(r.type)}</Badge>
               </TableCell>

@@ -18,6 +18,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { formatPrice, formatRelative } from "@/lib/format"
+import { TldLabel } from "@/components/tld-label"
 
 export type PriceRow = {
   priceId: number
@@ -224,7 +225,9 @@ export function PriceTable({ rows }: { rows: PriceRow[] }) {
         <TableBody>
           {rows.map((r) => (
             <TableRow key={r.priceId}>
-              <TableCell className="font-mono font-medium text-foreground">{r.tld}</TableCell>
+              <TableCell className="font-mono font-medium text-foreground">
+                <TldLabel tld={r.tld} withDot={false} />
+              </TableCell>
               <TableCell>
                 <div className="flex items-center gap-1.5">
                   <span className="text-sm text-foreground">{r.registrarName}</span>

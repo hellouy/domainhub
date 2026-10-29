@@ -6,6 +6,8 @@ import useSWR, { preload } from "swr"
 import { Check, ChevronDown, ChevronRight, Copy, ExternalLink, Search, Ticket, X } from "lucide-react"
 import { convertAmount } from "@/lib/format"
 import { getActivePromotionPrice } from "@/lib/promotion"
+import { tldToUnicode } from "@/lib/tld-display"
+import { TldLabel } from "@/components/tld-label"
 import { cn, normalizeUrl, withRegistrarReferral } from "@/lib/utils"
 import { useCurrency, useLocale } from "@/components/providers"
 import type { DictKey } from "@/lib/i18n"
@@ -114,7 +116,7 @@ function QuoteRow({ q }: { q: ExplorerTld }) {
           onClick={() => setOpen((v) => !v)}
           className="tap-row__link flex items-center gap-1.5 text-left font-mono text-base font-semibold after:absolute after:inset-0 after:content-[''] focus-visible:outline-none md:text-lg"
         >
-          .{q.tld}
+          <TldLabel tld={q.tld} />
           <ChevronDown
             aria-hidden="true"
             className={cn("size-4 text-muted-foreground transition-transform duration-200", open && "rotate-180 text-primary")}
@@ -205,7 +207,9 @@ function NewGRow({ item }: { item: UpcomingTld }) {
   return (
     <li className="flex flex-col gap-1 px-3 py-3 md:grid md:grid-cols-[9rem_7rem_minmax(0,1fr)_8rem_2.5rem] md:items-center md:gap-x-4 md:px-4">
       <div className="flex min-w-0 items-center gap-2">
-        <span className="truncate font-mono text-base font-semibold md:text-lg">.{item.tld}</span>
+        <span className="truncate font-mono text-base font-semibold md:text-lg">
+          <TldLabel tld={item.tld} />
+        </span>
         {kindKey && (
           <span className="shrink-0 border border-border px-1 text-[10px] font-medium text-muted-foreground">
             {t(kindKey)}
@@ -346,8 +350,10 @@ export function TldExplorer({ tlds, upcoming = [] }: { tlds: ExplorerTld[]; upco
     const q = query.trim().toLowerCase().replace(/^\.+/, "")
     let list = tlds
     if (q) {
-      const starts = list.filter((x) => x.tld.startsWith(q))
-      const contains = list.filter((x) => !x.tld.startsWith(q) && x.tld.includes(q))
+      const matches = (x: ExplorerTld) =>
+        x.tld.startsWith(q) || tldToUnicode(x.tld).toLowerCase().startsWith(q)
+      const starts = list.filter(matches)
+      const contains = list.filter((x) => !matches(x) && tldToUnicode(x.tld).toLowerCase().includes(q))
       list = [...starts, ...contains]
     } else if (tab === "popular") list = list.filter((x) => x.isPopular)
     else if (tab !== "all") list = list.filter((x) => x.type === tab)

@@ -1,6 +1,7 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { Money } from "@/components/money"
+import { TldLabel } from "@/components/tld-label"
 import { T, TCount, TldType } from "@/components/i18n-text"
 import { getTldsWithMinPrice } from "@/lib/db/queries"
 
@@ -57,7 +58,7 @@ export default async function TldsPage() {
               <tr key={t.id} className="border-b border-border last:border-b-0 hover:bg-accent/50">
                 <td className="truncate px-2 py-3.5 sm:px-4">
                   <Link href={`/tld/${t.tld}`} className="font-mono font-semibold hover:text-primary">
-                    .{t.tld}
+                    <TldLabel tld={t.tld} />
                   </Link>
                 </td>
                 <td className="whitespace-nowrap px-2 py-3.5 text-xs text-muted-foreground sm:px-4 sm:text-sm">

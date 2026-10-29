@@ -4,11 +4,13 @@ import { useMemo, useState } from "react"
 import Link from "next/link"
 import { ArrowDown, Check, Copy, ExternalLink, Search, Tag, X } from "lucide-react"
 import { TCount } from "@/components/i18n-text"
+import { TldLabel } from "@/components/tld-label"
 import { useCurrency, useLocale } from "@/components/providers"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { cn, normalizeUrl, withRegistrarReferral } from "@/lib/utils"
 import { getTldSpecificCodes } from "@/lib/promotion"
+import { tldToUnicode } from "@/lib/tld-display"
 
 type Deal = {
   registrar: string
@@ -39,14 +41,16 @@ export function DealsList({ deals }: { deals: Deal[] }) {
     const normalizedQuery = query.trim().toLocaleLowerCase().replace(/^\.+/, "")
     if (!normalizedQuery) return deals
 
-    const exactSuffixMatches = deals.filter(
-      (deal) => deal.tld.toLocaleLowerCase().replace(/^\.+/, "") === normalizedQuery,
-    )
+    const exactSuffixMatches = deals.filter((deal) => {
+      const raw = deal.tld.toLocaleLowerCase().replace(/^\.+/, "")
+      return raw === normalizedQuery || tldToUnicode(raw).toLowerCase() === normalizedQuery
+    })
     if (exactSuffixMatches.length > 0) return exactSuffixMatches
 
-    const suffixMatches = deals.filter((deal) =>
-      deal.tld.toLocaleLowerCase().replace(/^\.+/, "").startsWith(normalizedQuery),
-    )
+    const suffixMatches = deals.filter((deal) => {
+      const raw = deal.tld.toLocaleLowerCase().replace(/^\.+/, "")
+      return raw.startsWith(normalizedQuery) || tldToUnicode(raw).toLowerCase().startsWith(normalizedQuery)
+    })
     if (suffixMatches.length > 0) return suffixMatches
 
     return deals.filter((deal) =>
@@ -173,7 +177,7 @@ export function DealsList({ deals }: { deals: Deal[] }) {
                   href={`/tld/${tld}`}
                   className="w-fit font-mono text-3xl font-bold leading-none tracking-tight text-foreground transition-colors hover:text-primary sm:text-4xl"
                 >
-                  .{tld}
+                  <TldLabel tld={tld} />
                 </Link>
                 <Link
                   href={`/registrars/${deal.registrar}`}

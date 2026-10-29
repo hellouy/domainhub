@@ -5,6 +5,7 @@ import { ExternalLink } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Money } from "@/components/money"
 import { PromotionPrice } from "@/components/promotion-price"
+import { TldLabel } from "@/components/tld-label"
 import { T, RelativeTime, RegistrarDescription } from "@/components/i18n-text"
 import { RegistrarIcon } from "@/components/registrar-favicon"
 import { getPricesForRegistrar, getRegistrarBySlug } from "@/lib/db/queries"
@@ -127,7 +128,7 @@ export default async function RegistrarPage({ params }: Props) {
                       href={`/tld/${p.tld}`}
                       className="truncate font-mono text-lg font-semibold leading-tight hover:text-primary"
                     >
-                      .{p.tld}
+                      <TldLabel tld={p.tld} />
                     </Link>
                     <span className="text-xs text-muted-foreground">
                       <RelativeTime date={p.updatedAt} />
@@ -216,7 +217,7 @@ export default async function RegistrarPage({ params }: Props) {
                 <tr key={p.priceId} className="border-b border-border last:border-b-0 hover:bg-accent/50">
                   <td className="px-4 py-3.5">
                     <Link href={`/tld/${p.tld}`} className="font-mono font-semibold hover:text-primary">
-                      .{p.tld}
+                      <TldLabel tld={p.tld} />
                     </Link>
                   </td>
                   <td className="px-4 py-3.5 text-right font-mono tabular-nums">

@@ -162,7 +162,7 @@ export async function getTldPriceFloors(): Promise<Map<string, TldPriceFloor>> {
         })
         .from(prices)
         .innerJoin(registrars, and(eq(registrars.id, prices.registrarId), eq(registrars.isActive, true)))
-        .innerJoin(tlds, eq(tlds.id, prices.tldId))
+        .innerJoin(tlds, and(eq(tlds.id, prices.tldId), eq(tlds.isValid, true)))
         .groupBy(tlds.tld)
       return new Map(
         rows.map((r) => [
@@ -379,7 +379,11 @@ export async function getTldByName(tld: string) {
   return safeQuery(
     "getTldByName",
     async () => {
-      const [row] = await db.select().from(tlds).where(eq(tlds.tld, tld.toLowerCase())).limit(1)
+      const [row] = await db
+        .select()
+        .from(tlds)
+        .where(and(eq(tlds.tld, tld.toLowerCase()), eq(tlds.isValid, true)))
+        .limit(1)
       return row ?? null
     },
     seedTldByName(tld),
@@ -453,7 +457,7 @@ export async function getPricesForRegistrar(registrarId: number) {
           tldType: tlds.type,
         })
         .from(prices)
-        .innerJoin(tlds, eq(prices.tldId, tlds.id))
+        .innerJoin(tlds, and(eq(prices.tldId, tlds.id), eq(tlds.isValid, true)))
         .where(eq(prices.registrarId, registrarId))
         .orderBy(asc(tlds.tld))
       return rows.map((r) => ({
