@@ -541,3 +541,122 @@ export async function queryHealth() {
       })),
   )
 }
+
+/** 某后缀的最低价格汇总（注册/续费/转移分别返回最优价及其注册商） */
+export async function queryTldPriceInfo(tld: string) {
+  return withFallback(
+    "queryTldPriceInfo",
+    async () => {
+      const normalized = normalizeTld(tld)
+      const rates = await getUsdRates()
+
+      const rows = await db
+        .select({
+          registrar: registrars.slug,
+          registrarName: registrars.name,
+          website: registrars.website,
+          currency: prices.currency,
+          registerPrice: prices.registerPrice,
+          renewPrice: prices.renewPrice,
+          transferPrice: prices.transferPrice,
+          promotionPrice: prices.promotionPrice,
+          promoCode: prices.promoCode,
+          promoCodes: prices.promoCodes,
+          promotionEndsAt: prices.promotionEndsAt,
+        })
+        .from(prices)
+        .innerJoin(registrars, eq(prices.registrarId, registrars.id))
+        .innerJoin(tlds, eq(prices.tldId, tlds.id))
+        .where(and(eq(registrars.isActive, true), eq(tlds.tld, normalized)))
+
+      if (rows.length === 0) return null
+
+      interface PriceEntry {
+        registrar: string
+        registrarName: string
+        website: string | null
+        currency: string
+        registerPrice: number | null
+        renewPrice: number | null
+        transferPrice: number | null
+        promotionPrice: number | null
+        promoCode: string | null
+        promoCodes: unknown | null
+        promotionEndsAt: Date | null
+      }
+
+      const entries: PriceEntry[] = rows.map((r) => ({
+        registrar: r.registrar,
+        registrarName: r.registrarName,
+        website: r.website,
+        currency: r.currency,
+        registerPrice: num(r.registerPrice),
+        renewPrice: num(r.renewPrice),
+        transferPrice: num(r.transferPrice),
+        promotionPrice: num(r.promotionPrice),
+        promoCode: r.promoCode,
+        promoCodes: r.promoCodes,
+        promotionEndsAt: r.promotionEndsAt,
+      }))
+
+      const findBest = (
+        arr: PriceEntry[],
+        getPrice: (e: PriceEntry) => number | null,
+      ): { price: number; currency: string; registrar: string; registrarName: string; website: string | null; promoCode: string | null } | null => {
+        let best: PriceEntry | null = null
+        let bestUsd: number | null = null
+        for (const e of arr) {
+          const p = getPrice(e)
+          if (p == null) continue
+          const usd = usablePriceUsd(p, e.currency, rates)
+          if (usd == null) continue
+          if (bestUsd === null || usd < bestUsd) {
+            bestUsd = usd
+            best = e
+          }
+        }
+        if (!best) return null
+        const rawPrice = getPrice(best)
+        const promotionPrice = best.promotionPrice
+        const ends = best.promotionEndsAt ? new Date(best.promotionEndsAt).getTime() : null
+        const hasActivePromo =
+          promotionPrice != null && rawPrice != null && promotionPrice > 0 && promotionPrice < rawPrice &&
+          (ends == null || ends >= Date.now())
+        return {
+          price: hasActivePromo ? promotionPrice : rawPrice!,
+          currency: best.currency,
+          registrar: best.registrar,
+          registrarName: best.registrarName,
+          website: best.website,
+          promoCode: hasActivePromo ? best.promoCode : null,
+        }
+      }
+
+      const bestRegister = findBest(entries, (e) => {
+        const p = e.promotionPrice
+        const r = e.registerPrice
+        if (p == null || r == null) return r
+        const ends = e.promotionEndsAt ? new Date(e.promotionEndsAt).getTime() : null
+        const isPromo = p > 0 && p < r && (ends == null || ends >= Date.now())
+        return isPromo ? p : r
+      })
+      const bestRenew = findBest(entries, (e) => e.renewPrice)
+      const bestTransfer = findBest(entries, (e) => e.transferPrice)
+
+      const totalRows = entries.length
+      const registrarCount = new Set(entries.map((e) => e.registrar)).size
+
+      return {
+        tld: normalized,
+        totalRows,
+        registrarCount,
+        best: {
+          register: bestRegister,
+          renew: bestRenew,
+          transfer: bestTransfer,
+        },
+      }
+    },
+    () => null,
+  )
+}

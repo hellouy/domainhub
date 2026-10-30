@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BadgePercent, Globe2, House, Store } from "lucide-react"
+import { BadgePercent, Globe2, House, Mail, Store } from "lucide-react"
 import { useLocale } from "@/components/providers"
 import { cn } from "@/lib/utils"
 
@@ -10,6 +10,7 @@ const links = [
   { href: "/tlds", label: "nav.tlds", Icon: Globe2, match: ["/tlds", "/tld/"] },
   { href: "/registrars", label: "nav.registrars", Icon: Store, match: ["/registrars"] },
   { href: "/deals", label: "nav.deals", Icon: BadgePercent, match: ["/deals"] },
+  { href: "/contact", label: "nav.contact", Icon: Mail, match: ["/contact"] },
 ] as const
 
 const tabs = [{ href: "/", label: "nav.home", Icon: House, match: [] as readonly string[] }, ...links] as const
@@ -57,7 +58,7 @@ export function MobileTabBar() {
       aria-label={t("footer.nav")}
       className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
     >
-      <ul className="mx-auto grid h-14 max-w-md grid-cols-4">
+      <ul className="mx-auto grid h-14 max-w-md grid-cols-5">
         {tabs.map(({ href, label, Icon, match }) => {
           const active = isActive(pathname, href, match)
           return (
