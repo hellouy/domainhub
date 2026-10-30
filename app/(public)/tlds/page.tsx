@@ -4,6 +4,8 @@ import { Money } from "@/components/money"
 import { TldLabel } from "@/components/tld-label"
 import { T, TCount, TldType } from "@/components/i18n-text"
 import { getTldsWithMinPrice } from "@/lib/db/queries"
+import { getActiveAdsByPosition } from "@/lib/ads"
+import { AdSlot } from "@/components/ad-slot"
 
 export const revalidate = 300
 
@@ -14,7 +16,10 @@ export const metadata: Metadata = {
 }
 
 export default async function TldsPage() {
-  const rows = await getTldsWithMinPrice()
+  const [rows, sidebarAds] = await Promise.all([
+    getTldsWithMinPrice(),
+    getActiveAdsByPosition("tld-list-sidebar"),
+  ])
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-5 px-4 py-8 sm:gap-8 sm:py-12 md:px-6">
@@ -29,51 +34,56 @@ export default async function TldsPage() {
           <TCount k="page.tlds.desc" vars={{ n: rows.length }} />
         </p>
       </header>
-      <div className="border border-border">
-        <table className="w-full table-fixed border-collapse text-sm">
-          <colgroup>
-            <col className="w-1/4" />
-            <col className="w-1/4" />
-            <col className="w-1/4" />
-            <col className="w-1/4" />
-          </colgroup>
-          <thead>
-            <tr className="border-b border-border bg-secondary text-left">
-              <th scope="col" className="whitespace-nowrap px-2 py-3 text-[10px] font-medium text-muted-foreground sm:px-4 sm:text-xs sm:uppercase sm:tracking-widest">
-                <T k="th.tld" />
-              </th>
-              <th scope="col" className="whitespace-nowrap px-2 py-3 text-[10px] font-medium text-muted-foreground sm:px-4 sm:text-xs sm:uppercase sm:tracking-widest">
-                <T k="th.type" />
-              </th>
-              <th scope="col" className="whitespace-nowrap px-2 py-3 text-right text-[10px] font-medium text-muted-foreground sm:px-4 sm:text-xs sm:uppercase sm:tracking-widest">
-                <T k="th.minRegister" />
-              </th>
-              <th scope="col" className="whitespace-nowrap px-2 py-3 text-right text-[10px] font-medium text-muted-foreground sm:px-4 sm:text-xs sm:uppercase sm:tracking-widest">
-                <T k="th.registrarCount" />
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((t) => (
-              <tr key={t.id} className="border-b border-border last:border-b-0 hover:bg-accent/50">
-                <td className="truncate px-2 py-3.5 sm:px-4">
-                  <Link href={`/tld/${t.tld}`} className="font-mono font-semibold hover:text-primary">
-                    <TldLabel tld={t.tld} />
-                  </Link>
-                </td>
-                <td className="whitespace-nowrap px-2 py-3.5 text-xs text-muted-foreground sm:px-4 sm:text-sm">
-                  <TldType type={t.type} compact />
-                </td>
-                <td className="whitespace-nowrap px-2 py-3.5 text-right font-mono text-xs tabular-nums text-primary sm:px-4 sm:text-sm">
-                  <Money value={t.minRegister} from="USD" />
-                </td>
-                <td className="whitespace-nowrap px-2 py-3.5 text-right font-mono text-xs tabular-nums text-muted-foreground sm:px-4 sm:text-sm">
-                  {t.registrarCount}
-                </td>
+      <div className="flex flex-col gap-8 md:flex-row md:items-start">
+        <div className="flex-1 overflow-hidden border border-border">
+          <table className="w-full table-fixed border-collapse text-sm">
+            <colgroup>
+              <col className="w-1/4" />
+              <col className="w-1/4" />
+              <col className="w-1/4" />
+              <col className="w-1/4" />
+            </colgroup>
+            <thead>
+              <tr className="border-b border-border bg-secondary text-left">
+                <th scope="col" className="whitespace-nowrap px-2 py-3 text-[10px] font-medium text-muted-foreground sm:px-4 sm:text-xs sm:uppercase sm:tracking-widest">
+                  <T k="th.tld" />
+                </th>
+                <th scope="col" className="whitespace-nowrap px-2 py-3 text-[10px] font-medium text-muted-foreground sm:px-4 sm:text-xs sm:uppercase sm:tracking-widest">
+                  <T k="th.type" />
+                </th>
+                <th scope="col" className="whitespace-nowrap px-2 py-3 text-right text-[10px] font-medium text-muted-foreground sm:px-4 sm:text-xs sm:uppercase sm:tracking-widest">
+                  <T k="th.minRegister" />
+                </th>
+                <th scope="col" className="whitespace-nowrap px-2 py-3 text-right text-[10px] font-medium text-muted-foreground sm:px-4 sm:text-xs sm:uppercase sm:tracking-widest">
+                  <T k="th.registrarCount" />
+                </th>
               </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {rows.map((t) => (
+                <tr key={t.id} className="border-b border-border last:border-b-0 hover:bg-accent/50">
+                  <td className="truncate px-2 py-3.5 sm:px-4">
+                    <Link href={`/tld/${t.tld}`} className="font-mono font-semibold hover:text-primary">
+                      <TldLabel tld={t.tld} />
+                    </Link>
+                  </td>
+                  <td className="whitespace-nowrap px-2 py-3.5 text-xs text-muted-foreground sm:px-4 sm:text-sm">
+                    <TldType type={t.type} compact />
+                  </td>
+                  <td className="whitespace-nowrap px-2 py-3.5 text-right font-mono text-xs tabular-nums text-primary sm:px-4 sm:text-sm">
+                    <Money value={t.minRegister} from="USD" />
+                  </td>
+                  <td className="whitespace-nowrap px-2 py-3.5 text-right font-mono text-xs tabular-nums text-muted-foreground sm:px-4 sm:text-sm">
+                    {t.registrarCount}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+        <aside className="w-full shrink-0 md:w-64">
+          <AdSlot ads={sidebarAds} />
+        </aside>
       </div>
     </div>
   )

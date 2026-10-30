@@ -4,6 +4,8 @@ import { Badge } from "@/components/ui/badge"
 import { T, TCount, RegistrarDescription } from "@/components/i18n-text"
 import { RegistrarIcon } from "@/components/registrar-favicon"
 import { getActiveRegistrars } from "@/lib/db/queries"
+import { getActiveAdsByPosition } from "@/lib/ads"
+import { AdSlot } from "@/components/ad-slot"
 
 export const revalidate = 300
 
@@ -14,7 +16,10 @@ export const metadata: Metadata = {
 }
 
 export default async function RegistrarsPage() {
-  const rows = await getActiveRegistrars()
+  const [rows, sidebarAds] = await Promise.all([
+    getActiveRegistrars(),
+    getActiveAdsByPosition("registrars-list-sidebar"),
+  ])
 
   return (
     <div className="mx-auto flex w-full max-w-6xl flex-col gap-8 px-4 py-12 md:px-6">
@@ -29,7 +34,8 @@ export default async function RegistrarsPage() {
           <TCount k="page.registrars.desc" vars={{ n: rows.length }} />
         </p>
       </header>
-      <ul className="grid grid-cols-1 gap-3 md:grid-cols-2">
+      <div className="flex flex-col gap-8 md:flex-row md:items-start">
+        <ul className="grid flex-1 grid-cols-1 gap-3 md:grid-cols-2">
         {rows.map((r) => (
           <li key={r.id} className="min-w-0">
             <Link
@@ -80,7 +86,11 @@ export default async function RegistrarsPage() {
             </Link>
           </li>
         ))}
-      </ul>
+        </ul>
+        <aside className="w-full shrink-0 md:w-64">
+          <AdSlot ads={sidebarAds} />
+        </aside>
+      </div>
     </div>
   )
 }
