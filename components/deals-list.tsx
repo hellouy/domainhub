@@ -107,7 +107,7 @@ export function DealsList({ deals }: { deals: Deal[] }) {
             }}
             placeholder={t("deals.search")}
             aria-label={t("deals.search")}
-            className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            className="min-w-0 flex-1 bg-transparent text-base outline-none placeholder:text-muted-foreground"
           />
           {query && (
             <button

@@ -420,7 +420,7 @@ export function TldExplorer({ tlds, upcoming = [] }: { tlds: ExplorerTld[]; upco
             }}
             placeholder={t("explorer.filter")}
             aria-label={t("explorer.filter")}
-            className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            className="w-full bg-transparent text-base outline-none placeholder:text-muted-foreground"
           />
           {query && (
             <button
