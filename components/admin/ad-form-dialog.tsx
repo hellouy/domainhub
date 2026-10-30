@@ -1,6 +1,6 @@
 "use client"
 
-import { useActionState, useState } from "react"
+import { useActionState, useState, useEffect, useTransition } from "react"
 import { Plus, Pencil, X } from "lucide-react"
 import { createAd, updateAd } from "@/app/actions/admin"
 import { AD_POSITIONS } from "@/lib/ad-positions"
@@ -14,12 +14,17 @@ export function AdFormDialog(props: Props) {
   const [open, setOpen] = useState(false)
   const action = props.mode === "create" ? createAd : updateAd
   const [state, formAction, pending] = useActionState(action, null)
+  const [, startTransition] = useTransition()
 
   const ad = props.mode === "edit" ? props.ad : null
 
-  if (state?.ok) {
-    setOpen(false)
-  }
+  useEffect(() => {
+    if (state?.ok) {
+      startTransition(() => {
+        setOpen(false)
+      })
+    }
+  }, [state])
 
   return (
     <>

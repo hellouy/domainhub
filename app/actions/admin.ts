@@ -232,7 +232,6 @@ export async function createAd(
       endsAt: str("endsAt") ? new Date(str("endsAt")) : null,
     })
     invalidateAds()
-    revalidatePath("/admin/ads")
     return { ok: true }
   } catch (error) {
     console.error("[v0] 创建广告失败:", error)
@@ -276,7 +275,6 @@ export async function updateAd(
       })
       .where(eq(adSlots.id, id))
     invalidateAds()
-    revalidatePath("/admin/ads")
     return { ok: true }
   } catch (error) {
     console.error("[v0] 更新广告失败:", error)
