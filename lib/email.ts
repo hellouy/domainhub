@@ -74,7 +74,7 @@ function buildUserConfirmationEmail(data: ContactEmailData) {
           <p style="margin-bottom: 0;"><strong>时间：</strong> ${data.submittedAt}</p>
         </div>
         <p style="margin-top: 24px; line-height: 1.6; color: #555;">
-          如需紧急帮助，您可以回复此邮件或直接发送邮件至 ${ADMIN_EMAIL}。
+          如需紧急帮助，您可以回复此邮件或直接发送邮件至 domain@nic.rw。
         </p>
         <p style="margin-top: 24px; color: #888; font-size: 14px;">
           — TLDbi 团队<br/>

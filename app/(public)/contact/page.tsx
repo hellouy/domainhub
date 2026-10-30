@@ -90,7 +90,7 @@ export default function ContactPage() {
               value={form.name}
               onChange={handleChange}
               placeholder="您的姓名"
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="w-full rounded-md border border-border bg-background px-3 py-2.5 text-base placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
           </div>
           <div className="flex flex-col gap-1.5">
@@ -105,7 +105,7 @@ export default function ContactPage() {
               value={form.email}
               onChange={handleChange}
               placeholder="your@email.com"
-              className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50"
+              className="w-full rounded-md border border-border bg-background px-3 py-2.5 text-base placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50"
             />
           </div>
         </div>
@@ -120,7 +120,7 @@ export default function ContactPage() {
             required
             value={form.subject}
             onChange={handleChange}
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="w-full rounded-md border border-border bg-background px-3 py-2.5 text-base focus:outline-none focus:ring-2 focus:ring-primary/50"
           >
             <option value="" disabled>选择咨询类型</option>
             <option value="价格问题">价格问题</option>
@@ -144,7 +144,7 @@ export default function ContactPage() {
             value={form.message}
             onChange={handleChange}
             placeholder="请详细描述您的问题或建议..."
-            className="w-full rounded-md border border-border bg-background px-3 py-2 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
+            className="w-full rounded-md border border-border bg-background px-3 py-2.5 text-base placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
           />
         </div>
 
