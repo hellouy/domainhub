@@ -11,7 +11,7 @@
  */
 import { defineAdapter, type RawPrice } from "@/packages/adapter-sdk"
 
-const URL = "https://krystal.uk/domains"
+const URL = "https://krystal.io/domains"
 
 function parseKrystal(raw: string): RawPrice[] {
   const out: RawPrice[] = []

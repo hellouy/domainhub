@@ -212,10 +212,10 @@ export const dreamhostAdapter = createTableAdapter({
 
 export const jumingAdapter = createTableAdapter({
   slug: "juming",
-  name: "\u805a\u540d\u7f51 Juming",
+  name: "聚名网 Juming",
   website: "https://www.juming.com",
   currency: "CNY",
-  urls: ["https://www.juming.com/price.htm"],
+  urls: ["https://www.juming.com/price.html"],
   columnOrder: ["register", "renew", "transfer"],
   owner: "Data Team",
   browser: { waitForTimeoutMs: 25_000, scrollToBottom: true },
