@@ -146,6 +146,31 @@ const statements: Array<{ label: string; sql: string }> = [
         ADD COLUMN IF NOT EXISTS ad_positions_enabled jsonb;
     `,
   },
+  {
+    label: "articles 推广文章表",
+    sql: `
+      CREATE TABLE IF NOT EXISTS articles (
+        id serial PRIMARY KEY,
+        slug text NOT NULL UNIQUE,
+        title text NOT NULL DEFAULT '',
+        excerpt text NOT NULL DEFAULT '',
+        content text NOT NULL DEFAULT '',
+        topic text NOT NULL DEFAULT '',
+        locale text NOT NULL DEFAULT 'zh',
+        keywords text NOT NULL DEFAULT '',
+        model text,
+        is_published boolean NOT NULL DEFAULT false,
+        weight integer NOT NULL DEFAULT 1,
+        published_at timestamptz,
+        created_at timestamptz NOT NULL DEFAULT now(),
+        updated_at timestamptz NOT NULL DEFAULT now()
+      );
+      CREATE INDEX IF NOT EXISTS idx_articles_published
+        ON articles (is_published, published_at DESC);
+      CREATE UNIQUE INDEX IF NOT EXISTS idx_articles_slug
+        ON articles (slug);
+    `,
+  },
 ]
 
 async function main() {

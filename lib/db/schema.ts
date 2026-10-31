@@ -363,3 +363,33 @@ export const adSlots = pgTable("ad_slots", {
 })
 
 export type AdSlotRow = typeof adSlots.$inferSelect
+
+/** 推广文章:由后台 AI 生成的原创 SEO/GEO 内容 */
+export const articles = pgTable("articles", {
+  id: serial("id").primaryKey(),
+  /** URL 友好标识(全站唯一) */
+  slug: text("slug").notNull().unique(),
+  /** 标题 */
+  title: text("title").notNull().default(""),
+  /** 摘要/导语(用于列表与 meta description) */
+  excerpt: text("excerpt").notNull().default(""),
+  /** 正文(Markdown) */
+  content: text("content").notNull().default(""),
+  /** 主题/关键词(生成时使用) */
+  topic: text("topic").notNull().default(""),
+  /** 语言:zh | en */
+  locale: text("locale").notNull().default("zh"),
+  /** SEO 关键词(逗号分隔) */
+  keywords: text("keywords").notNull().default(""),
+  /** 生成所用模型 */
+  model: text("model"),
+  /** 是否发布(未发布不显示于前台与 sitemap) */
+  isPublished: boolean("is_published").notNull().default(false),
+  /** 置顶权重(越大越靠前) */
+  weight: integer("weight").notNull().default(1),
+  publishedAt: timestamp("published_at", { withTimezone: true }),
+  createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+})
+
+export type ArticleRow = typeof articles.$inferSelect

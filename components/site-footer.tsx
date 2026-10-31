@@ -56,6 +56,9 @@ export function SiteFooter({
             <Link href="/deals" className="text-sm text-foreground hover:text-primary">
               {t("nav.deals")}
             </Link>
+            <Link href="/articles" className="text-sm text-foreground hover:text-primary">
+              {t("nav.articles")}
+            </Link>
             <Link href="/contact" className="text-sm text-foreground hover:text-primary">
               {t("nav.contact")}
             </Link>

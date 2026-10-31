@@ -12,6 +12,7 @@ import {
   KeyRound,
   Settings,
   Megaphone,
+  Newspaper,
   Menu,
   X,
   ExternalLink,
@@ -28,6 +29,7 @@ const NAV_ITEMS = [
   { href: "/admin/tlds", label: "后缀管理", icon: Globe },
   { href: "/admin/credentials", label: "凭证", icon: KeyRound },
   { href: "/admin/ads", label: "广告位", icon: Megaphone },
+  { href: "/admin/articles", label: "文章管理", icon: Newspaper },
   { href: "/admin/settings", label: "站点设置", icon: Settings },
 ]
 

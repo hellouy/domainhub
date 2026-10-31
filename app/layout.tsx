@@ -58,7 +58,22 @@ export async function generateMetadata(): Promise<Metadata> {
       description,
       images: ['/og-image.png'],
     },
-    robots: { index: true, follow: true },
+    robots: {
+      index: true,
+      follow: true,
+      googleBot: {
+        index: true,
+        follow: true,
+        'max-snippet': -1,
+        'max-image-preview': 'large',
+        'max-video-preview': -1,
+      },
+    },
+    category: 'technology',
+    authors: [{ name: SITE_NAME, url: 'https://tldbi.com' }],
+    creator: SITE_NAME,
+    publisher: SITE_NAME,
+    formatDetection: { telephone: false, email: false, address: false },
     icons: {
       icon,
       apple: settings.faviconUrl || '/apple-touch-icon.png',
@@ -84,9 +99,52 @@ export default async function RootLayout({
   const cookieLocale = cookieStore.get(LOCALE_COOKIE)?.value
   const initialLocale: Locale = cookieLocale === 'en' ? 'en' : 'zh'
 
+  const settings = await getSiteSettings()
+  const siteTitle = localizedTitle(settings, initialLocale)
+  const siteDescription = localizedDescription(settings, initialLocale)
+
+  // 站点级结构化数据:帮助搜索引擎识别站点身份,并让生成式引擎/AI 准确引用品牌与搜索入口
+  const siteJsonLd = {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'WebSite',
+        '@id': 'https://tldbi.com/#website',
+        url: 'https://tldbi.com',
+        name: SITE_NAME,
+        description: siteDescription,
+        inLanguage: initialLocale === 'en' ? 'en' : 'zh-CN',
+        publisher: { '@id': 'https://tldbi.com/#organization' },
+        potentialAction: {
+          '@type': 'SearchAction',
+          target: {
+            '@type': 'EntryPoint',
+            urlTemplate: 'https://tldbi.com/tlds?q={search_term_string}',
+          },
+          'query-input': 'required name=search_term_string',
+        },
+      },
+      {
+        '@type': 'Organization',
+        '@id': 'https://tldbi.com/#organization',
+        name: SITE_NAME,
+        url: 'https://tldbi.com',
+        description: siteDescription,
+        logo: settings.logoUrl
+          ? { '@type': 'ImageObject', url: settings.logoUrl }
+          : { '@type': 'ImageObject', url: 'https://tldbi.com/icon.svg' },
+      },
+    ],
+  }
+
   return (
     <html lang={initialLocale === 'en' ? 'en' : 'zh-CN'} className="bg-background" suppressHydrationWarning>
       <body className="font-sans antialiased">
+        <script
+          type="application/ld+json"
+          // eslint-disable-next-line react/no-danger
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(siteJsonLd) }}
+        />
         <Providers initialLocale={initialLocale}>
           <NavigationFeedback />
           {children}
