@@ -32,8 +32,7 @@ import {
   amenAdapter,
   domeneshopAdapter,
   hoverAdapter,
-internetbsAdapter,
-  loopiaAdapter,
+  internetbsAdapter,
   lwsAdapter,
   netcupAdapter,
   onamaeAdapter,
@@ -59,6 +58,7 @@ internetbsAdapter,
   alibabacloudAdapter,
   reg123Adapter,
 } from "./table-registrars"
+import { loopiaAdapter } from "./loopia"
 import { pskzAdapter } from "./pskz"
 import { julynameAdapter, cny59Adapter, zwcnAdapter } from "./cny-registrars"
 import { forpsiAdapter } from "./forpsi"
@@ -149,7 +149,7 @@ export const allAdapters = [
   eurodnsAdapter,
   registercomAdapter,
   metanameAdapter,
-  loopiaAdapter,
+  loopiaAdapter, // ← 来自 ./loopia (Price API)，覆盖 table-registrars 的 HTML 版本
   domeneshopAdapter,
   hostpointAdapter,
   netcupAdapter,

@@ -3,10 +3,13 @@
  * ------------------------------------------------------------
  * 所有权: Data Team
  *
- * 域名价格页为 JS 渲染（fetch 无数据表），全量价表 1200+ 行
- * （注册/续费/转入三类价，EUR）。通过 browser-worker 的
- * extract-json 形态取表（表格优先的提取脚本），SDK 默认 parse
- * 直接消费规范化输出。
+ * 定价页 `/domain-pricing-list/` 为 JS 渲染（表格内容通过 AJAX 动态加载，
+ * fetch 无 SSR 数据）。初始 HTML 包含 TLD 下拉选项（1200+ 个 TLD），
+ * 价格数据需通过选择 TLD 后触发加载，或查找定价 API。
+ *
+ * 当前策略：使用 playwright 等待 JS 渲染后提取 HTML，
+ * parse 函数从 select#domain-search-tld 中提取 TLD 列表。
+ * 价格数据需要在后续步骤中通过其他方式获取。
  */
 import { defineAdapter } from "@/packages/adapter-sdk"
 
@@ -23,11 +26,25 @@ export const cloudnsAdapter = defineAdapter({
   strategies: [
     {
       type: "playwright",
-      url: "https://www.cloudns.net/domains/",
+      url: "https://www.cloudns.net/domain-pricing-list/",
       browser: {
-        extract: "extract-json",
+        extract: "html",
         waitForTimeoutMs: 20_000,
-        scrollToBottom: true,
+        scrollBottom: true,
+        parse(html) {
+          const tlds = []
+          const seen = new Set()
+          const optionRegex = /<option[^>]*value="([^">]+)"[^>]*>/g
+          let match
+          while ((match = optionRegex.exec(html)) !== null) {
+            const tld = match[1].trim()
+            if (tld && !seen.has(tld) && !tld.includes(" ") && tld.length > 1) {
+              seen.add(tld)
+              tlds.push(tld)
+            }
+          }
+          return tlds.map(tld => ({ tld }))
+        },
       },
     },
   ],
