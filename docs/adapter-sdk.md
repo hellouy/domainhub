@@ -207,7 +207,7 @@ Worker 在每次导航/子请求时检查 URL 协议、端口、DNS 解析及私
 
 ### 环境变量
 
-- `CRAWL_SERVICE_URL`(主站点):聚合反爬服务地址,如 `http://43.133.72.184:8090`。未配置时 anti-bot 策略直接抛错并降级。
+- `CRAWL_SERVICE_URL`(主站点):聚合反爬服务地址,如 `http://43.133.72.184:8100`。未配置时 anti-bot 策略直接抛错并降级。
 - `CRAWL_SERVICE_TOKEN`(主站点):服务端鉴权 `x-api-key` 头值。
 
 ### 适用场景

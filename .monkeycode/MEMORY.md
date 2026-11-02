@@ -307,3 +307,15 @@ Entries discovered by the Agent during task execution should follow this format:
   - **三服务契约勿混淆**：browser-worker = `POST ${URL}/render` + Bearer（真实渲染，支持自定义 script/extract-json）；crawl-service = `POST /api/auto` + x-api-key（仅 direct fetch 不执行 JS）；SearXNG = `GET /search?format=json` + Bearer。接入前先 curl 目标端口确认契约。
   - **教训（2026-10-31）**：commit 79e6a8e 曾把 BROWSER_SERVICE_URL 指向 crawl-service 8100（协议不同、无 JS 渲染），playwright 策略全废。本地开发应直连 worker `BROWSER_SERVICE_URL=http://127.0.0.1:8840`，无需代理。
   - **动态价表提取法**：cloudns/westcn 这类 AJAX 注入表格，用 browser-worker /render 的自定义 script（page.evaluate）在 DOM 内解析渲染后结构（cloudns `tbody tr.tlds` 6 列 1226 行、westcn el-table column_3 118 行），extract-json 返回数组即可，比抓静态 HTML 正则稳健。
+
+[Project Knowledge Summary]
+- Date: 2026-11-02
+- Context: Discovered by Agent while 规范化服务器与脚本职责(各司其职)
+- Category: Operations & Deployment
+- Instructions:
+  - **本地服务统一入口 `scripts/services.sh`**：`start|stop|restart|status|health|logs [app|worker|sync]...`。app=next dev:3000、worker=browser-worker:8840、sync=local-sync 调度循环。pid 在 `.run/`、日志在 `logs/`(均 gitignore)。由 setsid 启动并按进程组停止。
+  - **脚本职责划分**：核心运维脚本保留在 `scripts/` 根目录(文档/MEMORY 大量引用其路径, 移动会断链)；一次性审计放 `scripts/tmp-audit/`，已废弃一次脚本放 `scripts/archive/`(均 gitignore)。目录说明见 `scripts/README.md`。
+  - **服务拓扑唯一说明文档 `docs/services.md`**：记录本地三服务、远程 43.133.72.184(8100 crawl-service / 8090 cache / 8000 loopia API)、外部 SaaS、以及三套契约区别。改动服务先改此文档。
+  - **local-sync.sh 已修**：密钥统一经 `envval()` 从 `.env.local` 读取(原先硬编码 token)；worker 自愈重启默认本地 chromium 模式(原先硬编码已宕机的 `wss://pachong.china.tn` 远端农场，会导致重启后槽位卡死)；`.env.local` 配了 REMOTE_PLAYWRIGHT_URL 才走远端。
+  - **脚本编写坑**：`set -e` 下 `[ cond ] && action` 和 `envval()` 内 grep 未命中(退出码 1)都会直接终止脚本；改用 `if` 语句，并给 envval 加 `|| true`。
+  - **`services.sh` 探活**：Next dev 首次请求要编译，健康检查需 60s 超时；外部实例识别用端口监听(`ss -tln`)而非 HTTP，避免触发编译。

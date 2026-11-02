@@ -39,6 +39,7 @@
   "exclude": [
     "node_modules",
     "browser-worker",
-    "scripts/tmp-audit"
+    "scripts/tmp-audit",
+    "scripts/archive"
   ]
 }
