@@ -8,7 +8,7 @@ import { defineAdapter, type AdapterContext, type RawPrice } from "@/packages/ad
 
 const API_BASE = "http://43.133.72.184:8000"
 const REGISTRAR = "loopia"
-const API_KEY = process.env.LOOPIA_API_KEY ?? "f2c1a6679dd52d97cddf646c0d7f8df0f505ffd506f66351"
+const API_KEY = process.env.LOOPIA_API_KEY ?? ""
 
 export const loopiaAdapter = defineAdapter({
   slug: REGISTRAR,
@@ -25,6 +25,7 @@ export const loopiaAdapter = defineAdapter({
       type: "json",
       url: `${API_BASE}/v1/prices?registrar=${REGISTRAR}`,
       async fetch(ctx: AdapterContext): Promise<string> {
+        if (!API_KEY) throw new Error("LOOPIA_API_KEY is not configured")
         const res = await ctx.fetch(`${API_BASE}/v1/prices?registrar=${REGISTRAR}`, {
           headers: { Authorization: `Bearer ${API_KEY}` },
         })
