@@ -16,7 +16,7 @@
  *   - 价格 "429.000đ" 点千分位, 去点转数字
  *   - 过滤非 .vn 的二级子域 TLD(jpn.com/nom.co/za.com/gb.net/off.ai 等二手市场变体)
  *   - 过滤天价特殊域名(1字符/2字符 .VN 注册价千万盾级)
- * 限流(2026-10-11): 直连页面 JS 渲染需 anti-bot 通道(949KB/560 行)拿完整价目表。
+ * 2026-11-03: 直连恢复 SSR 全量(1MB/560 行), html 优先, anti-bot 降级。
  */
 import { defineAdapter, type RawPrice } from "@/packages/adapter-sdk"
 
@@ -85,13 +85,22 @@ export const pavietnamAdapter = defineAdapter({
   website: "https://www.pavietnam.vn",
   owner: "Data Team",
   version: "1.0.0",
-  parserVersion: "1.0.0",
+  parserVersion: "2.0.0",
   currency: "VND",
   priority: 50,
   capabilities: { registration: true, renewal: true, transfer: true, supportedCurrencies: ["VND"] },
   rateLimit: { concurrency: 1, rpm: 10, retries: 3, timeoutMs: 120_000 },
   strategies: [
     {
+      // 2026-11-03: 直连恢复 SSR 全量(1MB/560 行), html 优先
+      type: "html",
+      url: URL,
+      parse(raw: string): RawPrice[] {
+        return parsePavietnam(raw)
+      },
+    },
+    {
+      // 降级通道: 再次出现 JS 渲染/限流时走聚合反爬服务
       type: "anti-bot",
       url: URL,
       antiBot: { keyword: "Đăng ký" },
