@@ -9,7 +9,7 @@
  * compare 语义：价格无变化的行跳过（不写 prices 也不写 history）。
  */
 
-import { and, desc, eq } from "drizzle-orm"
+import { and, desc, eq, inArray, sql } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { priceHistory, prices, tlds } from "@/lib/db/schema"
 import type { PriceSink } from "@/packages/adapter-sdk"
@@ -87,6 +87,16 @@ export async function createPriceSink(registrarId: number): Promise<{
     let inserted = 0
     let updated = 0
     let skipped = 0
+    const now = new Date()
+
+    // 第一遍：解析 tldId（新后缀自动创建），并把待写行收集到内存，
+    // 最后批量 upsert —— 逐行 await 会造成 N 次数据库往返（远程 pooler 单往返可达 100ms，
+    // 900 行就是 150s+，足以吃光 serverless 整轮预算）。
+    // 去重保护: 同一 tldId 在结果中出现多次时以后者为准(与逐行顺序执行一致)，
+    // 否则批量 upsert 会触发 "ON CONFLICT DO UPDATE command cannot affect row a second time"。
+    const skippedTldIds = new Set<number>()
+    const upsertMap = new Map<number, (typeof prices.$inferInsert)>()
+    const historyMap = new Map<number, (typeof priceHistory.$inferInsert)>()
 
     for (const { price } of validated) {
       let tldId = tldIdMap.get(price.tld)
@@ -171,42 +181,64 @@ export async function createPriceSink(registrarId: number): Promise<{
         (prev.promotionEndsAt?.toISOString() ?? null) ===
           (next.promotionEndsAt?.toISOString() ?? null)
       ) {
-        await db
-          .update(prices)
-          .set({ updatedAt: new Date() })
-          .where(and(eq(prices.registrarId, registrarId), eq(prices.tldId, tldId)))
+        if (!upsertMap.has(tldId)) skippedTldIds.add(tldId)
         skipped++
         continue
       }
 
-      if (prev) {
-        // 保留既有促销信息: 普通价格采集适配器通常不带 promo, 若 next 无促销而 prev 有, 不抹掉(促销码/促销价由专项脚本维护)
-        const writeNext =
-          next.promoCodes == null && prev.promoCodes != null
-            ? {
-                ...next,
-                promotionPrice: prev.promotionPrice,
-                promoCode: prev.promoCode,
-                promoCodes: prev.promoCodes,
-                promotionEndsAt: prev.promotionEndsAt,
-              }
-            : next
-        await db
-          .update(prices)
-          .set({ ...writeNext, sourceUrl: price.sourceUrl, updatedAt: new Date() })
-          .where(and(eq(prices.registrarId, registrarId), eq(prices.tldId, tldId)))
-        updated++
-      } else {
-        await db.insert(prices).values({
-          registrarId,
-          tldId,
-          ...next,
-          sourceUrl: price.sourceUrl,
-          updatedAt: new Date(),
+      // 保留既有促销信息: 普通价格采集适配器通常不带 promo, 若 next 无促销而 prev 有, 不抹掉(促销码/促销价由专项脚本维护)
+      const writeNext =
+        prev && next.promoCodes == null && prev.promoCodes != null
+          ? {
+              ...next,
+              promotionPrice: prev.promotionPrice,
+              promoCode: prev.promoCode,
+              promoCodes: prev.promoCodes,
+              promotionEndsAt: prev.promotionEndsAt,
+            }
+          : next
+
+      upsertMap.set(tldId, { registrarId, tldId, ...writeNext, sourceUrl: price.sourceUrl, updatedAt: now })
+      historyMap.set(tldId, { registrarId, tldId, ...next })
+      if (prev) updated++
+      else inserted++
+    }
+
+    // 无变化行：一条 SQL 批量刷新 updated_at
+    if (skippedTldIds.size > 0) {
+      await db
+        .update(prices)
+        .set({ updatedAt: now })
+        .where(and(eq(prices.registrarId, registrarId), inArray(prices.tldId, [...skippedTldIds])))
+    }
+
+    // 变化行：批量 upsert（唯一键 registrar_id + tld_id），并批量写历史
+    const CHUNK = 400
+    const upsertRows = [...upsertMap.values()]
+    for (let i = 0; i < upsertRows.length; i += CHUNK) {
+      await db
+        .insert(prices)
+        .values(upsertRows.slice(i, i + CHUNK))
+        .onConflictDoUpdate({
+          target: [prices.registrarId, prices.tldId],
+          set: {
+            registerPrice: sql`excluded.register_price`,
+            renewPrice: sql`excluded.renew_price`,
+            transferPrice: sql`excluded.transfer_price`,
+            currency: sql`excluded.currency`,
+            promotionPrice: sql`excluded.promotion_price`,
+            promoCode: sql`excluded.promo_code`,
+            promoCodes: sql`excluded.promo_codes`,
+            promotionEndsAt: sql`excluded.promotion_ends_at`,
+            sourceUrl: sql`excluded.source_url`,
+            updatedAt: sql`excluded.updated_at`,
+          },
         })
-        inserted++
-      }
-      await db.insert(priceHistory).values({ registrarId, tldId, ...next })
+    }
+
+    const historyRows = [...historyMap.values()]
+    for (let i = 0; i < historyRows.length; i += CHUNK) {
+      await db.insert(priceHistory).values(historyRows.slice(i, i + CHUNK))
     }
 
     return { inserted, updated, skipped, databaseMs: Date.now() - started }
