@@ -8,7 +8,8 @@
  *   每格含 label(Register/Renew/Transfer/Redemption) + span.package-price-js data-usd。
  * 取 data-usd 数值(USD), 按 label 映射列。
  * 注: 价目表已从 /en/domains/pricing 迁至 /en/domains(原页面仅保留域名搜索框)。
- * 已验证 535 TLD, USD/年。
+ * 已验证 667 TLD, USD/年（含 .com.co/.co.at/.com.au 等多级后缀）。
+ * 2026-11-03: TLD 捕获组允许点号, 修复多级后缀漏采(站点扩充 535→667, 原正则只匹配单级)。
  */
 
 import { defineAdapter, type AdapterContext, type RawPrice } from "@/packages/adapter-sdk"
@@ -26,7 +27,7 @@ async function parseUltrahost(raw: string, _ctx: AdapterContext): Promise<RawPri
     const cells = seg.match(/<td[^>]*>[\s\S]*?<\/td>/gi) ?? []
     if (cells.length < 2) continue
     // TLD: td[0] > a > span.main.fw-500
-    const tldM = (cells[0] ?? "").match(/<span class="main fw-500"[^>]*>\s*\.([a-z0-9\u00e0-\uffff-]+)\s*<\/span>/i)
+    const tldM = (cells[0] ?? "").match(/<span class="main fw-500"[^>]*>\s*\.([a-z0-9\u00e0-\uffff-]+(?:\.[a-z0-9-]+)*)\s*<\/span>/i)
     if (!tldM) continue
     const tld = tldM[1].toLowerCase()
     if (seen.has(tld)) continue
@@ -58,8 +59,8 @@ export const ultahostAdapter = defineAdapter({
   name: "UltraHost",
   website: "https://ultahost.com",
   owner: "Data Team",
-  version: "1.1.0",
-  parserVersion: "2.0.0",
+  version: "1.2.0",
+  parserVersion: "2.1.0",
   currency: "USD",
   capabilities: { registration: true, renewal: true, transfer: true, restore: true, supportedCurrencies: ["USD", "EUR"] },
   rateLimit: { concurrency: 1, rpm: 10, retries: 3, timeoutMs: 60_000 },
