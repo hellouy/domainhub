@@ -265,12 +265,12 @@ async function renderViaAggregate(url: string): Promise<string> {
   abCallTimes.push(Date.now())
   const callStart = Date.now()
   try {
-    const res = await fetch(`${CRAWL_SERVICE_URL}/api/auto`, {
+    const res = await fetch(`${CRAWL_SERVICE_URL}/v1/crawl/auto`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         Accept: "application/json",
-        "x-api-key": CRAWL_SERVICE_TOKEN,
+        Authorization: `Bearer ${CRAWL_SERVICE_TOKEN}`,
       },
       body: JSON.stringify({ url, keyword: null }),
       signal: AbortSignal.timeout(45_000),

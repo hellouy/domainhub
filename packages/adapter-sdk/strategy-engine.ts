@@ -106,22 +106,22 @@ async function browserStrategyFetch(def: StrategyDefinition, ctx: AdapterContext
 
 /**
  * anti-bot 策略的聚合抓取 fetch：
- * 把抓取任务转发给聚合反爬服务（CRAWL_SERVICE_URL，FlareSolverr + Browserless + Crawlee）。
- * 服务端 /api/auto 先走 FlareSolverr 轻量抓取，失败或 keyword 校验不匹配时自动降级到
- * Browserless 渲染，返回最终 HTML（used_mode 标识走了哪条通道）。
- * 该服务聚合了反爬绕过能力，适合 html 直连被 Cloudflare/验证码拦截的静态价目表页。
+ * 把抓取任务转发给统一入口网关（CRAWL_SERVICE_URL，:8200）的 /v1/crawl/auto，
+ * 网关后端聚合 FlareSolverr + Browserless + Crawlee 多级降级，返回 {ok, data:{html, level}}。
+ * 鉴权使用统一入口密钥（Authorization: Bearer）。
+ * 该通道聚合了反爬绕过能力，适合 html 直连被 Cloudflare/验证码拦截的静态价目表页。
  */
 async function antiBotStrategyFetch(def: StrategyDefinition, ctx: AdapterContext): Promise<string> {
   if (!CRAWL_SERVICE_URL || !CRAWL_SERVICE_TOKEN) {
     throw new Error("anti-bot 策略需要配置 CRAWL_SERVICE_URL 和 CRAWL_SERVICE_TOKEN")
   }
   const opts = def.antiBot ?? {}
-  const res = await ctx.fetch(`${CRAWL_SERVICE_URL}/api/auto`, {
+  const res = await ctx.fetch(`${CRAWL_SERVICE_URL}/v1/crawl/auto`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Accept: "application/json",
-      "x-api-key": CRAWL_SERVICE_TOKEN,
+      Authorization: `Bearer ${CRAWL_SERVICE_TOKEN}`,
     },
     body: JSON.stringify({
       url: def.url,
@@ -133,7 +133,7 @@ async function antiBotStrategyFetch(def: StrategyDefinition, ctx: AdapterContext
   const raw = (await res.json()) as {
     ok?: boolean
     error?: string
-    data?: { url?: string; html?: string; used_mode?: string; error?: string }
+    data?: { url?: string; html?: string; used_mode?: string; level?: string; error?: string }
     url?: string
     html?: string
     used_mode?: string
@@ -141,7 +141,7 @@ async function antiBotStrategyFetch(def: StrategyDefinition, ctx: AdapterContext
   // 兼容两种返回结构: 顶层 html(旧) 或 data.html(聚合服务当前格式)
   const inner = raw.data && typeof raw.data === "object" ? raw.data : null
   const html = inner?.html ?? raw.html
-  const usedMode = inner?.used_mode ?? raw.used_mode
+  const usedMode = inner?.used_mode ?? inner?.level ?? raw.used_mode
   if (typeof html !== "string" || html.length === 0) {
     throw new Error(inner?.error ?? raw.error ?? "聚合抓取服务未返回 html")
   }
