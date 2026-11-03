@@ -1,24 +1,40 @@
 /**
  * Gandi —— 法国注册商价目(EUR)
  * ------------------------------------------------------------
- * 所有权: Data Team
- *
- * 源: https://www.gandi.net/en/domain (静态 HTML 价目表)
- * 表: TLD | Register | Renew | Transfer
- * Register 列格式: "€11.00" 或 "Promo €17.26 €11.99" (促销/原价)
- *  币种 EUR。验证: 10 TLD (.com/.net/.xyz/.fr/.nz/.eu/.app/.co.uk/.online/.me)
- * 注意: Renew 价格较高(如 .net €40) 为 Gandi 官方定价
+ * 源: https://www.gandi.net/en/domain/tld（SSR comparative-table）
+ * 分页: ?prefix=a..z 以及 ?prefix=xn--（IDN/Punycode），共 27 页约 999 个后缀，
+ *       每页包含该字母全部后缀（无页内分页）；默认页(无参数)仅字母 A 的 50 行
+ * 列序: TLD | Creation(注册) | Transfer(转移) | Renewal(续费) | Owner Change | Restore(找回)
+ * 促销: Creation 单元格为 <del>原价</del> + <ins>促销价</ins>（首年促销）
+ * 特殊: cell-none/cell-contact 显示 "N/A"（溢价或企业专享，联系销售）→ 价格记 null
+ *       Owner Change 列恒为 FREE，平台无对应字段，忽略
+ * 币种 EUR。sourceUrl 使用每行自己的后缀详情页
  */
 
-import { defineAdapter, type RawPrice } from "@/packages/adapter-sdk"
+import { defineAdapter, type AdapterContext, type RawPrice } from "@/packages/adapter-sdk"
 
-const URL = "https://www.gandi.net/en/domain"
+const LIST_URL = "https://www.gandi.net/en/domain/tld"
+const PREFIXES = [
+  ..."abcdefghijklmnopqrstuvwxyz".split(""),
+  "xn--",
+]
 
-function parseEur(s: string | null | undefined): number | null {
-  if (!s) return null
-  const m = s.replace(/[^0-9.,]/g, "").replace(",", ".")
-  const v = Number.parseFloat(m)
+function parseEur(cellHtml: string | null): number | null {
+  if (!cellHtml) return null
+  if (/cell-none|cell-contact/.test(cellHtml)) return null
+  const m = cellHtml.match(/([\d.]+)/)
+  if (!m) return null
+  const v = Number.parseFloat(m[1])
   return Number.isFinite(v) && v > 0 ? Math.round(v * 100) / 100 : null
+}
+
+function promoPrices(cellHtml: string): { register: number | null; promo: number | null } {
+  const del = cellHtml.match(/<del class="comparative-table__normal-price">\s*€?\s*([\d.]+)/)
+  const ins = cellHtml.match(/<ins class="comparative-table__price">\s*€?\s*([\d.]+)/)
+  return {
+    register: del ? Number.parseFloat(del[1]) : null,
+    promo: ins ? Number.parseFloat(ins[1]) : null,
+  }
 }
 
 export const gandiAdapter = defineAdapter({
@@ -26,8 +42,8 @@ export const gandiAdapter = defineAdapter({
   name: "Gandi",
   website: "https://www.gandi.net",
   owner: "Data Team",
-  version: "1.0.0",
-  parserVersion: "1.0.0",
+  version: "1.1.0",
+  parserVersion: "2.0.0",
   currency: "EUR",
   capabilities: {
     registration: true,
@@ -35,45 +51,55 @@ export const gandiAdapter = defineAdapter({
     transfer: true,
     supportedCurrencies: ["EUR"],
   },
-  rateLimit: { concurrency: 1, rpm: 10, retries: 3, timeoutMs: 60_000 },
+  rateLimit: { concurrency: 1, rpm: 30, retries: 2, timeoutMs: 30_000 },
   strategies: [
     {
       type: "html",
-      url: URL,
+      url: LIST_URL,
+      async fetch(ctx: AdapterContext): Promise<string> {
+        const pages: string[] = []
+        for (const prefix of PREFIXES) {
+          const res = await ctx.fetch(`${LIST_URL}?prefix=${encodeURIComponent(prefix)}`, {
+            headers: {
+              "Accept-Language": "en-US,en;q=0.9",
+              Referer: LIST_URL,
+            },
+          })
+          if (!res.ok) throw new Error(`Gandi prefix=${prefix} HTTP ${res.status}`)
+          pages.push(await res.text())
+        }
+        return pages.join("\n<!--GANDI-PAGE-->\n")
+      },
       async parse(raw: string): Promise<RawPrice[]> {
         const out: RawPrice[] = []
         const seen = new Set<string>()
-        const tableMatch = raw.match(/<table[^>]*>([\s\S]*?)<\/table>/i)
-        if (!tableMatch) throw new Error("Gandi 页面未找到表格")
-        const rows = tableMatch[1].match(/<tr[^>]*>[\s\S]*?<\/tr>/gi) || []
+        const rows = raw.match(/<tr class="comparative-table__row">[\s\S]*?<\/tr>/g) || []
         for (const row of rows) {
-          const cells = [...row.matchAll(/<(td|th)[^>]*>([\s\S]*?)<\/(td|th)>/gi)].map(m =>
-            m[2].replace(/<[^>]+>/g, " ").replace(/&nbsp;/g, " ").replace(/[\s]+/g, " ").trim(),
-          )
-          if (cells.length < 4) continue
-          const tldRaw = cells[0].replace(/^\./, "").toLowerCase().trim()
-          if (!tldRaw || !/^[a-z0-9]/.test(tldRaw) || seen.has(tldRaw)) continue
-          const regRaw = cells[1]
-          const renRaw = cells[2]
-          const traRaw = cells[3]
-          const price: RawPrice = { tld: tldRaw, currency: "EUR", sourceUrl: URL }
-          if (regRaw.includes("Promo")) {
-            const nums = [...regRaw.matchAll(/([€]?[\d]+[.,]\d{2})/g)].map(m => parseEur(m[1]))
-            if (nums.length >= 2) {
-              price.registerPrice = Math.max(...nums.filter(v => v != null) as number[])
-              price.promotionPrice = Math.min(...nums.filter(v => v != null) as number[])
-            } else if (nums.length === 1) {
-              price.registerPrice = nums[0]!
-            }
-          } else {
-            price.registerPrice = parseEur(regRaw)
+          const th = row.match(/<th[^>]*comparative-table__cell--tld[^>]*>([\s\S]*?)<\/th>/)
+          if (!th) continue
+          const link = th[1].match(/<a href="([^"]+)"[^>]*>([^<]*)<\/a>/)
+          if (!link) continue
+          const tld = link[2].replace(/^\./, "").trim().toLowerCase()
+          if (!tld || seen.has(tld)) continue
+          const cells = [...row.matchAll(/<td[^>]*>([\s\S]*?)<\/td>/g)].map(m => m[1])
+          if (cells.length < 5) continue
+          const creation = cells[0]
+          const promo = /badge--promo/.test(creation) ? promoPrices(creation) : null
+          const registerPrice = promo ? promo.register : parseEur(creation)
+          const renewPrice = parseEur(cells[2])
+          const transferPrice = parseEur(cells[1])
+          const restorePrice = parseEur(cells[4])
+          if (registerPrice == null && renewPrice == null && transferPrice == null) continue
+          const href = link[1]
+          const sourceUrl = href.startsWith("http") ? href : `https://www.gandi.net${href}`
+          const price: RawPrice = { tld, currency: "EUR", registerPrice, renewPrice, transferPrice, restorePrice, sourceUrl }
+          if (promo && promo.promo != null && promo.register != null && promo.promo < promo.register) {
+            price.promotionPrice = promo.promo
           }
-          price.renewPrice = parseEur(renRaw)
-          price.transferPrice = traRaw === "FREE" ? null : parseEur(traRaw)
-          seen.add(tldRaw)
+          seen.add(tld)
           out.push(price)
         }
-        if (out.length < 5) throw new Error(`Gandi 解析行数异常: ${out.length}`)
+        if (out.length < 100) throw new Error(`Gandi 解析行数异常: ${out.length}`)
         return out
       },
     },
