@@ -17,7 +17,7 @@
  * 输出 [{ tld, register, renew, transfer, promotionPrice }]，
  * worker 归一化为 registerPrice/renewPrice/transferPrice/promotionPrice。
  */
-import { defineAdapter } from "@/packages/adapter-sdk"
+import { defineAdapter, browserRender } from "@/packages/adapter-sdk"
 
 /** 支持售卖的 TLD 清单（源自 revved tld_score，2026-10-08 快照，可随价格页刷新） */
 const TLD_LIST = ["ac","academy","accountant","accountants","actor","ad","adult","ae.org","africa","agency","ai","airforce","apartments","app","archi","army","art","asia","associates","attorney","auction","audio","auto","autos","baby","band","bar","barcelona","bargains","beauty","beer","berlin","best","bet","bid","bike","bingo","bio","biz","black","blackfriday","blog","blue","boats","bond","boo","boston","bot","boutique","br.com","broker","build","builders","business","buzz","bz","ca","cab","cafe","cam","camera","camp","capital","car","cards","care","careers","cars","casa","cash","casino","cat","catering","cc","center","ceo","cfd","ch","channel","charity","chat","cheap","christmas","church","city","claims","cleaning","click","clinic","clothing","cloud","club","cm","cn","cn.com","co","co.bz","co.com","co.im","co.in","co.uk","coach","codes","coffee","college","com","com.au","com.co","com.de","com.es","com.im","com.mx","com.pe","com.ph","com.se","com.sg","com.vc","community","company","computer","condos","construction","consulting","contact","contractors","cooking","cool","country","coupons","courses","credit","creditcard","cricket","cruises","cv","cx","cymru","cyou","dad","dance","date","dating","day","de","de.com","deal","dealer","deals","degree","delivery","democrat","dental","dentist","desi","design","dev","diamonds","diet","digital","direct","directory","discount","diy","doctor","dog","domains","download","e2etestcpp","e2etestendswith","e2etestgeo","e2etestkeyword","earth","eco","education","email","energy","engineer","engineering","enterprises","equipment","es","esq","estate","eu","eu.com","events","exchange","expert","exposed","express","fail","faith","family","fan","fans","farm","fashion","fast","feedback","film","finance","financial","fish","fishing","fit","fitness","flights","florist","flowers","fm","foo","food","football","forex","forsale","forum","foundation","fr","free","fun","fund","furniture","futbol","fyi","gallery","game","games","garden","gay","gb.net","gdn","gg","gift","gifts","gives","giving","glass","global","gmbh","gold","golf","gr.com","graphics","gratis","green","gripe","group","guide","guitars","guru","hair","hamburg","haus","health","healthcare","help","hiphop","hockey","holdings","holiday","homes","horse","hospital","host","hosting","hot","hounds","house","how","hu.net","icu","id","im","immo","immobilien","in","in.net","inc","industries","info","ing","ink","institute","insure","international","investments","io","irish","is","it.com","jetzt","jewelry","jp.net","jpn.com","juegos","kaufen","kids","kim","kitchen","kiwi","krd","kyoto","la","land","lat","latino","law","lawyer","lease","legal","lgbt","li","life","lifestyle","lighting","limited","limo","link","live","living","llc","loan","loans","locker","lol","london","love","ltd","ltda","maison","makeup","management","market","marketing","markets","mba","me","me.uk","media","melbourne","meme","memorial","men","menu","mex.com","miami","mobi","mobile","moda","moe","mom","money","monster","mortgage","motorcycles","mov","movie","music","mx","my","nagoya","name","navy","net","net.au","net.im","net.pe","net.ph","net.vc","network","new","news","nexus","ngo","ninja","nl","nom.es","now","nu","nyc","observer","okinawa","one","ong","onl","online","org","org.au","org.es","org.im","org.mx","org.pe","org.ph","org.uk","org.vc","osaka","page","paris","partners","parts","party","pe","pet","ph","phd","photo","photography","photos","pics","pictures","pink","pizza","place","plumbing","plus","poker","porn","press","pro","productions","prof","promo","properties","property","protection","pub","pw","qatestcpp","qatestkeyword","quest","racing","realty","recipes","red","rehab","reise","reisen","rent","rentals","repair","report","republican","rest","restaurant","review","reviews","rip","rocks","rodeo","rsvp","ru.com","run","ryukyu","sa.com","sale","salon","sarl","sbs","school","schule","science","se.net","security","services","sex","sexy","sg","sh","shiksha","shoes","shop","shopping","show","si","singles","site","ski","skin","so","soccer","social","software","solar","solutions","soy","space","spot","storage","store","stream","studio","study","style","sucks","supplies","supply","support","surf","surgery","sydney","systems","talk","tattoo","tax","taxi","team","tech","technology","tel","tennis","theater","theatre","tickets","tienda","tips","tires","to","today","tokyo","tools","top","tours","town","toys","trade","trading","training","travel","tube","tv","uk","uk.com","uk.net","university","uno","us","us.com","us.org","vacations","vana","vc","vegas","ventures","vet","viajes","video","villas","vin","vip","vision","vodka","vote","voting","voto","voyage","wales","watch","webcam","website","wedding","wiki","win","wine","work","works","world","ws","wtf","xn--3ds443g","xn--6frz82g","xxx","xyz","yachts","yoga","yokohama","you","za.com","zip","zone"]
@@ -117,30 +117,20 @@ export const spaceshipAdapter = defineAdapter({
       type: "playwright",
       url: PRICING_URL,
       async fetch(ctx) {
-        const base = process.env.BROWSER_SERVICE_URL ?? "http://127.0.0.1:8840"
-        const token = process.env.BROWSER_SERVICE_TOKEN ?? ""
         const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
         let extracted: unknown[] | null = null
         let lastErr = ""
         // Spaceship 对高频浏览器请求有 Cloudflare 限流，page.goto 偶发 60s 超时；重试兜底
         for (let attempt = 0; attempt < 3 && extracted === null; attempt++) {
           if (attempt > 0) await sleep(8_000)
-          const res = await ctx.fetch(`${base}/render`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Accept: "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-            body: JSON.stringify({
-              url: PRICING_URL,
-              extract: "extract-json",
-              scrollToBottom: false,
-              script: buildScript(),
-            }),
-          })
           try {
-            const data = (await res.json()) as { ok?: boolean; extracted?: unknown[]; error?: string }
+            const data = await browserRender(
+              { url: PRICING_URL, extract: "extract-json", scrollToBottom: false, script: buildScript() },
+            )
             if (data.ok && Array.isArray(data.extracted) && data.extracted.length > 0) extracted = data.extracted
-            else lastErr = data.error ?? `HTTP ${res.status}（命中为空）`
-          } catch {
-            lastErr = `HTTP ${res.status}`
+            else lastErr = data.error ?? "渲染成功但命中为空"
+          } catch (e) {
+            lastErr = e instanceof Error ? e.message : String(e)
           }
         }
         if (extracted === null) throw new Error(lastErr || "浏览器渲染失败")

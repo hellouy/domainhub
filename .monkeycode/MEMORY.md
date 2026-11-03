@@ -355,3 +355,16 @@ Entries discovered by the Agent during task execution should follow this format:
   - **TLD 捕获组必须允许点号**：价目表扩充新增 .com.co/.co.at/.com.au 等多级后缀时，`\.([a-z0-9-]+)` 正则整行漏捕（站点 535→667 行时漏 131 行）；用 `([a-z0-9\u00e0-\uffff-]+(?:\.[a-z0-9-]+)*)`。定位法：对比页面 fw-500 span 数与适配器解析数差异。
   - **tlds.tld 存储不带前导点**（'com'、'ae.org'），SQL 抽样用 `t.tld = ANY($1::text[])` 参数化；SQL 字符串字面量勿用双引号（会被当标识符报 column does not exist）。
   - **大单行 HTML 的 grep 截断陷阱**：极少行超大文件用 grep 工具会被截断显示，造成"无表格"误判；用 node fs 读文件后正则计数（fw-500/data-usd/tr）才可靠。
+
+[Project Knowledge Summary]
+- Date: 2026-11-03
+- Context: Discovered by Agent while 执行用户三项运维指令（easyspace 下线、Vercel 补 PARSE_BOT_API_KEY、远程 browser 端口联通）
+- Category: Operations & Deployment
+- Instructions:
+  - **Vercel 运维配方**：API 令牌（vcp_ 开头）在 /tmp/opencode/vw/poll-api.mjs；团队 team_7fiGBsOkagtxipEvpPg349yM（CLI 显示 8839029-5124），项目 domainhub=prj_374p5jEnrxaW1pyCiJfX4ljJErg0。env 增改：POST /v10/projects/{pid}/env?teamId=（body {key,value,type:"encrypted",target:["production"]}）；部署：仓库根已 link .vercel，`vercel deploy --prod --yes --token <vcp>`（上传部署，构建期即带新 env；git 推 main 的自动部署用推送时刻 env）；状态：`vercel ls` / `vercel inspect <url> --token`。构建日志偶见 "Error: fetch failed"（单页 SSG 外部 fetch 瞬时失败）但部署仍 Ready 并绑别名，以 vercel ls/inspect 状态为准。
+  - **2026-11-03 生产变更**：新增 PARSE_BOT_API_KEY（Namecheap parse.bot）与 BROWSER_SERVICE_URL（当晚更新为远程 browser-worker 舰队，逗号分隔 http://43.133.72.184:8840,8841,8842,8843,8085）；CLI 上传部署 dpl_GQhKyGoq3QvtyGngwNDyyQFkdSsu Ready 并绑定 tldbi.com/www.tldbi.com；生产 /api/v1/adapters 验证 ultahost 1.2.0、nowcn 1.0.0 已上线（120 适配器）。
+  - **远程 worker 令牌**：/tmp/opencode/worker-token.txt 的值 == 生产 BROWSER_SERVICE_TOKEN（本地比对相等，44 字符）；远程 8840 对沙箱出口 TCP 可连但 HTTP 挂起（防火墙丢包或 worker 进程卡死，同症状须宿主机侧区分）。worker 卡死判定：GET /health 的 activeTasks==concurrency 恒满 + 真实 render 超时；本地 `bash scripts/services.sh restart worker` 自愈，远程 worker 须在宿主机重启（沙箱无 ssh）。
+  - 生产适配器健康看 GET /api/v1/health（DB 聚合 crawl_jobs），"playwright: HTTP 502" = worker /render 返回渲染失败。
+  - **browser-worker 舰队客户端（2026-11-03 晚上线）**：`packages/adapter-sdk/browser-service.ts` 解析逗号分隔 BROWSER_SERVICE_URL，GET /health 探活（4s 超时，正/负缓存 30s/60s）+ round-robin 选实例；渲染遇传输错误/超时/402/502/503/504 标记死亡并切换下一实例，400/401 直接抛；全死抛 BrowserServiceError，策略引擎降级下一策略。内部基建调用一律用全局 fetch，禁传 ctx.fetch——rateLimitedFetch 会用自身 60s signal 覆盖调用方 signal 并加重试退避，曾导致 aruba 引擎路径 playwright 探测卡 60s 后误报"全部 worker 健康检查失败"。
+  - **生产手动触发采集**：`POST https://tldbi.com/api/v1/crawl`（JSON {"registrar":"<slug>"}）需管理员会话 cookie `admin_session=<issuedAt>.<HMAC-SHA256(ADMIN_PASSWORD, issuedAt) hex>` 且请求 Origin/Referer 为 https://tldbi.com（isSameOriginRequest 校验）；登录是 server action 无 API 路由，ADMIN_PASSWORD 从 vw 快照程序化读取不打印。备用：GET /api/cron/crawl 带 `Authorization: Bearer <CRON_SECRET>`（值从 Vercel env API 读）。
+  - **沙箱出口 vs Vercel 出口**：远程 43.133.72.184 的 8840-8843/8085/9222 对沙箱 TCP 可连但 HTTP 全挂（宿主机防火墙丢弃沙箱出口 IP）；Vercel 函数（iad1）到远程 HTTP 正常（生产 /api/v1/health 曾报 "playwright: HTTP 502" = 请求已达 worker）。舰队上线后须在宿主机安全组确认放行 Vercel 函数出口 IP 段。

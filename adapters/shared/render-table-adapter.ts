@@ -7,7 +7,7 @@
  * playwright 策略走 browser-worker /render(extract=html) 拿完整渲染页,
  * 再复用 table-adapter 的行提取/列语义解析。
  */
-import { defineAdapter, type RawPrice, type RegistrarCapabilities, type RateLimitConfig } from "@/packages/adapter-sdk"
+import { defineAdapter, browserRender, type RawPrice, type RegistrarCapabilities, type RateLimitConfig } from "@/packages/adapter-sdk"
 import { extractTableRows, findTldCell, parsePrice, defaultNormalize } from "./table-adapter"
 
 interface RenderedTableConfig {
@@ -31,27 +31,20 @@ interface RenderedTableConfig {
   priority?: number
 }
 
-async function renderHtml(fetchFn: (url: string, init?: RequestInit) => Promise<Response>, url: string, waitMs: number): Promise<string> {
-  const base = process.env.BROWSER_SERVICE_URL ?? "http://127.0.0.1:8840"
-  const token = process.env.BROWSER_SERVICE_TOKEN ?? ""
+async function renderHtml(url: string, waitMs: number): Promise<string> {
   const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
   let html: string | null = null
   let lastErr = ""
   for (let attempt = 0; attempt < 3 && html === null; attempt++) {
     if (attempt > 0) await sleep(5_000)
-    const headers: Record<string, string> = { "Content-Type": "application/json", Accept: "application/json" }
-    if (token) headers.Authorization = `Bearer ${token}`
-    const res = await fetchFn(`${base}/render`, {
-      method: "POST",
-      headers,
-      body: JSON.stringify({ url, extract: "html", scrollToBottom: true, waitForTimeoutMs: waitMs }),
-    })
     try {
-      const data = (await res.json()) as { ok?: boolean; html?: string; error?: string }
+      const data = await browserRender(
+        { url, extract: "html", scrollToBottom: true, waitForTimeoutMs: waitMs },
+      )
       if (data.ok && data.html && /<tr/i.test(data.html)) html = data.html
-      else lastErr = data.error ?? `HTTP ${res.status}（页面为空）`
-    } catch {
-      lastErr = `HTTP ${res.status}`
+      else lastErr = data.error ?? "渲染成功但页面为空"
+    } catch (e) {
+      lastErr = e instanceof Error ? e.message : String(e)
     }
   }
   if (html === null) throw new Error(lastErr || "浏览器渲染失败")
@@ -82,8 +75,8 @@ export function createRenderedTableAdapter(config: RenderedTableConfig) {
       {
         type: "playwright",
         url: config.url,
-        async fetch(ctx) {
-          return renderHtml(ctx.fetch.bind(ctx), config.url, config.waitForTimeoutMs ?? 12_000)
+        async fetch() {
+          return renderHtml(config.url, config.waitForTimeoutMs ?? 12_000)
         },
         parse(raw): RawPrice[] {
           const rows = extractTableRows(raw)

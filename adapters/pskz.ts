@@ -8,7 +8,7 @@
  * 值形如 "9 590 тг/жыл"（空格千分位），需自定义解析。
  * 通过 browser-worker 的 html 形态渲染后正则提取。
  */
-import { defineAdapter } from "@/packages/adapter-sdk"
+import { defineAdapter, browserRender } from "@/packages/adapter-sdk"
 
 const PAGE_URL = "https://www.ps.kz/domains"
 
@@ -43,24 +43,19 @@ export const pskzAdapter = defineAdapter({
       type: "playwright",
       url: PAGE_URL,
       async fetch(ctx) {
-        const base = process.env.BROWSER_SERVICE_URL ?? "http://127.0.0.1:8840"
-        const token = process.env.BROWSER_SERVICE_TOKEN ?? ""
         const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
         let html: string | null = null
         let lastErr = ""
         for (let attempt = 0; attempt < 3 && html === null; attempt++) {
           if (attempt > 0) await sleep(5_000)
-          const res = await ctx.fetch(`${base}/render`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Accept: "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-            body: JSON.stringify({ url: PAGE_URL, extract: "html", scrollToBottom: true, waitForTimeoutMs: 12_000 }),
-          })
           try {
-            const data = (await res.json()) as { ok?: boolean; html?: string; error?: string }
+            const data = await browserRender(
+              { url: PAGE_URL, extract: "html", scrollToBottom: true, waitForTimeoutMs: 12_000 },
+            )
             if (data.ok && data.html && /<tr/i.test(data.html)) html = data.html
-            else lastErr = data.error ?? `HTTP ${res.status}（页面为空）`
-          } catch {
-            lastErr = `HTTP ${res.status}`
+            else lastErr = data.error ?? "渲染成功但页面为空"
+          } catch (e) {
+            lastErr = e instanceof Error ? e.message : String(e)
           }
         }
         if (html === null) throw new Error(lastErr || "浏览器渲染失败")
