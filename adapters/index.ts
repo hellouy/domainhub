@@ -130,6 +130,7 @@ import { aliyunAdapter } from "./aliyun"
 import { zcomAdapter } from "./zcom"
 import { nameslinkAdapter } from "./nameslink"
 import { nordnameAdapter } from "./nordname"
+import { bizcnAdapter } from "./bizcn"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -267,6 +268,8 @@ export const allAdapters = [
   zcomAdapter,
   nameslinkAdapter,
   nordnameAdapter,
+  // bizcn(CNY, 价格 JSON API 直连, 商务中国)(2026-11-03)
+  bizcnAdapter,
 ]
 
 for (const adapter of allAdapters) {
