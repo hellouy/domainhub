@@ -1,9 +1,9 @@
 /**
  * 浏览器类注册商本地补采 —— 对依赖 playwright 策略的注册商执行写库采集。
  * ---------------------------------------------------------------------
- * 用途: 生产 Vercel cron 环境无 BROWSER_SERVICE_URL(playwright 渲染服务),
- * 依赖 playwright 的注册商(20 家)在生产无法采集。本脚本在本机跑,
- * 使用本地常驻 browser-worker(8841) 补采这批注册商, 确保其价格自动更新。
+ * 用途: 生产 Vercel cron 已配置 BROWSER_SERVICE_URL 舰队(远程 browser-worker),
+ * playwright 注册商由生产自动采集。本脚本保留用于在本机/指定 worker 上
+ * 对依赖 playwright 策略的注册商补采(默认使用本地常驻 browser-worker 8841)。
  *
  * 运行:
  *   BROWSER_SERVICE_URL=http://127.0.0.1:8841 \

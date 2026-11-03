@@ -12,3 +12,10 @@ export { executeStrategies, type StrategyExecution } from "./strategy-engine"
 export { validatePrices, type ExistingPriceLookup } from "./validation"
 export { rateLimitedFetch, resetLimiter, CircuitOpenError } from "./rate-limit"
 export { resolveProxyAgent, validateProxyConfig, NO_PROXY } from "./proxy"
+export {
+  browserRender,
+  BrowserServiceError,
+  listBrowserServiceUrls,
+  type BrowserRenderPayload,
+  type BrowserRenderResponse,
+} from "./browser-service"

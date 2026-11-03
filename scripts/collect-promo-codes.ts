@@ -18,6 +18,7 @@ import { sql } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { registrars } from "@/lib/db/schema"
 import { eq } from "drizzle-orm"
+import { browserRender } from "@/packages/adapter-sdk"
 
 const SEARXNG_BASE = process.env.SEARXNG_BASE_URL ?? "https://paqu.china.tn"
 const SEARXNG_TOKEN = process.env.SEARXNG_TOKEN ?? ""
@@ -304,22 +305,10 @@ async function renderViaAggregate(url: string): Promise<string> {
   }
 }
 
-/** 本地 browser-worker(8840) 渲染, 作为聚合服务故障时的降级通道 */
+/** browser-worker 舰队渲染(健康检查 + 失败转移), 作为聚合服务故障时的降级通道 */
 async function renderViaLocal(url: string): Promise<string> {
-  const workerUrl = process.env.BROWSER_SERVICE_URL ?? "http://127.0.0.1:8840"
-  const token = process.env.BROWSER_SERVICE_TOKEN ?? ""
   try {
-    const res = await fetch(`${workerUrl}/render`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(token ? { Authorization: `Bearer ${token}` } : {}),
-      },
-      body: JSON.stringify({ url, extract: "html", scrollToBottom: true, waitForTimeoutMs: 25_000 }),
-      signal: AbortSignal.timeout(35_000),
-    })
-    if (!res.ok) throw new Error(`HTTP ${res.status}`)
-    const j = (await res.json()) as { html?: string }
+    const j = await browserRender({ url, extract: "html", scrollToBottom: true, waitForTimeoutMs: 25_000 })
     if (typeof j.html !== "string" || !j.html) throw new Error("empty html")
     if (looksLikeChallenge(j.html)) throw new Error("challenge page")
     return j.html

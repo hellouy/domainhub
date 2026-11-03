@@ -9,7 +9,7 @@
  *   new_gtld_extensions.htm  —— 237 个新 gTLD 注册价（无续费/转入）
  * 通过 browser-worker 的 extract-json 形态逐页提取后合并。
  */
-import { defineAdapter } from "@/packages/adapter-sdk"
+import { defineAdapter, browserRender } from "@/packages/adapter-sdk"
 
 const PRICING_URL = "https://www.101domain.com/pricing.htm"
 const GTLD_URL = "https://www.101domain.com/new_gtld_extensions.htm"
@@ -29,8 +29,6 @@ export const domain101Adapter = defineAdapter({
       type: "playwright",
       url: PRICING_URL,
       async fetch(ctx) {
-        const base = process.env.BROWSER_SERVICE_URL ?? "http://127.0.0.1:8840"
-        const token = process.env.BROWSER_SERVICE_TOKEN ?? ""
         const out: unknown[] = []
         const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
         // pricing.htm 是 div 网格（li.pricelist-row），需按 label 定位价格，通用提取脚本取不到
@@ -59,22 +57,19 @@ export const domain101Adapter = defineAdapter({
           // 101domain 对连续浏览器请求限流（Cloudflare 间歇 502/空页），加大重试间隔
           for (let attempt = 0; attempt < 4 && extracted === null; attempt++) {
             if (attempt > 0) await sleep(8_000)
-            const res = await ctx.fetch(`${base}/render`, {
-              method: "POST",
-              headers: { "Content-Type": "application/json", Accept: "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-              body: JSON.stringify({
-                url: u,
-                extract: "extract-json",
-                waitForTimeoutMs: 25_000,
-                ...(u === PRICING_URL ? { script: pricingScript } : {}),
-              }),
-            })
             try {
-              const data = (await res.json()) as { ok?: boolean; extracted?: unknown[]; error?: string }
+              const data = await browserRender(
+                {
+                  url: u,
+                  extract: "extract-json",
+                  waitForTimeoutMs: 25_000,
+                  ...(u === PRICING_URL ? { script: pricingScript } : {}),
+                },
+              )
               if (data.ok && Array.isArray(data.extracted) && data.extracted.length > 0) extracted = data.extracted
-              else lastErr = data.error ?? `HTTP ${res.status}（命中为空）`
-            } catch {
-              lastErr = `HTTP ${res.status}`
+              else lastErr = data.error ?? "渲染成功但命中为空"
+            } catch (e) {
+              lastErr = e instanceof Error ? e.message : String(e)
             }
           }
           if (extracted === null) throw new Error(lastErr || "浏览器渲染失败")

@@ -11,7 +11,7 @@
  * 特色: .africa/.durban/.joburg/.co.za/.mu 等非洲 ccTLD 与南非本地域名
  */
 
-import { defineAdapter, type AdapterContext, type RawPrice } from "@/packages/adapter-sdk"
+import { defineAdapter, browserRender, type AdapterContext, type RawPrice } from "@/packages/adapter-sdk"
 
 const URL = "https://www.afrihost.com/domains"
 
@@ -76,29 +76,19 @@ export const afrihostAdapter = defineAdapter({
       type: "playwright",
       url: URL,
       async fetch(ctx: AdapterContext): Promise<string> {
-        const base = process.env.BROWSER_SERVICE_URL ?? "http://127.0.0.1:8840"
-        const token = process.env.BROWSER_SERVICE_TOKEN ?? ""
         const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms))
         let extracted: unknown[] | null = null
         let lastErr = ""
         for (let attempt = 0; attempt < 3 && extracted === null; attempt++) {
           if (attempt > 0) await sleep(8_000)
-          const res = await ctx.fetch(`${base}/render`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json", Accept: "application/json", ...(token ? { Authorization: `Bearer ${token}` } : {}) },
-            body: JSON.stringify({
-              url: URL,
-              extract: "extract-json",
-              scrollToBottom: false,
-              script: buildScript(),
-            }),
-          })
           try {
-            const data = (await res.json()) as { ok?: boolean; extracted?: unknown[]; error?: string }
+            const data = await browserRender(
+              { url: URL, extract: "extract-json", scrollToBottom: false, script: buildScript() },
+            )
             if (data.ok && Array.isArray(data.extracted) && data.extracted.length > 0) extracted = data.extracted
-            else lastErr = data.error ?? `HTTP ${res.status}（命中为空）`
-          } catch {
-            lastErr = `HTTP ${res.status}`
+            else lastErr = data.error ?? "渲染成功但命中为空"
+          } catch (e) {
+            lastErr = e instanceof Error ? e.message : String(e)
           }
         }
         if (extracted === null) throw new Error(lastErr || "浏览器渲染失败")

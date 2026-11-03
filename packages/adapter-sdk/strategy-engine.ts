@@ -16,6 +16,7 @@ import type {
   StrategyType,
 } from "./types"
 import { autoParse, parsePriceString } from "../parser"
+import { browserRender, type BrowserRenderPayload } from "./browser-service"
 
 export interface StrategyExecution {
   strategy: StrategyType
@@ -37,30 +38,24 @@ async function defaultFetch(def: StrategyDefinition, ctx: AdapterContext): Promi
   return res.text()
 }
 
-/** 浏览器渲染服务地址（独立部署的 Playwright worker）；未配置时 playwright 策略直接降级 */
-const BROWSER_SERVICE_URL = process.env.BROWSER_SERVICE_URL ?? ""
-const BROWSER_SERVICE_TOKEN = process.env.BROWSER_SERVICE_TOKEN ?? ""
-
 /** 聚合反爬抓取服务地址（FlareSolverr + Browserless + Crawlee 封装）；未配置时 anti-bot 策略直接降级 */
 const CRAWL_SERVICE_URL = process.env.CRAWL_SERVICE_URL ?? ""
 const CRAWL_SERVICE_TOKEN = process.env.CRAWL_SERVICE_TOKEN ?? ""
 
 /**
  * playwright 策略的浏览器 fetch：
- * 把渲染任务转发给浏览器服务（BROWSER_SERVICE_URL），服务端用 Playwright 打开页面、
- * 等待渲染完成并注入提取脚本，返回提取结果 JSON（extract-json）或完整 HTML（html）。
+ * 把渲染任务转发给 browser-worker 舰队（BROWSER_SERVICE_URL，支持逗号分隔多地址），
+ * 客户端自动健康检查 + 失败转移；worker 用 Playwright 打开页面、等待渲染完成
+ * 并注入提取脚本，返回提取结果 JSON（extract-json）或完整 HTML（html）。
  *
  * extract-json 返回项字段已按 RawPrice 约定规范化：
  *   { tld, registerPrice, renewPrice, transferPrice, currency?, sourceUrl? }
  * 因此该形态下可以省略自定义 parse，直接走 defaultParse。
  */
 async function browserStrategyFetch(def: StrategyDefinition, ctx: AdapterContext): Promise<string> {
-  if (!BROWSER_SERVICE_URL || !BROWSER_SERVICE_TOKEN) {
-    throw new Error("playwright 策略需要配置 BROWSER_SERVICE_URL 和 BROWSER_SERVICE_TOKEN")
-  }
   const opts = def.browser ?? {}
-  const payload = {
-    url: def.url,
+  const payload: BrowserRenderPayload = {
+    url: def.url ?? "",
     extract: opts.extract ?? "extract-json",
     waitFor: opts.waitFor ?? null,
     waitForTimeoutMs: opts.waitForTimeoutMs ?? 30_000,
@@ -71,24 +66,7 @@ async function browserStrategyFetch(def: StrategyDefinition, ctx: AdapterContext
     captureXhrFilter: opts.captureXhrFilter ?? [],
     apiFetch: opts.apiFetch ?? null,
   }
-  const res = await ctx.fetch(`${BROWSER_SERVICE_URL}/render`, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Accept: "application/json",
-      Authorization: `Bearer ${BROWSER_SERVICE_TOKEN}`,
-    },
-    body: JSON.stringify(payload),
-  })
-  if (!res.ok) throw new Error(`浏览器服务返回 HTTP ${res.status}`)
-  const data = (await res.json()) as {
-    ok?: boolean
-    extracted?: unknown[]
-    html?: string
-    xhrResponses?: unknown[]
-    api?: { status: number; body: string }
-    error?: string
-  }
+  const data = await browserRender(payload)
   if (!data.ok) throw new Error(data.error ?? "浏览器服务报告渲染失败")
   if (opts.extract === "html") {
     if (typeof data.html !== "string") throw new Error("浏览器服务未返回 html")
