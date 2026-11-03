@@ -19,6 +19,7 @@ export SEARXNG_TOKEN="$(envval SEARXNG_TOKEN)"
 export CRAWL_SERVICE_URL="$(envval CRAWL_SERVICE_URL)"
 export CRAWL_SERVICE_TOKEN="$(envval CRAWL_SERVICE_TOKEN)"
 export PARSE_BOT_API_KEY="$(envval PARSE_BOT_API_KEY)"
+export LOOPIA_API_KEY="$(envval LOOPIA_API_KEY)"
 # 可选: 配置了远端 playwright 农场则透传给 worker; 留空使用本地 chromium
 export REMOTE_PLAYWRIGHT_URL="$(envval REMOTE_PLAYWRIGHT_URL)"
 export REMOTE_PLAYWRIGHT_TOKEN="$(envval REMOTE_PLAYWRIGHT_TOKEN)"

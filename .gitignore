@@ -24,3 +24,6 @@ scripts/archive/
 
 # tsc incremental build cache
 *.tsbuildinfo
+
+# opencode tool config
+opencode.json
