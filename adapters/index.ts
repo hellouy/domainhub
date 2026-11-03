@@ -131,6 +131,7 @@ import { zcomAdapter } from "./zcom"
 import { nameslinkAdapter } from "./nameslink"
 import { nordnameAdapter } from "./nordname"
 import { bizcnAdapter } from "./bizcn"
+import { nowcnAdapter } from "./nowcn"
 
 export const allAdapters = [
   cloudflareAdapter,
@@ -270,6 +271,8 @@ export const allAdapters = [
   nordnameAdapter,
   // bizcn(CNY, 价格 JSON API 直连, 商务中国)(2026-11-03)
   bizcnAdapter,
+  // nowcn(CNY, 时代互联, 价目页 SSR 内联 Vue tableData)(2026-11-03)
+  nowcnAdapter,
 ]
 
 for (const adapter of allAdapters) {
