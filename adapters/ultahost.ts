@@ -3,16 +3,17 @@
  * ------------------------------------------------------------
  * 所有权: Data Team
  *
- * 源: https://ultahost.com/en/domains/pricing
+ * 源: https://ultahost.com/en/domains
  * 表: #domainDataTble, 每行 <td>TLD</td> + 4 个价目格,
  *   每格含 label(Register/Renew/Transfer/Redemption) + span.package-price-js data-usd。
  * 取 data-usd 数值(USD), 按 label 映射列。
- * 已验证约 664 TLD, USD/年。
+ * 注: 价目表已从 /en/domains/pricing 迁至 /en/domains(原页面仅保留域名搜索框)。
+ * 已验证 535 TLD, USD/年。
  */
 
 import { defineAdapter, type AdapterContext, type RawPrice } from "@/packages/adapter-sdk"
 
-const URL = "https://ultahost.com/en/domains/pricing"
+const URL = "https://ultahost.com/en/domains"
 
 async function parseUltrahost(raw: string, _ctx: AdapterContext): Promise<RawPrice[]> {
   const out: RawPrice[] = []
@@ -57,8 +58,8 @@ export const ultahostAdapter = defineAdapter({
   name: "UltraHost",
   website: "https://ultahost.com",
   owner: "Data Team",
-  version: "1.0.0",
-  parserVersion: "1.0.0",
+  version: "1.1.0",
+  parserVersion: "2.0.0",
   currency: "USD",
   capabilities: { registration: true, renewal: true, transfer: true, restore: true, supportedCurrencies: ["USD", "EUR"] },
   rateLimit: { concurrency: 1, rpm: 10, retries: 3, timeoutMs: 60_000 },

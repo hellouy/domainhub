@@ -11,6 +11,8 @@
  * 3. 现用: Parse.bot marketplace 现成 Namecheap API(fork 后补上 transferPrice),
  *    REST GET 单次调用返回全部 571 TLD 的 register/renew/transfer 价格。
  *    端点信息已在下方 URL 注释, 依赖 PARSE_BOT_API_KEY 环境变量。
+ * 2026-11-03: Parse.bot 偶发 524/慢响应(其服务商侧, 实测 5s-125s),
+ *    采集超时放宽到 150s(调度器 JOB_TIMEOUT_MS=240s 兜底)。
  */
 
 import { defineAdapter, type AdapterContext, type RawPrice } from "@/packages/adapter-sdk"
@@ -42,7 +44,7 @@ export const namecheapAdapter = defineAdapter({
     supportedCurrencies: ["USD"],
     supportedLanguages: ["en"],
   },
-  rateLimit: { concurrency: 1, rpm: 6, retries: 2, timeoutMs: 120_000 },
+  rateLimit: { concurrency: 1, rpm: 6, retries: 2, timeoutMs: 150_000 },
   strategies: [
     {
       type: "api",
@@ -57,7 +59,7 @@ export const namecheapAdapter = defineAdapter({
         // 私有 API 读取操作不做代理, 直接带鉴权头调用托管服务
         const raw = await fetch(PARSE_BASE, {
           headers: { "X-API-Key": key },
-          signal: AbortSignal.timeout(90_000),
+          signal: AbortSignal.timeout(150_000),
         })
         if (!raw.ok) throw new Error(`Parse.bot list_tld_prices 返回 HTTP ${raw.status}`)
         return raw.text()

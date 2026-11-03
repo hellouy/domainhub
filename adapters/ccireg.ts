@@ -6,6 +6,7 @@
  * 源: https://ccireg.com/Pricing/index.html (SSR 静态表)
  * 每行 5 td: [.tld, 新注册, 续费, 转移, 恢复], 币种 USD。
  * 验证: 12 TLD, .com=$18.00。
+ * 2026-11-03: 直连恢复可用(CF 不再拦截静态抓取), html 优先, anti-bot 降级。
  */
 
 import { defineAdapter, type AdapterContext, type RawPrice } from "@/packages/adapter-sdk"
@@ -51,14 +52,18 @@ export const cciregAdapter = defineAdapter({
   website: "https://ccireg.com",
   owner: "Data Team",
   version: "1.0.0",
-  parserVersion: "1.0.0",
+  parserVersion: "2.0.0",
   currency: "USD",
   capabilities: { registration: true, renewal: true, transfer: true, supportedCurrencies: ["USD"] },
   rateLimit: { concurrency: 1, rpm: 10, retries: 3, timeoutMs: 60_000 },
   strategies: [
     {
-      // ccireg 被 Cloudflare JS 挑战拦截（failedChecks 特征），直连 html 拿到 0 行，
-      // 必须走聚合反爬服务（FlareSolverr 自动过盾后返回真实价目表）
+      type: "html",
+      url: URL,
+      parse: parseCcireg,
+    },
+    {
+      // 降级通道: CF 再次拦截时走聚合反爬服务(FlareSolverr 过盾)
       type: "anti-bot",
       url: URL,
       antiBot: { keyword: "Indicative Pricing Table" },

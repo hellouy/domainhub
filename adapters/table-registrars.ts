@@ -19,14 +19,27 @@ export const hoverAdapter = createTableAdapter({
   columnOrder: ["register", "renew", "transfer"],
 })
 
+// onamae: 价目表由 script.js 按 ?table_type&table_group 懒加载, 直取
+// table_type=domain&table_group=All 片段(SSR, 456 行)。单元格为复数年拼接价
+// ("1,2871,615円～" = 1年1,287 / 2年1,615), normalizeCells 合并被标签拆散的
+// 数字后取首个数值; rowFilter 限 ASCII 后缀(过滤日文表头与 IDN 行)。
+const onamaeNormalize = (cells: string[]): string[] =>
+  cells.map((c, i) => {
+    if (i === 0) return c
+    const merged = c.replace(/(\d)\s+(?=\d)/g, "$1")
+    const m = merged.match(/\d{1,3}(?:,\d{3})+|\d+/)
+    return m ? m[0] : c
+  })
+
 export const onamaeAdapter = createTableAdapter({
   slug: "onamae",
-  name: "\u304a\u540d\u524d.com",
+  name: "お名前.com",
   website: "https://www.onamae.com",
   currency: "JPY",
-  urls: ["https://www.onamae.com/service/d-price/"],
+  urls: ["https://www.onamae.com/service/d-price/?table_type=domain&table_group=All"],
   columnOrder: ["register", "renew", "transfer"],
-  browser: { waitFor: ".js-price-table-view", waitForTimeoutMs: 25_000 },
+  rowFilter: (cells) => /^[\x00-\x7F]*$/.test((cells[0] ?? "").trim()),
+  normalizeCells: onamaeNormalize,
 })
 
 export const internetbsAdapter = createTableAdapter({
