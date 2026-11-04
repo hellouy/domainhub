@@ -63,9 +63,11 @@ export interface TableAdapterConfig {
     /** 表格数据挂载后出现的选择器(可选),如 "table.pricing-table tbody tr" */
  waitFor?: string
    /** waitFor 等待超时毫秒,默认 30000 */
-   waitForTimeoutMs?: number
+    waitForTimeoutMs?: number
     /** 提取前滚动到底触发动态加载,默认 true */
     scrollToBottom?: boolean
+    /** 提取模式: extract-json(默认, 依赖舰队) 或 html(舰队不可用时降级网关整页渲染) */
+    extract?: "extract-json" | "html"
     /** 模拟地区 locale(影响 GeoIP 分区定价) */
     locale?: string
     /** 初始导航附加请求头 */
@@ -337,7 +339,7 @@ export function createTableAdapter(config: TableAdapterConfig) {
                 type: "playwright" as const,
                 url: config.urls[0],
                 browser: {
-                  extract: "extract-json" as const,
+                  extract: config.browser.extract ?? "extract-json",
                   ...(config.browser.waitFor ? { waitFor: config.browser.waitFor } : {}),
                   waitForTimeoutMs: config.browser.waitForTimeoutMs,
                   scrollToBottom: config.browser.scrollToBottom,
@@ -346,6 +348,8 @@ export function createTableAdapter(config: TableAdapterConfig) {
                   script: config.browser.script,
                 },
                 async parse(raw: string): Promise<RawPrice[]> {
+                  // html 模式直接复用表格解析; extract-json 走字段映射
+                  if (config.browser?.extract === "html") return parseTableRows(raw)
                   // extract-json 形状：数组对象 { tld, registerPrice, renewPrice, transferPrice }
                   // 过滤表头/空行（extract.js 会把首行 "tld" 也当作数据行提取出来）
                   const rows = JSON.parse(raw) as Array<{
