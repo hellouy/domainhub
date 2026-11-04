@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "未授权" }, { status: 401 })
   }
 
-  const enqueued = await scheduleAll("cron")
+  const { enqueued, skipped } = await scheduleAll("cron")
   const result = await drainQueue(
     async (registrarId) => {
       const res = await runCrawlJob(registrarId)
@@ -25,5 +25,5 @@ export async function GET(request: NextRequest) {
     { budgetMs: 280_000 },
   )
 
-  return NextResponse.json({ enqueued, ...result })
+  return NextResponse.json({ enqueued, skipped, ...result })
 }
