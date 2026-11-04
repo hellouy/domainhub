@@ -34,8 +34,10 @@ scripts/services.sh logs worker 100
 | search（SearXNG） | 8080 | `GET /v1/search?q=<kw>&format=json` |
 
 > 该主机部署了 **browser-worker 舰队**：`8840/8841/8842/8843` 为同构 `/render` 实例
-> （`BROWSER_WORKER_TOKEN` 同值），`8085` 为备选渲染实例；`9222` 是 Chromium CDP 调试端口
+> （`BROWSER_WORKER_TOKEN` 同值）；`9222` 是 Chromium CDP 调试端口
 > （ws://，非 HTTP `/render` 端点，供 worker `REMOTE_PLAYWRIGHT_URL` 复用远程 Chromium）。
+> 注意：`8085` 是自托管 **Frankfurter 货币数据 API**（`GET /` 返回 Frankfurter 标识，
+> 无 `/health`、`/render` 契约），不属于渲染舰队，勿列入 `BROWSER_SERVICE_URL`。
 > `8090` 是网关内部的渲染聚合通道（schema 与本平台 `/render` 不同，SDK 未接入）。
 > 注意：沙箱出口 IP 被该主机防火墙丢弃（TCP 可连、HTTP 挂起），联通性须在宿主机
 > 安全组确认放行（Vercel 函数出口亦然）。
@@ -116,7 +118,7 @@ resp: { ok, data: { url, slug, level, html, htmlLength, elapsed } }
 
 - Vercel serverless 无法运行 Playwright，生产 `BROWSER_SERVICE_URL` 配置为远程
   browser-worker 舰队（逗号分隔，2026-11-03 起）：
-  `http://43.133.72.184:8840,http://43.133.72.184:8841,http://43.133.72.184:8842,http://43.133.72.184:8843,http://43.133.72.184:8085`
+  `http://43.133.72.184:8840,http://43.133.72.184:8841,http://43.133.72.184:8842,http://43.133.72.184:8843`
   SDK 自动健康检查 + 失败转移：单实例卡死或端口防火墙丢包时，采集切换到下一实例。
   `BROWSER_SERVICE_TOKEN` 与各远程 worker 的 `BROWSER_WORKER_TOKEN` 同值。
 - `9222` 是 Chromium CDP 调试端口（ws://），不是 `/render` HTTP 端点，不列入舰队；
@@ -124,7 +126,7 @@ resp: { ok, data: { url, slug, level, html, htmlLength, elapsed } }
 - 备选方案：`BROWSER_SERVICE_URL` 指向站内代理 `https://<域名>/api/browser`，
   由 `app/api/browser/render` 透传到 `${BROWSER_WORKER_URL}/render`；
   代理未配置 `BROWSER_WORKER_URL/TOKEN` 时返回 503，不影响其它 HTTP 采集。
-- 前提：远程主机 8840-8843/8085 须对 Vercel 函数出口 IP 开放（沙箱出口已被防火墙丢弃，
+- 前提：远程主机 8840-8843 须对 Vercel 函数出口 IP 开放（沙箱出口已被防火墙丢弃，
   TCP 可连、HTTP 挂起；worker 卡死时同样表现为 HTTP 挂起，需在宿主机重启）。
 - 生产 env 已配置（2026-11-03）：`BROWSER_SERVICE_URL`（舰队）、`BROWSER_SERVICE_TOKEN`、
   `PARSE_BOT_API_KEY`、`CRAWL_SERVICE_URL=http://43.133.72.184:8200`、`CRAWL_SERVICE_TOKEN`、
