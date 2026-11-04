@@ -346,6 +346,11 @@ Entries discovered by the Agent during task execution should follow this format:
   - **网关浏览器通道已接入 SDK（2026-11-04）**：`packages/adapter-sdk/browser-service.ts` 在 browser-worker 舰队全部不可用（或未配置）时，对 `extract:"html"` 请求自动降级到 `CRAWL_SERVICE_URL` + `/v1/browser/auto`（统一入口密钥 Bearer），响应 `{url, html, used_mode, cached}`（兼容顶层 html 与嵌套 data.html），带 Cloudflare 挑战页检测。extract-json/xhr-json/api-fetch 仍只走舰队（需自定义脚本，聚合通道不支持）。复用 CRAWL_SERVICE_URL/TOKEN，无新增环境变量。
   - **8090 渲染聚合服务实证**：`GET :8090/health` → `{"ok":true,"cache":true}`；`POST :8090/api/auto` 直连 401（内部通道密钥≠入口密钥），外部必须走网关 `/v1/browser/auto`（网关把 `/v1/browser/*` 重写到 `:8090/api/*`）。aruba 价目表实测 512KB/30 表/1583 TLD token，首渲染 6.9s、缓存命中 183ms；Redis 缓存 1h、限流 30 次/分钟/key。
   - **远程舰队 8840-8843 对外空响应**（TCP 可连、HTTP 立即断开，沙箱 curl exit 52；Vercel 侧 ~230ms/实例快失败）：worker 未监听/仅绑 localhost/Docker 后端挂死，需宿主机排查（`ss -ltnp`、`curl 127.0.0.1:8840/health`、`docker ps -a`）。舰队恢复后 SDK 自动回流（健康正缓存 30s），无需改代码。
+  - **生产实证（2026-11-04 04:31-04:41 UTC，PR #19 合并部署 domainhub-bint4hca8 后两轮全量 drain）**：网关降级通道恢复 playwright-html 类适配器——julyname 620 TLD、cosmotown 249、59cn 107、zwcn 42、aruba 13（策略 playwright 成功）；namecom 失败于"网关浏览器通道返回反爬挑战页"（FlareSolverr 未解开 name.com 的 CF）；extract-json/api-fetch 类（table-adapter 系：transip/exabytes/123reg/amen/hostingkr/alibabacloud/aliyun/spaceship/101domain 等）仍依赖舰队，恢复前持续失败。
+  - **aruba 网关渲染保真度缺口**：网关 Browserless 渲染 aruba 价目表只拿到 13 TLD（服务端渲染的前 2+2 表），本地真 playwright 40s 等待可拿 360 TLD；懒加载 slot 需更长等待或交互，舰队恢复前 aruba 仅 13 TLD 新鲜度。
+  - **运维坑**：`crawl_jobs.trigger` 列不可用于归因——`lib/crawler/runner.ts:58` 硬编码写 "manual" 覆盖入队时的 api/cron；`POST /api/v1/crawl` 单注册商触发实际会 drain 整个队列（route 未传 targetRegistrarId），含历史重试积压，一次请求可处理 30+ 任务、最长 250s（客户端易误判超时）。
+  - **aruba 全量恢复（fasce 端点）**：aruba 价目页 slot 表的 TLD 列表由页面 JS 从 `https://managehosting.aruba.it/GetEstensioniFasce.asp` 填充（纯文本分组：& 分隔组、| 分隔 TLD，共 13 组，注册/续费共用；服务端可直接 GET 无跨域问题）。适配器 parse 内合并该端点 + aspx 表服务端渲染价格，html 策略即 360 TLD（~3s），无需 playwright；端点不可用时回退 13 TLD。
+  - **网关浏览器通道局限**：`:8200/v1/browser/auto` 的 used_mode 由服务端自动选择（crawl/browserless），客户端传 mode/keyword/render/browserless/forceBrowser 均不改变选择（实测同一组合时好时坏，非确定）；适合服务端渲染或轻 JS 站点（julyname 620、cosmotown 249、59cn 107、zwcn 42 全量恢复），JS-slot 类站点（aruba）应优先找内嵌数据端点，namecom 等 CF 强防护站点网关也解不了。
 
 [Project Knowledge Summary]
 - Date: 2026-11-03
