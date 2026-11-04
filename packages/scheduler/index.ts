@@ -107,9 +107,10 @@ export async function drainQueue(
   let succeeded = 0
   let failed = 0
 
+  // 先恢复卡死项(serverless 冻结/崩溃残留的 running), 再开始取任务; 恢复本身不占任务预算
+  await recoverStaleRunning()
+
   while (processed < maxJobs && Date.now() - startedAt < budgetMs) {
-    // 先恢复卡死项, 再取任务(每轮最多恢复一次, 恢复本身不占任务预算)
-    if (processed === 0) await recoverStaleRunning()
     // 剩余预算不足时不再开工, 避免新任务中途被 serverless 超时强杀
     if (budgetMs - (Date.now() - startedAt) < MIN_JOB_BUDGET_MS) break
     const item = await queue.dequeue(
