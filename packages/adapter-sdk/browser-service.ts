@@ -13,7 +13,10 @@
  *      死亡并切换下一个实例
  *   4. HTTP 400/401 属请求或鉴权问题，换 worker 无意义，直接抛出
  *
- * 全部实例不可达时抛出 BrowserServiceError，由策略引擎降级到下一策略。
+ * 全部实例不可达时，对 extract:"html" 的请求降级到统一入口网关的浏览器通道
+ * （CRAWL_SERVICE_URL /v1/browser/auto → 渲染聚合服务，FlareSolverr + Browserless
+ * JS 渲染 + Redis 1h 缓存，仅返回整页 HTML，不支持自定义 script/extract-json/
+ * xhr 捕获）；网关也不可用时抛出 BrowserServiceError，由策略引擎降级到下一策略。
  * 单地址配置时行为与直连等价（向后兼容）。
  */
 
@@ -61,6 +64,54 @@ const HEALTH_TIMEOUT_MS = 4_000
 const HEALTH_POSITIVE_TTL_MS = 30_000
 const HEALTH_NEGATIVE_TTL_MS = 60_000
 const DEFAULT_RENDER_TIMEOUT_MS = 95_000
+const GATEWAY_RENDER_TIMEOUT_MS = 30_000
+const CF_CHALLENGE_SIGNS = ["just a moment", "attention required", "cf-chl", "challenge-platform", "cf-please-wait", "checking your browser"]
+
+function gatewayConfigured(): boolean {
+  return Boolean(process.env.CRAWL_SERVICE_URL && process.env.CRAWL_SERVICE_TOKEN)
+}
+
+function looksLikeChallenge(html: string): boolean {
+  if (html.length > 200_000) return false
+  const lower = html.toLowerCase()
+  return CF_CHALLENGE_SIGNS.some((s) => lower.includes(s))
+}
+
+/**
+ * 统一入口网关浏览器通道（CRAWL_SERVICE_URL /v1/browser/auto → 渲染聚合服务）。
+ * 仅支持整页 HTML 渲染（FlareSolverr 过盾 + Browserless JS 渲染 + Redis 1h 缓存），
+ * 作为 browser-worker 舰队不可用时的降级通道。
+ */
+async function renderViaGateway(url: string, fetchFn: FetchFn): Promise<BrowserRenderResponse> {
+  const base = (process.env.CRAWL_SERVICE_URL ?? "").replace(/\/+$/, "")
+  const token = process.env.CRAWL_SERVICE_TOKEN ?? ""
+  if (!base || !token) {
+    throw new BrowserServiceError("网关浏览器通道需要配置 CRAWL_SERVICE_URL 和 CRAWL_SERVICE_TOKEN")
+  }
+  const res = await fetchFn(`${base}/v1/browser/auto`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Accept: "application/json",
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ url, keyword: null, scrollBottom: true, timeout: 25_000 }),
+    signal: AbortSignal.timeout(GATEWAY_RENDER_TIMEOUT_MS),
+  })
+  if (!res.ok) {
+    throw new BrowserServiceError(`网关浏览器通道返回 HTTP ${res.status}`, res.status)
+  }
+  const raw = (await res.json()) as { html?: string; data?: { html?: string } }
+  const html = typeof raw.html === "string" ? raw.html : typeof raw.data?.html === "string" ? raw.data.html : ""
+  if (!html) throw new BrowserServiceError("网关浏览器通道未返回 html")
+  if (looksLikeChallenge(html)) throw new BrowserServiceError("网关浏览器通道返回反爬挑战页")
+  return { ok: true, url, html }
+}
+
+/** html 请求在舰队失败后尝试网关浏览器通道；非 html 提取（需自定义脚本）不支持 */
+function gatewayFallbackAvailable(payload: BrowserRenderPayload): boolean {
+  return payload.extract === "html" && gatewayConfigured()
+}
 
 interface WorkerHealth {
   lastOkAt: number
@@ -144,12 +195,13 @@ export async function browserRender(
   payload: BrowserRenderPayload,
   opts: BrowserRenderOptions = {},
 ): Promise<BrowserRenderResponse> {
+  const fetchFn: FetchFn = opts.fetchFn ?? fetch
   const urls = listBrowserServiceUrls()
   if (urls.length === 0) {
+    if (gatewayFallbackAvailable(payload)) return renderViaGateway(payload.url, fetchFn)
     throw new BrowserServiceError("未配置 BROWSER_SERVICE_URL（browser-worker 地址，支持逗号分隔多地址舰队）")
   }
   const token = process.env.BROWSER_SERVICE_TOKEN ?? ""
-  const fetchFn: FetchFn = opts.fetchFn ?? fetch
   const timeoutMs = opts.timeoutMs ?? DEFAULT_RENDER_TIMEOUT_MS
   let lastError: Error = new Error("browser-worker 渲染失败")
 
@@ -157,8 +209,10 @@ export async function browserRender(
     const base = await pickWorker(fetchFn)
     if (!base) {
       if (attempt === 0) {
+        if (gatewayFallbackAvailable(payload)) return renderViaGateway(payload.url, fetchFn)
         throw new BrowserServiceError(`全部 ${urls.length} 个 browser-worker 健康检查失败，无法渲染 ${payload.url}`)
       }
+      if (gatewayFallbackAvailable(payload)) return renderViaGateway(payload.url, fetchFn)
       throw new BrowserServiceError(`全部 ${urls.length} 个 browser-worker 渲染失败（已无健康实例），最后错误：${lastError.message}`)
     }
     try {
@@ -190,6 +244,7 @@ export async function browserRender(
       lastError = e instanceof Error ? e : new Error(String(e))
     }
   }
+  if (gatewayFallbackAvailable(payload)) return renderViaGateway(payload.url, fetchFn)
   throw new BrowserServiceError(`全部 ${urls.length} 个 browser-worker 渲染失败：${lastError.message}`)
 }
 

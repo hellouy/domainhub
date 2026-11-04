@@ -28,7 +28,7 @@ scripts/services.sh logs worker 100
 
 | 通道 | 内部端口 | 网关路径 |
 |------|----------|----------|
-| browser（渲染聚合） | 8090 | `/v1/browser/*`（schema 与本平台 `/render` 不同，SDK 未接入） |
+| browser（渲染聚合） | 8090 | 网关暴露为 `POST /v1/browser/auto`（SDK 已接入为舰队降级通道，仅 html） |
 | crawl（聚合反爬） | 8100 | `POST /v1/crawl/auto` |
 | registrar（价格聚合） | 8000 | `GET /v1/registrar/prices?registrar=<slug>` |
 | search（SearXNG） | 8080 | `GET /v1/search?q=<kw>&format=json` |
@@ -38,7 +38,8 @@ scripts/services.sh logs worker 100
 > （ws://，非 HTTP `/render` 端点，供 worker `REMOTE_PLAYWRIGHT_URL` 复用远程 Chromium）。
 > 注意：`8085` 是自托管 **Frankfurter 货币数据 API**（`GET /` 返回 Frankfurter 标识，
 > 无 `/health`、`/render` 契约），不属于渲染舰队，勿列入 `BROWSER_SERVICE_URL`。
-> `8090` 是网关内部的渲染聚合通道（schema 与本平台 `/render` 不同，SDK 未接入）。
+> `8090` 是网关内部的渲染聚合通道（FlareSolverr + Browserless JS 渲染 + Redis 缓存）。
+> 8090 直连返回 401（内部通道密钥与入口密钥不同），外部调用一律走网关 `/v1/browser/auto`。
 > 注意：沙箱出口 IP 被该主机防火墙丢弃（TCP 可连、HTTP 挂起），联通性须在宿主机
 > 安全组确认放行（Vercel 函数出口亦然）。
 
@@ -69,6 +70,16 @@ GET  /v1/search?q=<kw>&format=json           Authorization: Bearer <入口密钥
 - `/v1/crawl/auto` 聚合反爬：仅 direct fetch，不执行 JS；`level` 恒为 `direct`。
 - SDK antiBot 策略（`strategy-engine.ts`）、`collect-promo-codes.ts`、Loopia 适配器均已切到网关。
 - Loopia 通道实测约 47 个 TLD，SEK，数据新鲜（`updated_at` 每日更新）。
+
+```
+POST /v1/browser/auto      Authorization: Bearer <入口密钥>
+     body: { url, keyword }（keyword 传 null；scrollBottom/timeout 可选，均可选）
+     resp: { url, html, used_mode, cached }
+```
+
+- 渲染聚合：FlareSolverr 过 Cloudflare → Browserless JS 渲染 → Redis 缓存 1h，限流 30 次/分钟/key。
+- 仅整页 HTML 渲染，不支持自定义 script / extract-json / xhr 捕获（这些只有 browser-worker `/render` 支持）。
+- SDK `browser-service.ts` 已接入：`extract:"html"` 请求在 browser-worker 舰队全部不可用（或未配置舰队）时自动降级到该通道；`extract-json` / `xhr-json` / `api-fetch` 仍只走舰队。复用 `CRAWL_SERVICE_URL` / `CRAWL_SERVICE_TOKEN`，无需新增环境变量。
 
 ### browser-worker（渲染服务，本地 :8840）
 
@@ -128,6 +139,8 @@ resp: { ok, data: { url, slug, level, html, htmlLength, elapsed } }
   代理未配置 `BROWSER_WORKER_URL/TOKEN` 时返回 503，不影响其它 HTTP 采集。
 - 前提：远程主机 8840-8843 须对 Vercel 函数出口 IP 开放（沙箱出口已被防火墙丢弃，
   TCP 可连、HTTP 挂起；worker 卡死时同样表现为 HTTP 挂起，需在宿主机重启）。
+- 舰队不可用时的兜底：playwright 策略的 html 提取请求自动降级到网关 `/v1/browser/auto`
+  （渲染聚合服务，JS 渲染 + 1h Redis 缓存），extract-json/api-fetch 类适配器除外。
 - 生产 env 已配置（2026-11-03）：`BROWSER_SERVICE_URL`（舰队）、`BROWSER_SERVICE_TOKEN`、
   `PARSE_BOT_API_KEY`、`CRAWL_SERVICE_URL=http://43.133.72.184:8200`、`CRAWL_SERVICE_TOKEN`、
   `AI_GATEWAY_API_KEY`、`BROWSER_WORKER_URL=http://43.133.72.184:8840`、`BROWSER_WORKER_TOKEN`。
