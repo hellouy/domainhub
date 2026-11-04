@@ -126,6 +126,7 @@
 | keliweb | https://www.keliweb.com/domains/ | HTML |
 | milesweb | https://www.milesweb.com/domain/ | HTML |
 | ukrnames | https://www.ukrnames.com/ | HTML |
+| aruba | https://www.aruba.it/listino-domini.aspx | 360 TLD EUR；26 个 slot 表的 TLD 分组直取 managehosting.aruba.it/GetEstensioniFasce.asp（纯文本端点，无需浏览器），分组价格取自页面服务端渲染的表 |
 
 ### 3.4 xhr / embedded-json — 站点内部接口
 
@@ -153,7 +154,6 @@
 | julyname | https://julyname.com/price.htm |
 | 59cn | https://ym.longming.com/pricing |
 | zwcn | https://zw.cn/Domain/domainprice.html |
-| aruba | https://www.aruba.it/listino-domini.aspx (playwright, html 降级) |
 
 ### 3.6 anti-bot 主策略 — 需 8090 聚合服务
 
