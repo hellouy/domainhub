@@ -78,15 +78,26 @@ export const eurodnsAdapter = defineAdapter({
       async fetch(ctx) {
         const parts: string[] = []
         for (const url of PAGE_URLS) {
-          const res = await ctx.fetch(url, {
-            headers: {
-              "User-Agent":
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
-              Accept: "text/html,application/xhtml+xml",
-            },
-          })
-          if (!res.ok) throw new Error(`eurodns 价格页 ${url} 返回 HTTP ${res.status}`)
-          parts.push(await res.text())
+          let lastErr: unknown = null
+          for (let attempt = 0; attempt < 2; attempt++) {
+            try {
+              const res = await ctx.fetch(url, {
+                headers: {
+                  "User-Agent":
+                    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+                  Accept: "text/html,application/xhtml+xml",
+                },
+              })
+              if (!res.ok) throw new Error(`eurodns 价格页 ${url} 返回 HTTP ${res.status}`)
+              parts.push(await res.text())
+              lastErr = null
+              break
+            } catch (e) {
+              lastErr = e
+              if (attempt === 0) await new Promise((r) => setTimeout(r, 3_000))
+            }
+          }
+          if (lastErr != null) throw lastErr instanceof Error ? lastErr : new Error(String(lastErr))
         }
         return parts.join("\n<!--PAGE_BREAK-->\n")
       },

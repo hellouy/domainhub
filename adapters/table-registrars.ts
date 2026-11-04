@@ -49,7 +49,7 @@ export const internetbsAdapter = createTableAdapter({
   currency: "USD",
   urls: ["https://internetbs.net/en/domain-name-registrations/pricelist.html"],
   columnOrder: ["register", "transfer", "renew"],
-  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true },
+  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true, extract: "html" },
 })
 
 export const registercomAdapter = createTableAdapter({
@@ -59,7 +59,7 @@ export const registercomAdapter = createTableAdapter({
   currency: "USD",
   urls: ["https://www.register.com/domains/domain-pricing"],
   columnOrder: ["register", "renew", "transfer"],
-  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true },
+  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true, extract: "html" },
 })
 
 export const loopiaAdapter = createTableAdapter({
@@ -97,7 +97,7 @@ export const netcupAdapter = createTableAdapter({
   numberFormat: "eu",
   urls: ["https://www.netcup.com/en/domain/domain-endings-tlds"],
   columnOrder: ["register", "renew", "transfer"],
-  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true },
+  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true, extract: "html" },
 })
 
 export const lwsAdapter = createTableAdapter({
@@ -160,7 +160,7 @@ export const amenAdapter = createTableAdapter({
   numberFormat: "fr",
   urls: ["https://www.amen.fr/nom-de-domaine/"],
   columnOrder: ["register", "renew", "transfer"],
-  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true },
+  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true, extract: "html" },
 })
 
 export const transipAdapter = createTableAdapter({
@@ -171,7 +171,7 @@ export const transipAdapter = createTableAdapter({
   numberFormat: "eu",
   urls: ["https://www.transip.nl/domeinnamen"],
   columnOrder: ["register", "renew", "transfer"],
-  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true },
+  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true, extract: "html" },
 })
 
 export const xserverAdapter = createTableAdapter({
@@ -233,7 +233,7 @@ export const jumingAdapter = createTableAdapter({
   urls: ["https://www.juming.com/price.html"],
   columnOrder: ["register", "renew", "transfer"],
   owner: "Data Team",
-  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true },
+  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true, extract: "html" },
 })
 
 export const blacknightAdapter = createTableAdapter({
@@ -286,7 +286,7 @@ export const hostingkrAdapter = createTableAdapter({
   urls: ["https://www.hosting.kr/domain"],
   columnOrder: ["register", "renew", "transfer"],
   owner: "Data Team",
-  browser: { waitFor: "table", waitForTimeoutMs: 20_000 },
+  browser: { waitFor: "table", waitForTimeoutMs: 20_000, extract: "html" },
 })
 
 export const exabytesAdapter = createTableAdapter({
@@ -297,7 +297,7 @@ export const exabytesAdapter = createTableAdapter({
   urls: ["https://www.exabytes.my/domains/domain-name-search"],
   columnOrder: ["register"],
   owner: "Data Team",
-  browser: { waitForTimeoutMs: 30_000, scrollToBottom: true },
+  browser: { waitForTimeoutMs: 30_000, scrollToBottom: true, extract: "html" },
 })
 
 export const lcnAdapter = createTableAdapter({
@@ -366,7 +366,7 @@ export const alibabacloudAdapter = createTableAdapter({
   urls: ["https://www.alibabacloud.com/domain/pricing"],
   columnOrder: ["register", "renew", "transfer", "skip"],
   rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
-  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true },
+  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true, extract: "html" },
   owner: "Data Team",
 })
 
