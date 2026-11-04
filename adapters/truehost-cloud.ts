@@ -34,4 +34,6 @@ export const truehostCloudAdapter = createTableAdapter({
   normalizeCells,
   rowFilter: (cells) => /^\./.test(cells[0]?.trim() ?? ""),
   owner: "Data Team",
+  // 直连被 Cloudflare 拦截(403), 改走聚合反爬通道
+  antiBot: { keyword: "New Price" },
 })

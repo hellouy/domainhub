@@ -148,6 +148,8 @@ export const barberoAdapter = createTableAdapter({
   columnOrder: ["register", "renew", "transfer", "skip"],
   rowFilter: (cells) => /^\.[a-z]/i.test((cells[0] ?? "").trim()),
   owner: "Data Team",
+  // 直连被 Cloudflare 拦截(403), 改走聚合反爬通道
+  antiBot: { keyword: "TLD" },
 })
 
 export const amenAdapter = createTableAdapter({
@@ -251,10 +253,15 @@ export const namesiloAdapter = createTableAdapter({
   website: "https://www.namesilo.com",
   currency: "USD",
   urls: ["https://www.namesilo.com/pricing"],
-  columnOrder: ["register", "renew", "transfer"],
+  // 表头: TLD (462) | 1-49 | 50-100 | 101-500 | 0+ | 100+ | ... 均为量级价,
+  // 仅第 1 列(1-49)为标准零售价; 单格双值 "$19.99 $8.75" 第二个为促销价
+  columnOrder: ["register", "skip", "skip", "skip", "skip", "skip", "skip", "skip", "skip"],
+  dualValuePromoColumns: ["register"],
+  rowFilter: (cells) => !/^tld\b/i.test((cells[0] ?? "").trim()),
   owner: "Data Team",
-  browser: { waitFor: "table", waitForTimeoutMs: 30_000 },
-  antiBot: { keyword: "TLD" },
+  // CF 挑战页对 /v1/crawl/auto 也返回 403(2026-11-04 实测), 用整页 html 渲染:
+  // 舰队不可用时自动降级到网关 /v1/browser/auto, 实测可拿到完整表格。
+  browser: { waitFor: "table", waitForTimeoutMs: 30_000, extract: "html" },
 })
 
 export const truehostAdapter = createTableAdapter({
@@ -267,6 +274,8 @@ export const truehostAdapter = createTableAdapter({
   // Category 为文字分类(无价格), 须 skip 跳过
   columnOrder: ["skip", "register", "renew", "transfer"],
   owner: "Data Team",
+  // 直连被 Cloudflare 拦截(403), 改走聚合反爬通道
+  antiBot: { keyword: "Kshs" },
 })
 
 export const hostingkrAdapter = createTableAdapter({
@@ -323,9 +332,13 @@ export const networksolutionsAdapter = createTableAdapter({
   website: "https://www.networksolutions.com",
   currency: "USD",
   urls: ["https://www.networksolutions.com/domains/domain-name-pricing"],
-  columnOrder: ["register", "renew", "transfer"],
+  // 表头: Domain Extensions (TLD) | Registration Price | Renewal Price | Minimum Term
+  // 第 4 列是 "1 year" 期限而非转入价, 须 skip
+  columnOrder: ["register", "renew", "skip"],
   owner: "Data Team",
-  browser: { waitFor: "table", waitForTimeoutMs: 30_000 },
+  // CF 挑战页对 /v1/crawl/auto 也返回 403(2026-11-04 实测), 用整页 html 渲染:
+  // 舰队不可用时自动降级到网关 /v1/browser/auto, 实测可拿到完整表格。
+  browser: { waitFor: "table", waitForTimeoutMs: 30_000, extract: "html" },
 })
 
 

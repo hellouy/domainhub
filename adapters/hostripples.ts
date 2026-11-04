@@ -68,6 +68,15 @@ export const hostripplesAdapter = defineAdapter({
   rateLimit: { concurrency: 1, rpm: 10, retries: 3, timeoutMs: 60_000 },
   strategies: [
     {
+      // 直连被 Cloudflare 拦截(403), 改走聚合反爬通道
+      type: "anti-bot",
+      url: URL,
+      antiBot: { keyword: "Extension" },
+      parse(raw: string): RawPrice[] {
+        return parseHostripples(raw)
+      },
+    },
+    {
       type: "html",
       url: URL,
       fetch(ctx) {
