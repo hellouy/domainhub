@@ -20,7 +20,7 @@ import { revalidatePath } from "next/cache"
 import { redirect } from "next/navigation"
 import { headers } from "next/headers"
 import { getQueue } from "@/packages/queue"
-import { drainQueue } from "@/packages/scheduler"
+import { drainQueue, scheduleAll } from "@/packages/scheduler"
 
 async function requireAdmin() {
   if (!(await isAdminAuthenticated())) throw new Error("未授权")
@@ -110,11 +110,8 @@ export async function triggerCrawl(registrarId: number) {
 
 export async function triggerCrawlAll() {
   await requireAdmin()
-  const active = await db.select().from(registrars).where(eq(registrars.isActive, true))
+  const { enqueued, skipped } = await scheduleAll("manual")
   const queue = getQueue()
-  for (const r of active) {
-    await queue.enqueue({ registrarId: r.id, priority: r.priority ?? 100, trigger: "manual" })
-  }
   const result = await drainQueue(
     async (id) => {
       const res = await runCrawlJob(id)
@@ -129,7 +126,7 @@ export async function triggerCrawlAll() {
   return Array.from({ length: 1 }, () => ({
     jobId: 0,
     ok: true,
-    message: `已入队 ${active.length} 家注册商；本次完成 ${result.processed} 家，队列中还有 ${pending} 家待执行`,
+    message: `已入队 ${enqueued} 家注册商${skipped > 0 ? `，${skipped} 家频率窗口内已成功采集跳过` : ""}；本次完成 ${result.processed} 家，队列中还有 ${pending} 家待执行`,
     totalTlds: 0,
     updated: 0,
     skipped: 0,

@@ -10,29 +10,96 @@
  * 只依赖 Queue 抽象与 services 层, 不依赖具体队列实现或 UI。
  */
 
-import { and, eq, lte } from "drizzle-orm"
+import { and, eq, lte, sql } from "drizzle-orm"
 import { db } from "@/lib/db"
 import { crawlJobs, crawlQueue, registrars } from "@/lib/db/schema"
 import { getQueue, type QueueTrigger } from "@/packages/queue"
 
-/** 将所有激活注册商入队, 返回入队数量 */
-export async function scheduleAll(trigger: QueueTrigger = "cron"): Promise<number> {
+/** 入队频率窗口默认值(小时): 窗口内有成功记录的注册商跳过入队 */
+const DEFAULT_FREQUENCY_WINDOW_HOURS = 6
+
+/** 读取入队频率窗口(毫秒); 非法/缺失回退默认值, >=24h 时告警 */
+export function getFrequencyWindowMs(): number {
+  const raw = process.env.CRAWL_SCHEDULE_WINDOW_HOURS
+  const hours = raw === undefined ? DEFAULT_FREQUENCY_WINDOW_HOURS : Number(raw)
+  if (!Number.isFinite(hours) || hours <= 0) return DEFAULT_FREQUENCY_WINDOW_HOURS * 3_600_000
+  if (hours >= 24) {
+    console.warn(
+      JSON.stringify({ event: "scheduleAll", warn: "频率窗口>=24h, 每日 cron 全量刷新语义受影响", hours }),
+    )
+  }
+  return hours * 3_600_000
+}
+
+/**
+ * 查询频率窗口内有成功 crawl_jobs 的注册商 id 集合。
+ * 返回 null 表示查询失败, 调用方降级为全量入队(可用性优先)。
+ */
+async function fetchRecentSuccessRegistrarIds(windowMs: number): Promise<Set<number> | null> {
+  const cutoff = new Date(Date.now() - windowMs)
+  try {
+    const rows = await db.execute(sql`
+      SELECT DISTINCT registrar_id FROM crawl_jobs
+      WHERE status = 'success' AND COALESCE(finished_at, created_at) >= ${cutoff}
+    `)
+    return new Set(rows.rows.map((r) => Number(r.registrar_id)))
+  } catch (error) {
+    console.warn(
+      JSON.stringify({
+        event: "scheduleAll",
+        warn: "频率窗口查询失败, 降级为全量入队",
+        error: error instanceof Error ? error.message : String(error),
+      }),
+    )
+    return null
+  }
+}
+
+/** 依据近期成功集合把注册商分为入队/跳过两组(纯函数, 便于测试) */
+export function buildEnqueuePlan<T extends { id: number }>(
+  active: T[],
+  recentSuccessIds: Set<number> | null,
+): { toEnqueue: T[]; skippedIds: number[] } {
+  const toEnqueue: T[] = []
+  const skippedIds: number[] = []
+  for (const r of active) {
+    if (recentSuccessIds !== null && recentSuccessIds.has(r.id)) skippedIds.push(r.id)
+    else toEnqueue.push(r)
+  }
+  return { toEnqueue, skippedIds }
+}
+
+/** 将所有激活注册商入队, 频率窗口内成功的注册商跳过; 返回入队/跳过数量 */
+export async function scheduleAll(
+  trigger: QueueTrigger = "cron",
+): Promise<{ enqueued: number; skipped: number }> {
   const queue = getQueue()
   const active = await db
     .select({ id: registrars.id, priority: registrars.priority })
     .from(registrars)
     .where(eq(registrars.isActive, true))
 
-  let count = 0
-  for (const r of active) {
+  const windowMs = getFrequencyWindowMs()
+  const recentSuccessIds = await fetchRecentSuccessRegistrarIds(windowMs)
+  const { toEnqueue, skippedIds } = buildEnqueuePlan(active, recentSuccessIds)
+
+  for (const r of toEnqueue) {
     await queue.enqueue({
       registrarId: r.id,
       priority: r.priority ?? 100,
       trigger,
     })
-    count++
   }
-  return count
+  console.log(
+    JSON.stringify({
+      event: "scheduleAll",
+      trigger,
+      enqueued: toEnqueue.length,
+      skipped: skippedIds.length,
+      windowHours: Math.round(windowMs / 3_600_000),
+    }),
+  )
+  return { enqueued: toEnqueue.length, skipped: skippedIds.length }
 }
 
 /**

@@ -32,6 +32,7 @@ export async function POST(request: NextRequest) {
   }
 
   try {
+    let scheduleCounts: { enqueued: number; skipped: number } | undefined
     if (body.registrar) {
       const [registrar] = await db
         .select({ id: registrars.id, priority: registrars.priority })
@@ -46,7 +47,7 @@ export async function POST(request: NextRequest) {
         trigger: "api",
       })
     } else {
-      await scheduleAll("api")
+      scheduleCounts = await scheduleAll("api")
     }
 
     const result = await drainQueue(async (registrarId) => {
@@ -54,7 +55,7 @@ export async function POST(request: NextRequest) {
       return { ok: res.ok, error: res.error }
     })
 
-    return NextResponse.json({ apiVersion: "v1", data: result })
+    return NextResponse.json({ apiVersion: "v1", ...scheduleCounts, data: result })
   } catch (error) {
     return NextResponse.json(
       { apiVersion: "v1", error: error instanceof Error ? error.message : "采集失败" },
