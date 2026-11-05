@@ -395,6 +395,27 @@ Entries discovered by the Agent during task execution should follow this format:
 - Context: Discovered by Agent while 修复剩余失败注册商的舰队依赖问题（分支 261104-fix-extract-html-fleet-dep-b8n2-m4k9-x3w6）
 - Category: Troubleshooting & Debugging
 - Instructions:
-  - **extract html 转换适用范围**：仅给 createTableAdapter 纯 browser 配置（无自定义 script）的适配器加 `browser.extract:"html"`（舰队存活走舰队，全挂自动降级网关 /v1/browser/auto）。带自定义 script 的 extract-json 家（cloudns/westcn/aliyun/spaceship/101domain/centralnic）不可转——parseTableRows 会误读脚本注入表的原价/隐藏价列导致价格污染。已转 9 家：internetbs/registercom/netcup/amen/transip/juming/hostingkr/exabytes/alibabacloud。
-  - **SSR __NUXT__ 直连解析模式（afrihost 先例）**：价目数据内嵌 `window.__NUXT__=<json>;` 时，html 策略在 Node 侧正则提取 payload + JSON.parse + 递归 walk（深度 8；数组 every 项 name 为字符串且含 renew_cost/transfer_cost 键即为目标数组）直连解析，摆脱舰队与网关；playwright extract html 兜底复用同一 parse。陷阱：transfer_cost 为 "0" 表示免费转入（如 co.za），价格解析不得过滤 0 值。
+  - **extract html 转换适用范围**：仅给 createTableAdapter 纯 browser 配置（无自定义 script）的适配器加 `browser.extract:"html"`（舰队存活走舰队，全挂自动降级网关 /v1/browser/auto）。带自定义 script 的 extract-json 家（cloudns/westcn/aliyun/spaceship/101domain/centralnic）不可转——parseTableRows 会误读脚本注入表的原价/隐藏价列导致价格污染。已转 8 家：internetbs/registercom/netcup/amen/transip/juming/hostingkr/alibabacloud（exabytes 后改独立 defineAdapter 适配器，见 2026-11-05 条目）。
+  - **SSR __NUXT__ 直连解析模式（afrihost 先例，2026-11-05 起页面已迁 Nuxt 3，价格源改 __NUXT_DATA__，见当日条目）**：价目数据内嵌 `window.__NUXT__=<json>;` 时，html 策略在 Node 侧正则提取 payload + JSON.parse + 递归 walk（深度 8；数组 every 项 name 为字符串且含 renew_cost/transfer_cost 键即为目标数组）直连解析，摆脱舰队与网关；playwright extract html 兜底复用同一 parse。陷阱：transfer_cost 为 "0" 表示免费转入（如 co.za），价格解析不得过滤 0 值。
   - **沙箱出网故障特征与对照组判定法（2026-11-04）**：初期 DNS/TCP 可通但 TLS Client Hello 后重置（SSL_ERROR_SYSCALL）；16:40 后恶化为所有外部目标（含 example.com:80 明文）TCP 可连但 ~100ms 空响应（curl exit 52），应用层数据全丢弃。判定法：公共站点（example.com:80）作对照组——对照组同样空响应即证明是沙箱出口层故障，目标主机（如 43.133.72.184）的"不可用"是假阳性，勿据此判断主机宕机。排障先区分出网故障与代码故障；观察器脚本 /tmp/opencode/watch-egress.sh 每 30s 探测 github TLS。
+
+[Project Knowledge Summary]
+- Date: 2026-11-05
+- Context: Discovered by Agent while afrihost Nuxt 3 迁移修复（PR #24）与 exabytes 卡片适配（PR #25）
+- Category: Troubleshooting & Debugging
+- Instructions:
+  - **afrihost 已迁 Nuxt 3（PR #24 上线）**：`window.__NUXT__` 仅剩 config（946 字符，无价格），价格在 `<script type="application/json" id="__NUXT_DATA__">` 的 devalue 扁平化数组（顶层数组 1083 元素；对象条目 `{name,price,renew_cost,transfer_cost,parking_cost}` 的值多为字符串表索引）。解引用原则：仅当 `typeof list[v]==="string"` 时解引用，真实数字（如 109）不误伤；transfer_cost "0"=免费转入不过滤；playwright extract html 兜底复用同一 parse。
+  - **CSS3 Grid 卡片解析模式（exabytes 先例，PR #25）**：页面无 `<table>`，TLD 价目为卡片流（cart.php 链接 `query=.tld` 标识 + `class="all-domain-price"` 段落 RM 现价/yr + 可选 `pricing-onsale` 内 `<s>` 原价），仅注册价 → 独立 defineAdapter，capabilities 仅 registration；正则 `query=\.([a-z0-9.]+)[^"]*"[\s\S]{0,350}?class="all-domain-price"[^>]*>\s*RM\s?([\d.,]+)\s*\/\s*yr/gi`。卡片式站点不适合 createTableAdapter 表格解析。
+  - **amen 价目页无完整价格表**：WordPress+SiteOrigin 页 tldList-widget 110 个 li 全是 TLD 导航链接（无价格）；仅 5 个促销 TLD（dada-highlighted-tld-widget：com/fr/eu/net/org）有价；完整数据在 wp-admin/admin-ajax.php 交互（110 TLD 详情页抓取成本高）——待设计决策（促销部分覆盖 vs 详情页抓取 vs 停用）。
+  - **transip 价目页纯 SPA**：/domeinnamen 302→/domeinnaam/，SSR 0 个 EUR 价格文本，页面仅 4 个 js refs（polyfill/hsforms/one-showroom-init/css-polyfill），one-showroom-init.js 仅 GA 跟踪无价格 API，价格全靠客户端 XHR——下一步可带 CRAWL_SERVICE_TOKEN 走网关 /v1/browser/auto 渲染（沙箱直连网关须带该 token，401 即未带）或深挖主 bundle。
+
+[Project Knowledge Summary]
+- Date: 2026-11-05
+- Context: Discovered by Agent while PR #23/#24/#25 部署排查与验证
+- Category: Operations & Deployment
+- Instructions:
+  - **Vercel git 自动部署对 API squash 合并不可靠（PR #23/#24/#25 三次实证）**：合并后数分钟无新部署，须手动 `POST /v13/deployments?teamId=8839029-5124` body `{"name":"domainhub","target":"production","gitSource":{"type":"github","repoId":1299004490,"org":"hellouy","ref":"main"}}`；合并→触发→READY 全程 8-10 分钟。
+  - **Vercel 部署列表 REST API 不可用**：/v6/deployments 传 projectId/app/slug 均返回 400 "Invalid API version"；用 `vercel ls / vercel inspect <url> --token` 替代（CLI 列表第 1 列是 age、最后列是构建时长，勿把 "57s" 构建时长误读为新部署）。
+  - **health adapterVersion 不可作部署锚点**：来自 DB syncAdapterToDb，滞后部署（afrihost ver 显示 2.0.0 但 #2641 success html 证明 2.1.0 代码已生效）——部署验证以 crawl_jobs 行为结果为准。
+  - **分支 base 过期自愈**：origin/main 本地引用在其他会话合并后过期，checkout -b 前先 `git fetch origin`；已建分支用 `git fetch origin && git rebase origin/main` 修正（f8a7f56→f614524 实操）。
+  - **GitHub PR 配方复核**：PAT 取自 `git credential fill`（L338 条目），`POST /repos/hellouy/domainhub/pulls` 建 PR、`PUT /pulls/{n}/merge` squash 合并——PR #24/#25 全流程验证通过。
