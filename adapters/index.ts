@@ -37,7 +37,6 @@ import {
   netcupAdapter,
   onamaeAdapter,
   registercomAdapter,
-  transipAdapter,
   xserverAdapter,
   muumuuDomainAdapter,
   directnicAdapter,
@@ -58,6 +57,7 @@ import {
   reg123Adapter,
 } from "./table-registrars"
 import { exabytesAdapter } from "./exabytes"
+import { transipAdapter } from "./transip"
 import { loopiaAdapter } from "./loopia"
 import { pskzAdapter } from "./pskz"
 import { julynameAdapter, cny59Adapter, zwcnAdapter } from "./cny-registrars"
