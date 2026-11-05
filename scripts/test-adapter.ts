@@ -71,6 +71,8 @@ async function main() {
     fetch: (url: string, init?: RequestInit) => rateLimitedFetch(slug, url, init, adapter.definition.rateLimit),
     getCredential: async () => null,
     knownTlds: sinkBundle.knownTlds,
+    knownTldsRanked: sinkBundle.knownTldsRanked,
+    validTldsRanked: sinkBundle.validTldsRanked,
     addRetry: () => {},
   }
 

@@ -152,17 +152,6 @@ export const barberoAdapter = createTableAdapter({
   antiBot: { keyword: "TLD" },
 })
 
-export const amenAdapter = createTableAdapter({
-  slug: "amen",
-  name: "Amen",
-  website: "https://www.amen.fr",
-  currency: "EUR",
-  numberFormat: "fr",
-  urls: ["https://www.amen.fr/nom-de-domaine/"],
-  columnOrder: ["register", "renew", "transfer"],
-  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true, extract: "html" },
-})
-
 export const xserverAdapter = createTableAdapter({
   slug: "xserver",
   name: "Xserver",
