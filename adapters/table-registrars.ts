@@ -289,17 +289,6 @@ export const hostingkrAdapter = createTableAdapter({
   browser: { waitFor: "table", waitForTimeoutMs: 20_000, extract: "html" },
 })
 
-export const exabytesAdapter = createTableAdapter({
-  slug: "exabytes",
-  name: "Exabytes",
-  website: "https://www.exabytes.my",
-  currency: "MYR",
-  urls: ["https://www.exabytes.my/domains/domain-name-search"],
-  columnOrder: ["register"],
-  owner: "Data Team",
-  browser: { waitForTimeoutMs: 30_000, scrollToBottom: true, extract: "html" },
-})
-
 export const lcnAdapter = createTableAdapter({
   slug: "lcn",
   name: "LCN",

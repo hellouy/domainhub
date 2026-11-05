@@ -45,7 +45,6 @@ import {
   jumingAdapter,
   blacknightAdapter,
   namesiloAdapter,
-  exabytesAdapter,
   networksolutionsAdapter,
   truehostAdapter,
   hostingkrAdapter,
@@ -58,6 +57,7 @@ import {
   alibabacloudAdapter,
   reg123Adapter,
 } from "./table-registrars"
+import { exabytesAdapter } from "./exabytes"
 import { loopiaAdapter } from "./loopia"
 import { pskzAdapter } from "./pskz"
 import { julynameAdapter, cny59Adapter, zwcnAdapter } from "./cny-registrars"
