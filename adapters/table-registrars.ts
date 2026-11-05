@@ -163,17 +163,6 @@ export const amenAdapter = createTableAdapter({
   browser: { waitForTimeoutMs: 25_000, scrollToBottom: true, extract: "html" },
 })
 
-export const transipAdapter = createTableAdapter({
-  slug: "transip",
-  name: "TransIP",
-  website: "https://www.transip.nl",
-  currency: "EUR",
-  numberFormat: "eu",
-  urls: ["https://www.transip.nl/domeinnamen"],
-  columnOrder: ["register", "renew", "transfer"],
-  browser: { waitForTimeoutMs: 25_000, scrollToBottom: true, extract: "html" },
-})
-
 export const xserverAdapter = createTableAdapter({
   slug: "xserver",
   name: "Xserver",
