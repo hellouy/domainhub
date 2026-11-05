@@ -4,10 +4,10 @@
  * 所有权: Data Team
  *
  * 源: https://www.afrihost.com/domains
- * 结构: 静态 HTML 卡片仅显示注册价; window.__NUXT__ 内含全量三价数组
- *       [{ name, price, renew_cost, transfer_cost, parking_cost }, ...] (key 动态, 递归定位)
- * 2026-11-04 改为 html 策略直连解析: SSR HTML 内嵌 __NUXT__ payload, Node 侧递归提取
- *       register/renew/transfer, 无需浏览器舰队; playwright extract html 仅作直连被拦兜底。
+ * 结构: Nuxt 3 SSR, 价格数据在 <script id="__NUXT_DATA__"> 内嵌 devalue 扁平数组,
+ *       对象条目 {name,price,renew_cost,transfer_cost,parking_cost} 值为字符串表索引。
+ * 2026-11-05 改为 html 策略直连解析 __NUXT_DATA__, 无需浏览器舰队;
+ *       playwright extract html 仅作直连被拦兜底。
  * 已验证 138 TLD; co.za/net.za/org.za 等 transfer=0 (免费转入)。
  * 特色: .africa/.durban/.joburg/.co.za/.mu 等非洲 ccTLD 与南非本地域名
  */
@@ -21,45 +21,36 @@ function toPrice(s: string): number | null {
   return Number.isFinite(n) ? n : null
 }
 
-const isPriceEntry = (e: unknown): e is Record<string, unknown> =>
-  e != null &&
-  typeof e === "object" &&
-  typeof (e as Record<string, unknown>).name === "string" &&
-  ("renew_cost" in (e as Record<string, unknown>) || "transfer_cost" in (e as Record<string, unknown>))
-
 function extractNuxtPrices(raw: string): RawPrice[] {
-  const payloadMatch = raw.match(/window\.__NUXT__\s*=\s*([\s\S]*?)<\/script>/i)
-  if (!payloadMatch) throw new Error("afrihost 未找到 window.__NUXT__ 内嵌数据(页面结构可能已变化)")
-  let payload: unknown
+  const dataMatch = raw.match(/<script[^>]*id="__NUXT_DATA__"[^>]*>([\s\S]*?)<\/script>/i)
+  if (!dataMatch) throw new Error("afrihost 未找到 __NUXT_DATA__ 内嵌数据(页面结构可能已变化)")
+  let arr: unknown
   try {
-    payload = JSON.parse(payloadMatch[1].replace(/;\s*$/, ""))
+    arr = JSON.parse(dataMatch[1])
   } catch {
-    throw new Error("afrihost __NUXT__ payload 不是合法 JSON(页面结构可能已变化)")
+    throw new Error("afrihost __NUXT_DATA__ payload 不是合法 JSON(页面结构可能已变化)")
+  }
+  if (!Array.isArray(arr)) throw new Error("afrihost __NUXT_DATA__ 结构异常(页面结构可能已变化)")
+  const list = arr as unknown[]
+  const deref = (v: unknown): unknown => {
+    if (typeof v !== "number" || !Number.isInteger(v) || v < 0 || v >= list.length) return v
+    const s = list[v]
+    return typeof s === "string" ? s : v
   }
   const found: Array<Record<string, unknown>> = []
-  const walk = (v: unknown, depth: number): void => {
-    if (depth > 8 || !v || typeof v !== "object") return
-    if (Array.isArray(v)) {
-      const arr = v as unknown[]
-      if (arr.length > 0 && arr.every(isPriceEntry)) {
-        for (const e of arr) {
-          if (typeof e.price === "string" && typeof e.renew_cost === "string") found.push(e)
-        }
-        return
-      }
-      for (const x of arr) walk(x, depth + 1)
-      return
+  for (const e of list) {
+    if (e != null && typeof e === "object" && !Array.isArray(e)) {
+      const o = e as Record<string, unknown>
+      if (o.name != null && ("renew_cost" in o || "transfer_cost" in o)) found.push(o)
     }
-    for (const x of Object.values(v as Record<string, unknown>)) walk(x, depth + 1)
   }
-  walk(payload, 0)
   const byTld = new Map<string, RawPrice>()
   for (const e of found) {
-    const tld = String(e.name ?? "").toLowerCase().replace(/^\./, "").trim()
+    const tld = String(deref(e.name) ?? "").toLowerCase().replace(/^\./, "").trim()
     if (!tld || !/^[a-z0-9][a-z0-9.-]*$/.test(tld) || byTld.has(tld)) continue
-    const register = toPrice(String(e.price ?? ""))
-    const renew = toPrice(String(e.renew_cost ?? ""))
-    const transfer = e.transfer_cost != null && e.transfer_cost !== "" ? toPrice(String(e.transfer_cost)) : null
+    const register = toPrice(String(deref(e.price) ?? ""))
+    const renew = toPrice(String(deref(e.renew_cost) ?? ""))
+    const transfer = e.transfer_cost != null && e.transfer_cost !== "" ? toPrice(String(deref(e.transfer_cost) ?? "")) : null
     if (register == null && renew == null && transfer == null) continue
     byTld.set(tld, {
       tld,
