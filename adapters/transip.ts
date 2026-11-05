@@ -23,15 +23,18 @@ function extractCardPrices(raw: string): RawPrice[] {
       b.match(/data-gtm-ga-ee-name="Domain \.([a-z0-9.-]+)"/) ||
       b.match(/<span class="domain-extensions-tld__name">\.([a-z0-9.-]+)<\/span>/)
     )?.[1]
-    const registerCents = Number.parseInt(b.match(/ data-price="(\d+)"/)?.[1] ?? "", 10)
+    const firstPeriodRaw = b.match(/<span class="domain-extensions-tld__first-period">[\s\S]*?€\u00a0([\d,]+)/)?.[1]
+    const registerPrice = firstPeriodRaw
+      ? Number.parseFloat(firstPeriodRaw.replace(",", "."))
+      : null
     const renewRaw = b.match(/data-gtm-ga-ee-price="([\d.]+)"/)?.[1]
     const renewPrice = renewRaw ? Number.parseFloat(renewRaw) : null
-    if (!tld || !Number.isFinite(registerCents) || byTld.has(tld)) continue
+    if (!tld || registerPrice === null || byTld.has(tld)) continue
     byTld.set(tld, {
       tld: tld.toLowerCase(),
       currency: "EUR",
       sourceUrl: URL,
-      registerPrice: registerCents / 100,
+      registerPrice,
       renewPrice,
       transferPrice: null,
     })
