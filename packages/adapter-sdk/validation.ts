@@ -34,6 +34,9 @@ export type ExistingPriceLookup = (
 const OUTLIER_MULTIPLIER = 50
 /** 相对旧价变化超过该比例视为突变（警告） */
 const LARGE_CHANGE_RATIO = 0.5
+/** 零价占位符阈值：注册/续费/恢复价 <= 该值视为"未公布"占位数据。
+ * 真实促销首年价（如 €0.49、€0.99）必须入库，阈值须低于真实促销价下限 */
+const ZERO_PRICE_THRESHOLD = 0.1
 
 function median(values: number[]): number | null {
   if (values.length === 0) return null
@@ -70,7 +73,7 @@ export function validatePrices(
       if (status === "valid") status = "warning"
     }
 
-    // 1. 负价格 → 拒绝；零价/近零价（<= 0.5）视为占位数据 → 置空
+    // 1. 负价格 → 拒绝；零价/近零价（<= 0.1）视为占位数据 → 置空
     // 例外：transferPrice 的 0 是注册商明确的"免费转移"报价（如 OVH 对部分
     // TLD 提供免费转入），是真实价格而非占位符，予以保留。
     for (const [field, v] of [
@@ -81,8 +84,8 @@ export function validatePrices(
     ] as const) {
       if (typeof v === "number" && v < 0) {
         reject("negative-price", `${field} 为负数：${v}`)
-      } else if (typeof v === "number" && v <= 0.5 && field !== "transferPrice") {
-        // 0 或近 0 通常是"价格未公布"的占位符,不是真实报价
+      } else if (typeof v === "number" && v <= ZERO_PRICE_THRESHOLD && field !== "transferPrice") {
+        // 0 或近 0 通常是"价格未公布"的占位符；真实促销首年价（€0.49 等）高于阈值，不受影响
         warn("zero-price", `${field} 为 ${v}，视为未公布并置空`)
         ;(price as unknown as Record<string, unknown>)[field] = null
       }
