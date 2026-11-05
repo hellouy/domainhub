@@ -406,8 +406,8 @@ Entries discovered by the Agent during task execution should follow this format:
 - Instructions:
   - **afrihost 已迁 Nuxt 3（PR #24 上线）**：`window.__NUXT__` 仅剩 config（946 字符，无价格），价格在 `<script type="application/json" id="__NUXT_DATA__">` 的 devalue 扁平化数组（顶层数组 1083 元素；对象条目 `{name,price,renew_cost,transfer_cost,parking_cost}` 的值多为字符串表索引）。解引用原则：仅当 `typeof list[v]==="string"` 时解引用，真实数字（如 109）不误伤；transfer_cost "0"=免费转入不过滤；playwright extract html 兜底复用同一 parse。
   - **CSS3 Grid 卡片解析模式（exabytes 先例，PR #25）**：页面无 `<table>`，TLD 价目为卡片流（cart.php 链接 `query=.tld` 标识 + `class="all-domain-price"` 段落 RM 现价/yr + 可选 `pricing-onsale` 内 `<s>` 原价），仅注册价 → 独立 defineAdapter，capabilities 仅 registration；正则 `query=\.([a-z0-9.]+)[^"]*"[\s\S]{0,350}?class="all-domain-price"[^>]*>\s*RM\s?([\d.,]+)\s*\/\s*yr/gi`。卡片式站点不适合 createTableAdapter 表格解析。
-  - **amen 价目页无完整价格表**：WordPress+SiteOrigin 页 tldList-widget 110 个 li 全是 TLD 导航链接（无价格）；仅 5 个促销 TLD（dada-highlighted-tld-widget：com/fr/eu/net/org）有价；完整数据在 wp-admin/admin-ajax.php 交互（110 TLD 详情页抓取成本高）——待设计决策（促销部分覆盖 vs 详情页抓取 vs 停用）。
-  - **transip 价目页纯 SPA**：/domeinnamen 302→/domeinnaam/，SSR 0 个 EUR 价格文本，页面仅 4 个 js refs（polyfill/hsforms/one-showroom-init/css-polyfill），one-showroom-init.js 仅 GA 跟踪无价格 API，价格全靠客户端 XHR——下一步可带 CRAWL_SERVICE_TOKEN 走网关 /v1/browser/auto 渲染（沙箱直连网关须带该 token，401 即未带）或深挖主 bundle。
+   - **amen 价目页**：WordPress+SiteOrigin 主页 tldList-widget 仅导航链接无价格；价格在各 TLD 详情页 SSR（见 2026-11-06 条目 PR #29）。
+   - **transip 价目页**：/beschikbare-domeinextensies/ SSR 含全量 490 卡片（见 2026-11-06 条目 PR #26/#27），早期"纯 SPA"结论作废。
 
 [Project Knowledge Summary]
 - Date: 2026-11-05
@@ -418,4 +418,16 @@ Entries discovered by the Agent during task execution should follow this format:
   - **Vercel 部署列表 REST API 不可用**：/v6/deployments 传 projectId/app/slug 均返回 400 "Invalid API version"；用 `vercel ls / vercel inspect <url> --token` 替代（CLI 列表第 1 列是 age、最后列是构建时长，勿把 "57s" 构建时长误读为新部署）。
   - **health adapterVersion 不可作部署锚点**：来自 DB syncAdapterToDb，滞后部署（afrihost ver 显示 2.0.0 但 #2641 success html 证明 2.1.0 代码已生效）——部署验证以 crawl_jobs 行为结果为准。
   - **分支 base 过期自愈**：origin/main 本地引用在其他会话合并后过期，checkout -b 前先 `git fetch origin`；已建分支用 `git fetch origin && git rebase origin/main` 修正（f8a7f56→f614524 实操）。
-  - **GitHub PR 配方复核**：PAT 取自 `git credential fill`（L338 条目），`POST /repos/hellouy/domainhub/pulls` 建 PR、`PUT /pulls/{n}/merge` squash 合并——PR #24/#25 全流程验证通过。
+   - **GitHub PR 配方复核**：PAT 取自 `git credential fill`（L338 条目），`POST /repos/hellouy/domainhub/pulls` 建 PR、`PUT /pulls/{n}/merge` squash 合并——PR #24/#25 全流程验证通过。
+
+[Project Knowledge Summary]
+- Date: 2026-11-06
+- Context: Discovered by Agent while transip .nl 促销价 null 根因修复（PR #28）与 amen SSR 专用适配器（PR #29）
+- Category: Troubleshooting & Debugging
+- Instructions:
+  - **validation zero-price 占位符陷阱**：packages/adapter-sdk/validation.ts 将 register/renew/restore ≤€0.5 视为占位符置空（transferPrice=0 免费转移例外）。transip .nl 首年 €0.49 被此规则置空（job rows=490、warnings 含 zero-price，适配器解析层正常）。阈值已改 0.10（PR #28）；促销价 promotionPrice ≤0.5 置空规则保留（免费首年促销无法建模）。排查"价格丢失"先查校验层三态与 warnings 计数，勿只盯适配器。
+  - **transip SSR 卡片模式（PR #26/#27）**：/beschikbare-domeinextensies/ SSR 直连含全量 490 卡片（li.domain-extensions-tld：data-gtm-ga-ee-name 取 TLD、__first-period span 内 "€\u00a0" 取首期注册价、data-gtm-ga-ee-price 取续费价）。html 策略生产走 strategy-engine defaultFetch 直连，无需舰队/网关。
+  - **amen SSR 三列面板模式（PR #29）**：详情页 /nom-de-domaine/tld/extension-{tld}/ comparativeTable SSR 含标准年价（行标签 "Tarif annuel ... hors promotion"），三列 widgetContainerAlias column1/2/3th2_price=注册/续费/转入，格式 `<b><span class="euroPrice">19</span></b>,<span class="centsPrice">90</span> € HT`。Dada 框架 fireWhen=userLogged：游客不触发 AJAX 刷新，SSR 即游客可见价。发现源=主页 tldList 65 链接 ∪ highlighted 12 个首年促销价（title-lg/title-sm span，HT）∪ knownTldsRanked Top100 补充探测（.co 有价但无任何 SSR 入口链接）；约 18 个 TLD 有价（io/ad 详情页存在但无价格表）。search.amen.fr recaptcha 搜索流不覆盖。
+  - **playwright/网关 innerHTML 实体化陷阱**：浏览器渲染返回的 HTML 把字面 \u00a0 序列化为 &nbsp; 实体，依赖 "€\u00a0" 的正则全灭（transip 网关渲染 490/490 失败 vs SSR 直连 489/490 成功）。价格正则须兼容 &nbsp;，或优先选 SSR 直连源。
+  - **scripts/test-adapter.ts ctx 对齐生产**：测试 harness 的 ctx 补齐 knownTldsRanked/validTldsRanked（此前缺失，依赖热度榜的适配器测试行为与生产不一致）。
+  - **生产 DB 快查陷阱**：crawl_jobs.registrar_id 与 prices.tld_id 是 integer FK——按 slug/TLD 查必须 JOIN registrars/tlds；crawl_jobs 无 response_size 列；price_history 时间戳列名 recorded_at；node -e 异常路径必须 c.end()+process.exit 否则挂起。
