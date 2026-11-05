@@ -29,7 +29,6 @@ import { ovhcloudAdapter } from "./ovhcloud"
 import { hostpointAdapter } from "./hostpoint"
 import { arubaAdapter } from "./aruba"
 import {
-  amenAdapter,
   domeneshopAdapter,
   hoverAdapter,
   internetbsAdapter,
@@ -57,6 +56,7 @@ import {
   reg123Adapter,
 } from "./table-registrars"
 import { exabytesAdapter } from "./exabytes"
+import { amenAdapter } from "./amen"
 import { transipAdapter } from "./transip"
 import { loopiaAdapter } from "./loopia"
 import { pskzAdapter } from "./pskz"
