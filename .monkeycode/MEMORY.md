@@ -306,7 +306,7 @@ Entries discovered by the Agent during task execution should follow this format:
   - **43.133.72.184 无公网可达的 browser-worker**：8840/8841/8842 TCP 可连但 HTTP 被防火墙丢弃（curl 挂起超时），8100 是 crawl-service（仅 /api/auto direct fetch，无 /render 端点）。playwright 适配器要在 Vercel 生产可用，须先在带 Chromium 的主机部署 browser-worker，再配 Vercel 变量 `BROWSER_SERVICE_URL=https://域名/api/browser` + `BROWSER_SERVICE_TOKEN` + `BROWSER_WORKER_URL/TOKEN`（站内代理 app/api/browser 透传 /render，SDK 契约不变）。
   - **三服务契约勿混淆**：browser-worker = `POST ${URL}/render` + Bearer（真实渲染，支持自定义 script/extract-json）；crawl-service = `POST /api/auto` + x-api-key（仅 direct fetch 不执行 JS）；SearXNG = `GET /search?format=json` + Bearer。接入前先 curl 目标端口确认契约。
   - **教训（2026-10-31）**：commit 79e6a8e 曾把 BROWSER_SERVICE_URL 指向 crawl-service 8100（协议不同、无 JS 渲染），playwright 策略全废。本地开发应直连 worker `BROWSER_SERVICE_URL=http://127.0.0.1:8840`，无需代理。
-  - **动态价表提取法**：cloudns/westcn 这类 AJAX 注入表格，用 browser-worker /render 的自定义 script（page.evaluate）在 DOM 内解析渲染后结构（cloudns `tbody tr.tlds` 6 列 1226 行、westcn el-table column_3 118 行），extract-json 返回数组即可，比抓静态 HTML 正则稳健。
+  - **动态价表提取法**：cloudns/westcn 这类 AJAX 注入表格，用 browser-worker /render 的自定义 script（page.evaluate）在 DOM 内解析渲染后结构（cloudns `tbody tr.tlds` 6 列 1226 行、westcn el-table column_3 118 行），extract-json 返回数组即可，比抓静态 HTML 正则稳健。**2026-11-07 更新（PR #31）**：cloudns 已改直采内部 XHR 端点（策略 xhr，无浏览器/舰队/网关依赖），此浏览器提取法仅 westcn 仍在用。
 
 [Project Knowledge Summary]
 - Date: 2026-11-02
@@ -430,4 +430,13 @@ Entries discovered by the Agent during task execution should follow this format:
   - **amen SSR 三列面板模式（PR #29）**：详情页 /nom-de-domaine/tld/extension-{tld}/ comparativeTable SSR 含标准年价（行标签 "Tarif annuel ... hors promotion"），三列 widgetContainerAlias column1/2/3th2_price=注册/续费/转入，格式 `<b><span class="euroPrice">19</span></b>,<span class="centsPrice">90</span> € HT`。Dada 框架 fireWhen=userLogged：游客不触发 AJAX 刷新，SSR 即游客可见价。发现源=主页 tldList 65 链接 ∪ highlighted 12 个首年促销价（title-lg/title-sm span，HT）∪ knownTldsRanked Top100 补充探测（.co 有价但无任何 SSR 入口链接）；约 18 个 TLD 有价（io/ad 详情页存在但无价格表）。search.amen.fr recaptcha 搜索流不覆盖。
   - **playwright/网关 innerHTML 实体化陷阱**：浏览器渲染返回的 HTML 把字面 \u00a0 序列化为 &nbsp; 实体，依赖 "€\u00a0" 的正则全灭（transip 网关渲染 490/490 失败 vs SSR 直连 489/490 成功）。价格正则须兼容 &nbsp;，或优先选 SSR 直连源。
   - **scripts/test-adapter.ts ctx 对齐生产**：测试 harness 的 ctx 补齐 knownTldsRanked/validTldsRanked（此前缺失，依赖热度榜的适配器测试行为与生产不一致）。
-  - **生产 DB 快查陷阱**：crawl_jobs.registrar_id 与 prices.tld_id 是 integer FK——按 slug/TLD 查必须 JOIN registrars/tlds；crawl_jobs 无 response_size 列；price_history 时间戳列名 recorded_at；node -e 异常路径必须 c.end()+process.exit 否则挂起。
+   - **生产 DB 快查陷阱**：crawl_jobs.registrar_id 与 prices.tld_id 是 integer FK——按 slug/TLD 查必须 JOIN registrars/tlds；crawl_jobs 无 response_size 列；price_history 时间戳列名 recorded_at；node -e 异常路径必须 c.end()+process.exit 否则挂起。
+
+[Project Knowledge Summary]
+- Date: 2026-11-07
+- Context: Discovered by Agent while cloudns 舰队依赖解除（PR #31）与生产全量 drain 验证
+- Category: Operations & Deployment
+- Instructions:
+  - **cloudns 已无浏览器依赖（PR #31，main 84e6689）**：策略改 xhr 直 POST `https://www.cloudns.net/ajaxPages.php?action=domain-pricing-list`（body `&show=table&category=`，无 cookie/会话依赖），1.3s 返回 880KB/1249 行表格片段。生产 job 2819/2852 success（strategy=xhr，rows=1226，prices.promotion_price 首次落库 227 行）。促销语义：单元格 `<span class="old">$标准价</span> $现价`，old 值进三价，register 列现价进 promotionPrice（平台规则促销价须 < 注册价）。
+  - **舰队 flapping 判据（2026-11-07 生产实证）**：同一时间窗内部分 playwright job 成功（networksolutions/julyname）、部分报「全部 4 个 browser-worker 健康检查失败」或 render 超时中止 = 宿主机 8840-8843 worker 不稳定（卡死槽位/进程退化，同 2026-10-20 症状），非全死；html/api/xhr/json 策略家不受影响。当日仍失败 7 家（spaceship/aliyun/101domain/namecom/pskz/westcn/zwcn）全部卡 playwright 策略——aliyun 属服务端缓存豁免（2026-10-20 条目），123reg 为已知 SPA 硬骨头，其余待宿主机重启 worker 恢复。
+  - 验证锚点：crawl_jobs.strategy 列（xhr/html/playwright/api/anti-bot/json）+ prices 行数与 updated_at；health adapterVersion 滞后不可信（2026-11-05 条目）。
