@@ -439,4 +439,15 @@ Entries discovered by the Agent during task execution should follow this format:
 - Instructions:
   - **cloudns 已无浏览器依赖（PR #31，main 84e6689）**：策略改 xhr 直 POST `https://www.cloudns.net/ajaxPages.php?action=domain-pricing-list`（body `&show=table&category=`，无 cookie/会话依赖），1.3s 返回 880KB/1249 行表格片段。生产 job 2819/2852 success（strategy=xhr，rows=1226，prices.promotion_price 首次落库 227 行）。促销语义：单元格 `<span class="old">$标准价</span> $现价`，old 值进三价，register 列现价进 promotionPrice（平台规则促销价须 < 注册价）。
   - **舰队 flapping 判据（2026-11-07 生产实证）**：同一时间窗内部分 playwright job 成功（networksolutions/julyname）、部分报「全部 4 个 browser-worker 健康检查失败」或 render 超时中止 = 宿主机 8840-8843 worker 不稳定（卡死槽位/进程退化，同 2026-10-20 症状），非全死；html/api/xhr/json 策略家不受影响。当日仍失败 7 家（spaceship/aliyun/101domain/namecom/pskz/westcn/zwcn）全部卡 playwright 策略——aliyun 属服务端缓存豁免（2026-10-20 条目），123reg 为已知 SPA 硬骨头，其余待宿主机重启 worker 恢复。
-  - 验证锚点：crawl_jobs.strategy 列（xhr/html/playwright/api/anti-bot/json）+ prices 行数与 updated_at；health adapterVersion 滞后不可信（2026-11-05 条目）。
+   - 验证锚点：crawl_jobs.strategy 列（xhr/html/playwright/api/anti-bot/json）+ prices 行数与 updated_at；health adapterVersion 滞后不可信（2026-11-05 条目）。
+
+[Project Knowledge Summary]
+- Date: 2026-11-08
+- Context: Discovered by Agent while westcn/101domain 舰队依赖解除（PR #33/#34）与 spaceship 直连可行性结论
+- Category: Operations & Deployment
+- Instructions:
+  - **westcn 已无浏览器依赖（PR #33，main 65bd1fe）**：west.cn `/web/price/domainpricelist` SSR HTML 内嵌 `enData = JSON.parse('[...]')`（118 条 CNY；另有 cnData 中文域名表），正则 `/enData\s*=\s*JSON\.parse\('([^']*)'\)/` 提取。结构 `{suffix, oldprice, buy:{等级:{年限:价}}, renew:{...}, turnprice:{buyprice,buyprice_pro}}`；映射 register=oldprice、promotion=buy["1"]["1"]（<oldprice，110 行）、renew=renew["1"]["1"]、transfer=turnprice.buyprice（114 条有值；rent/luxe/college/fans 无 turnprice→写 null，旧 DB 转移价=续费价系提取列错位伪影，本次自愈）。生产 job 2975 success html 118 行。
+  - **101domain 已无浏览器依赖（PR #34，main e53c8ee）**：内部 JSON 服务 `GET /price_list_service.json?o=<首字母>` 字母浏览 a-z 26 请求并集=全量 1712 TLD（分类 popular/newgtld/business 均为其子集）；主流 26 家由 pricing.htm POST `e[]=` 表单提供且字母浏览同样覆盖（保险重放，按 sld_name 去重）。字段 registration_price/original_price（非空=当期注册促销）/renew_price/transfer_price 形如 "15.99 USD"。旧 playwright 双页方案保留为降级兜底。生产 job 2977 success xhr 1712 行；DB 252→1712，三价全覆盖、promo 0→12。
+  - **spaceship 直连不可采已证实（2026-11-08）**：BFF `POST /gateway/api/v1/pricing-bff/price/getPrices` 与全站均在 Cloudflare JS 挑战之后（沙箱探针 403 "Just a moment..."），serverless 无解；现有 browserRender 建会话+分批重放 BFF（579 TLD）为最优方案，恢复取决于宿主机 8840-8843 舰队。extract-json 依赖舰队的剩余家：spaceship/namecom/pskz/zwcn/istanco/123reg（123reg SPA 硬骨头；aliyun 服务端缓存豁免）。
+  - **SSR 内嵌数据是解除舰队依赖的高产模式**：页面 HTML 内 `const X = JSON.parse('...')`（westcn enData）、内部 JSON 端点（cloudns ajaxPages.php、101domain price_list_service.json）、`<script type="application/json">`（afrihost __NUXT_DATA__）、SSR 卡片（transip）。playwright 依赖家排查顺序：先 curl 价目页找内嵌变量/内部端点，再谈舰队修复。
+  - **zsh 单引号陷阱**：curl --data 含 `'`（如 `JSON.parse('...')`）触发 "no matches found" glob 报错；含引号文本（PR body 等）先写文件再 `--data-binary @file`。
