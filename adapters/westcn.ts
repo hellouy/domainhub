@@ -3,85 +3,104 @@
  * ------------------------------------------------------------
  * 所有权: Data Team
  *
- * 浏览器提取全量价格页 `/web/price/domainpricelist`（Element UI el-table，JS 注入，fetch 无 SSR 行）。
- * 列结构：域名 | 注册价格 | 续费价格 | 转入价格 | 操作。
- *
- * 单元格为 El-popover 促销结构：隐藏的 year-list（1年/3年/5年/10年）+ 可见参考价。
- * 通用 extract-json 会把注册格的原价（old-price）和续费格隐藏的多年限价一起拼坏，
- * 因此用自定义 script 精确定位可视 1 年价：
- *   - 注册 column_3 = old-price 为标准注册价，.price 为促销价（cur < old 时分别落库）
- *   - 续费 column_4 = `.el-popover__reference .price`
- *   - 转入 column_5 = `.price`
+ * 数据源结论(2026-11-07 实测):
+ * 1. 价格页 /web/price/domainpricelist 为 Vue+Element UI 应用，但价表数据由服务端内嵌：
+ *    HTML 中存在全局变量 enData = JSON.parse('[...]')（英文 TLD 表，118 条），
+ *    另有 cnData（中文域名表）。直连 GET 无任何反爬（无 Cloudflare）。
+ * 2. 单条结构: {suffix, oldprice, buy:{等级:{年限:价}}, renew:{...}, turnprice:{buyprice,buyprice_pro}}
+ *    buy/renew 按用户等级("1"=普通用户)与年限("1"/"3"/"5"/"10")；单位 CNY。
+ * 3. 映射（与 DB 现存 118 行逐字段对齐）:
+ *    registerPrice = oldprice（标准价，缺失回退 buy 1 年价）
+ *    promotionPrice = buy["1"]["1"] 当严格小于 oldprice（110 行促销，与 DB 一致）
+ *    renewPrice = renew["1"]["1"]
+ *    transferPrice = turnprice.buyprice（114 条有值，4 条无转移价）
+ * 4. 零浏览器依赖（原 playwright + extract-json 自定义脚本方案废弃）。
  */
-import { defineAdapter } from "@/packages/adapter-sdk"
+import { defineAdapter, type AdapterContext, type RawPrice } from "@/packages/adapter-sdk"
 import { validatePrices } from "@/packages/adapter-sdk/validation"
 
-const WEST_SCRIPT = `(() => {
-  const num = (el) => {
-    if (!el) return null
-    const raw = (el.textContent || "").trim()
-    const t = raw.replace(/[^\\d.,]/g, "")
-    if (!t) return null
-    const lastDot = t.lastIndexOf(".")
-    const lastComma = t.lastIndexOf(",")
-    const sep = Math.max(lastDot, lastComma)
-    const da = sep >= 0 ? t.slice(sep + 1).length : 0
-    let s = t
-    if (sep >= 0 && da === 3) s = t.replace(/[.,\\s\\u00a0]/g, "")
-    else if (lastComma > lastDot) s = t.replace(/[.\\s\\u00a0]/g, "").replace(",", ".")
-    else s = t.replace(/[,\\s\\u00a0]/g, "")
-    const v = parseFloat(s)
-    return Number.isFinite(v) && v > 0 && v < 1000000 ? Math.round(v * 100) / 100 : null
+const PAGE_URL = "https://www.west.cn/web/price/domainpricelist"
+
+const num = (v: unknown): number | null => {
+  if (v == null) return null
+  const n = Number(typeof v === "string" ? v.replace(/[\s,]/g, "") : v)
+  return Number.isFinite(n) && n > 0 && n < 1000000 ? Math.round(n * 100) / 100 : null
+}
+
+interface WestEntry {
+  suffix?: string
+  oldprice?: string
+  buy?: Record<string, Record<string, string>>
+  renew?: Record<string, Record<string, string>>
+  turnprice?: { buyprice?: string; buyprice_pro?: string }
+}
+
+async function fetchWestcn(ctx: AdapterContext): Promise<string> {
+  const res = await ctx.fetch(PAGE_URL, {
+    headers: {
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+      Referer: "https://www.west.cn/",
+    },
+    signal: AbortSignal.timeout(30_000),
+  })
+  if (!res.ok) throw new Error(`westcn 页面返回 HTTP ${res.status}`)
+  return res.text()
+}
+
+function parseWestcn(raw: string): RawPrice[] {
+  const m = raw.match(/enData\s*=\s*JSON\.parse\('([^']*)'\)/)
+  if (!m) throw new Error("westcn 页面未找到 enData 内嵌价表（页面结构可能已变化）")
+  let entries: WestEntry[]
+  try {
+    entries = JSON.parse(m[1]) as WestEntry[]
+  } catch {
+    throw new Error("westcn enData JSON 解析失败")
   }
-  const out = []
-  for (const tr of document.querySelectorAll("table.el-table__body tr")) {
-    const tds = tr.querySelectorAll("td")
-    if (!tds.length) continue
-    const m = (tr.querySelector(".cell")?.textContent || "").trim().toLowerCase().match(/^.?([a-z0-9-]{2,20}(?:\\.[a-z0-9-]{2,15}){0,2})(?:\\s|$)/)
-    if (!m) continue
-    const row = { tld: m[1], register: null, renew: null, transfer: null, promotionPrice: null, promotion: false }
-    for (const td of tds) {
-      const cls = td.className || ""
-      if (cls.includes("column_3")) {
-        const ref = td.querySelector(".el-popover__reference")
-        const old = num(ref?.querySelector(".old-price"))
-        const cur = num(ref?.querySelector(".price"))
-        if (old != null && cur != null && cur < old) {
-          row.register = old
-          row.promotionPrice = cur
-          row.promotion = true
-        } else {
-          row.register = cur ?? old
-        }
-      }
-      else if (cls.includes("column_4")) row.renew = num(td.querySelector(".el-popover__reference .price")) ?? num(td.querySelector("span.price"))
-      else if (cls.includes("column_5")) row.transfer = num(td.querySelector(".price")) ?? num(td.querySelector(".cell"))
-    }
-    out.push(row)
+  const prices: RawPrice[] = []
+  const seen = new Set<string>()
+  for (const e of entries) {
+    const tld = (e.suffix ?? "").replace(/^\./, "").toLowerCase()
+    if (!tld || !/^[a-z0-9][a-z0-9.-]*$/.test(tld) || seen.has(tld)) continue
+    const register = num(e.oldprice) ?? num(e.buy?.["1"]?.["1"])
+    const buy1 = num(e.buy?.["1"]?.["1"])
+    const renew = num(e.renew?.["1"]?.["1"])
+    const transfer = num(e.turnprice?.buyprice)
+    if (register == null && renew == null && transfer == null) continue
+    const promotionPrice = register != null && buy1 != null && buy1 < register ? buy1 : null
+    seen.add(tld)
+    prices.push({
+      tld,
+      currency: "CNY",
+      registerPrice: register,
+      renewPrice: renew,
+      transferPrice: transfer,
+      promotionPrice,
+      promotion: promotionPrice != null,
+      billingPeriod: "1y",
+      sourceUrl: PAGE_URL,
+    })
   }
-  return JSON.stringify(out)
-})()`
+  if (prices.length < 50) throw new Error(`westcn enData 解析行数异常: ${prices.length}`)
+  return prices
+}
 
 export const westcnAdapter = defineAdapter({
   slug: "westcn",
   name: "West.cn（西部数码）",
   website: "https://www.west.cn",
-  version: "2.1.0",
-  parserVersion: "2.1.0",
+  version: "3.0.0",
+  parserVersion: "3.0.0",
   owner: "Data Team",
   currency: "CNY",
   capabilities: { registration: true, renewal: true, transfer: true, supportedCurrencies: ["CNY"] },
-  rateLimit: { concurrency: 1, rpm: 10, retries: 2, timeoutMs: 120_000 },
+  rateLimit: { concurrency: 1, rpm: 10, retries: 2, timeoutMs: 60_000 },
   strategies: [
     {
-      type: "playwright",
-      url: "https://www.west.cn/web/price/domainpricelist",
-      browser: {
-        extract: "extract-json",
-        script: WEST_SCRIPT,
-        waitForTimeoutMs: 20_000,
-        scrollToBottom: true,
-      },
+      type: "html",
+      url: PAGE_URL,
+      fetch: fetchWestcn,
+      parse: parseWestcn,
     },
   ],
   hooks: {
